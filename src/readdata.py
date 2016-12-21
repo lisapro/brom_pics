@@ -6,6 +6,7 @@ Created on 14. des. 2016
 from netCDF4 import Dataset
 import main
 import numpy as np
+import math
 def readdata_brom(self,fname): 
 
     fh = Dataset(fname)
@@ -92,38 +93,25 @@ def readdata_brom(self,fname):
     
     fh.close()
  
-def calculate_watmax(self):
+def calculate_ywat(self):
     for n in range(0,(len(self.depth2)-1)):
         if self.depth2[n+1] - self.depth2[n] >= 0.5:
             pass
         elif self.depth2[n+1] - self.depth2[n] < 0.50:    
             y1max = (self.depth2[n])
-            self.y1max = y1max                               
-            break
-
-    
-def calculate_nwatmax(self):
-    for n in range(0,(len(self.depth2)-1)):
-        if self.depth2[n+1] - self.depth2[n] >= 0.5:
-            pass
-        elif self.depth2[n+1] - self.depth2[n] < 0.50:    
-            self.ny1max = n                               
-            return self.ny1max
+            self.y1max = y1max                                                      
+            self.ny1max = n
             break
   
-def calculate_bblmax(self):
+def calculate_ybbl(self):
     for n in range(0,(len(self.depth2)-1)):
         if self.kz[1,n] == 0:
             self.y2max = self.depth2[n]         
-            return self.y2max
-            break        
-def calculate_nbblmax(self):
-    for n in range(0,(len(self.depth2)-1)):
-        if self.kz[1,n] == 0:
             self.ny2max = n         
-            return self.ny2max 
             break  
-     
+        
+
+            
 def y2max_fill_water(self):
     for n in range(0,(len(self.depth2)-1)):
 #        if depth[_]-depth[_?]
@@ -131,9 +119,20 @@ def y2max_fill_water(self):
             pass
         elif self.depth2[n+1] - self.depth2[n] < 0.50:
 #            watmax =  depth[n],depth[n]-depth[n+1],n
-            self.y2max_fill_water = self.depth2[n]            
-            return self.y2max_fill_water
-            break    
+            self.y2max_fill_water = self.depth2[n] 
+            self.nbblmin = n            
+            break 
+         
+def calculate_ysed(self):
+    for n in range(0,(len(self.depth_sed))):
+        if self.kz[1,n] == 0:
+            ysed = self.depth_sed[n]  
+            self.ysedmin =  ysed - 10
+            self.ysedmax =  ysed + 10 
+            self.y3min = self.depth_sed[self.nbblmin+2]
+            #here we cach part of BBL to add to 
+            #the sediment image                
+            break            
 def y_coords(self):       
 #        self.y2min = self.y2max - 2*(self.y2max - self.y1max)   #calculate the position of y2min, for catching part of BBL 
     self.ny2min = self.ny2max - 2*(self.ny2max - self.ny1max) 
@@ -141,12 +140,10 @@ def y_coords(self):
     self.ysedmax_fill_bbl = 0
     self.ysedmin_fill_sed = 0
     self.y1min = 0
-    
-def y2min(self):    
-    y2min = self.y2max - 2*(self.y2max - self.y1max)          
-    self.y2min = y2min
+    self.y2min = self.y2max - 2*(self.y2max - self.y1max)   
+          
     #calculate the position of y2min, for catching part of BBL 
-#y2max = 110 #(sed_wat interface)
+
 
 def depth_sed(self):
     to_float = []
@@ -158,89 +155,61 @@ def depth_sed(self):
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed.append(v)
         self.depth_sed = depth_sed
-#            return depth_sed
-def calculate_sedmin(self):
-    for n in range(0,(len(self.depth_sed)-1)):
-        if self.kz[1,n] == 0:
-            ysed = self.depth_sed[n]  
-            self.ysedmin =  ysed - 10                 
-#               return ysedmin
-            break   
-        
-def calculate_sedmax(self):
-    for n in range(0,(len(self.depth_sed)-1)):
-        if self.kz[1,n] == 0:
-            ysed = self.depth_sed[n]    
-            self.ysedmax =  ysed + 10                
-            break  
-            
-def watmax(self,variable):
-    n = variable[:,self.y1min:self.ny2max].max()#+ ((variable[:,y1min:y2max].max())/10))
-    
-    
-    if n > 28000:
-        n = 30000#np.ceil(n)        
-    if n > 27000:
-        n = 28000#np.ceil(n)
-    if n > 26000:
-        n = 27000#np.ceil(n)
-    if n > 25000:
-        n = 26000#np.ceil(n)
-    elif n > 22500:
-        n = 25000#np.ceil(n)              
-    elif n > 20000:
-        n = 22500#np.ceil(n)            
-    elif n > 10000:
-        n = 20000#np.ceil(n)    
-    elif n > 7000 and n <= 10000:  
-        n = 10000                     
-    elif n > 5000 and n <= 7000:  
-        n =7000 
-    elif n > 2000 and n <= 5000:  
-        n = 5000                                  
-    elif n > 1000 and n <= 2000:  
-        n = 2000        
-    elif n > 500 and n <= 1000:  
-        n = 1000 
-    elif n > 350 and n <= 500:  
-        n = 500                       
-    elif n > 200 and n <= 350:  
-        n = 350          
-    elif n > 100 and n <= 200:  
-        n = 200   
-        
-    elif n > 50 and n <= 100:
-        n = 100    
-    elif n > 25 and n <= 50:
-        n = 50                             
-    elif n > 10 and n <= 25:
-        n = 25    
-         
-    elif n > 5 and n <= 10:
-        n = 10
-    elif n > 2.5 and n <= 5:
-        n = 5      
-    elif n > 1 and n <= 2.5:
-        n = 2.5                     
-    elif n > 0.5 and n <= 1:
-        n = 1                     
-    elif n > 0.05 and n <= 0.5:
-        n = 0.5           
-    elif n > 0.005 and n <= 0.05:
-        n = 0.05         
-    elif n > 0.0005 and n <= 0.005:
-        n = 0.005
-    elif n > 0.00005 and  n  <= 0.0005 :
-        n = 0.0005   
-    elif n <= 0.00005  :
-        n = 0.00005               
-    return n 
+  
+                   
+def varmax(self,variable,vartype):
+    if vartype == 0: #water
+        n = variable[0:self.ny2max-1,:].max()     
+    elif vartype == 1 :#sediment
+        n = variable[self.nbblmin:,:].max()
+    if n > 10000. and n <= 100000.:  
+        n = int(math.ceil(n / 1000.0)) * 1000  
+    elif n > 1000. and n <= 10000.:  
+        n = int(math.ceil(n / 100.0)) * 100                                   
+    elif n >= 100. and n < 1000.:
+        n = int(math.ceil(n / 10.0)) * 10
+    elif n >= 1. and n < 100. :
+        n =  int(np.ceil(n)) 
+    elif n >= 0.1 and n < 1. :
+        n =  (math.ceil(n*10.))/10.  
+    elif n >= 0.01 and n < 0.1 :
+        n =  (math.ceil(n*100.))/100. 
+    elif n >= 0.001 and n < 0.01 :
+        n =  (math.ceil(n*1000.))/1000.
+    elif n >= 0.0001 and n < 0.001 :
+        n =  (math.ceil(n*10000))/10000  
+    elif n >= 0.00001 and n < 0.0001 :
+        n =  (math.ceil(n*100000))/100000                                                                                         
+    self.watmax =  n
+    return self.watmax
 
-def watmin(self,variable):
-    n = np.round(variable[0:365].min())
-        
-    if n >= 28000:
-        n = 28000 #np.ceil(n)        
+def int_value(self,n,min,max):
+    num = self.num
+    if (max - min) >= num*10 and ( 
+     max - min) < num*100 :
+        m = math.ceil(n/10)*10
+    elif ( max -  min) >= num and (
+         max -  min) < 10*num :
+        m = math.ceil(n)        
+    elif ( max -  min) > num/10. and (
+         max -  min) < num :
+        m = (math.ceil(n*10.))/10.        
+    elif ( max -  min) > num/100. and (
+         max -  min) < num/10. :
+        m = (math.ceil(n*100.))/100.          
+    elif ( max -  min) > num/1000. and (
+         max -  min) < num/100. :
+        m = (math.ceil(n*1000.))/1000.                      
+    else :
+        m = n     
+    return m    
+def varmin(self,variable,vartype):
+    if vartype == 0 :
+        n = np.round(variable[0:365].min())
+    elif vartype == 1 : 
+        n = variable[:,self.ny2min:].min()            
+    if n >= 28000.:
+        n = 28000. #np.ceil(n)        
     if n >= 27000 and n < 28000:
         n = 27000#np.ceil(n)
     if n >= 26000 and n < 27000:
@@ -262,27 +231,25 @@ def watmin(self,variable):
     elif n >= 500 and n < 1000:  
         n = 500 
     elif n >= 350 and n < 500:  
-        n = 350                       
-    elif n >= 200 and n < 350:  
+        n = 350.                       
+    elif n >= 200. and n < 350:  
         n = 200          
     elif n >= 100 and n < 200:  
-        n = 100   
-        
+        n = 100          
     elif n >= 50 and n < 100:
         n = 50    
     elif n >= 25 and n < 50:
         n = 25                             
     elif n >= 10 and n < 25:
-        n = 10    
-         
+        n = 10            
     elif n >= 6 and n < 10:
         n = 6
     elif n >= 5 and n < 6:
         n = 5            
     elif n >= 2.5 and n < 5:
         n = 2.5     
-    elif n >= 1 and n < 2.5:
-        n = 1                     
+    elif n >= 1. and n < 2.5:
+        n = 1.                     
     elif n >=  0.5 and n <1:
         n = 0.5                     
     elif n >= 0.05 and n < 0.5:
@@ -292,138 +259,10 @@ def watmin(self,variable):
     elif n >=  0.0005 and n <= 0.005:
         n = 0.0005
     elif n >=  0.00005 and  n  <0.0005 :
-        n = 0.00005   
-       
-#        return n         
-            
+        n = 0.00005 
+    self.watmin = int(np.floor(n))                          
     return self.watmin
 
-def sedmax(self,variable):
-    n = np.ceil(variable[:,self.ny2min:].max())# + ((variable[:,ysedmin:ysedmax].max()))) #np.ceil   
-    
-    if n > 28000:
-        n = 30000#np.ceil(n)        
-    if n > 27000:
-        n = 28000#np.ceil(n)
-    if n > 26000:
-        n = 27000#np.ceil(n)
-    if n > 25000:
-        n = 26000#np.ceil(n)
-    elif n > 22500:
-        n = 25000#np.ceil(n)              
-    elif n > 20000:
-        n = 22500#np.ceil(n)            
-    elif n > 10000:
-        n = 20000#np.ceil(n)    
-    elif n > 7000 and n <= 10000:  
-        n = 10000                     
-    elif n > 5000 and n <= 7000:  
-        n =7000         
-    elif n > 2000 and n <= 5000:  
-        n = 5000                                  
-    elif n > 1000 and n <= 2000:  
-        n = 2000          
-    elif n > 500 and n <= 1000:  
-        n = 1000 
-    elif n > 350 and n <= 500:  
-        n = 500                       
-    elif n > 200 and n <= 350:  
-        n = 350          
-    elif n > 100 and n <= 200:  
-        n = 200   
-        
-    elif n > 50 and n <= 100:
-        n = 100    
-    elif n > 25 and n <= 50:
-        n = 50                             
-    elif n > 10 and n <= 25:
-        n = 25    
-         
-    elif n > 5 and n <= 10:
-        n = 10
-    elif n > 2.5 and n <= 5:
-        n = 5      
-    elif n > 1 and n <= 2.5:
-        n = 2.5                     
-    elif n > 0.5 and n <= 1:
-        n = 1                     
-    elif n > 0.05 and n <= 0.5:
-        n = 0.5           
-    elif n > 0.005 and n <= 0.05:
-        n = 0.05         
-    elif n > 0.0005 and n <= 0.005:
-        n = 0.005
-    elif n > 0.00005 and  n  <= 0.0005 :
-        n = 0.0005   
-    elif n <= 0.00005  :
-        n = 0.00005               
-    return n 
-   
-def sedmin(self,variable):
-    n = variable[:,self.ny2min:].min()
-    if n >= 28000:
-        n = 28000 #np.ceil(n)        
-    if n >= 27000 and n < 28000:
-        n = 27000#np.ceil(n)
-    if n >= 26000 and n < 27000:
-        n = 26000#np.ceil(n)
-    if n >= 25000 and n < 26000:
-        n = 25000#np.ceil(n)
-    elif n >= 22500 and n < 25000 :
-        n = 22500#np.ceil(n)              
-    elif n >= 20000 and n < 22500:
-        n = 20000#np.ceil(n)            
-    elif n >= 10000 and n < 20000:
-        n = 10000#np.ceil(n)    
-    elif n >= 7000 and n < 10000:  
-        n = 7000                     
-    elif n >= 5000 and n < 7000:  
-        n =5000         
-    elif n >= 1000 and n < 5000:  
-        n = 1000        
-    elif n >= 500 and n < 1000:  
-        n = 500 
-    elif n >= 350 and n < 500:  
-        n = 350                       
-    elif n >= 200 and n < 350:  
-        n = 200          
-    elif n >= 100 and n < 200:  
-        n = 100   
-        
-    elif n >= 50 and n < 100:
-        n = 50    
-    elif n >= 25 and n < 50:
-        n = 25                             
-    elif n >= 10 and n < 25:
-        n = 10    
-         
-    elif n >= 10 and n < 25:
-        n = 10    
-         
-    elif n >= 6 and n < 10:
-        n = 6
-    elif n >= 5 and n < 6:
-        n = 5 
-        
-    elif n >= 2.5 and n < 5:
-        n = 2.5     
-    elif n >= 1 and n < 2.5:
-        n = 1                     
-    elif n >=  0.5 and n <1:
-        n = 0.5                     
-    elif n >= 0.05 and n < 0.5:
-        n = 0.05           
-    elif n >=  0.005 and n <0.05:
-        n = 0.005         
-    elif n >=  0.0005 and n <= 0.005:
-        n = 0.0005
-    elif n >=  0.00005 and  n  <0.0005 :
-        n = 0.00005           
-
-    return n
-    
-    
-    
 def maxmin(self):
     self.kzmin = self.watmin(self.kz)
     self.kzmax = self.watmax(self.kz)
