@@ -159,7 +159,8 @@ def depth_sed(self):
                    
 def varmax(self,variable,vartype):
     if vartype == 0: #water
-        n = variable[0:self.ny2max-1,:].max()     
+        n = variable[0:self.ny2max-1,:].max() 
+           
     elif vartype == 1 :#sediment
         n = variable[self.nbblmin:,:].max()
     if n > 10000. and n <= 100000.:  
@@ -181,15 +182,17 @@ def varmax(self,variable,vartype):
     elif n >= 0.00001 and n < 0.0001 :
         n =  (math.ceil(n*100000))/100000                                                                                         
     self.watmax =  n
+    
     return self.watmax
 
 def int_value(self,n,min,max):
     num = self.num
-    if (max - min) >= num*10 and ( 
-     max - min) < num*100 :
-        m = math.ceil(n/10)*10
+    print ('n',n) 
+    if (max - min) >= num*10. and ( 
+     max - min) < num*100. :
+        m = math.ceil(n/10)*10.
     elif ( max -  min) >= num and (
-         max -  min) < 10*num :
+         max -  min) < 10.*num :
         m = math.ceil(n)        
     elif ( max -  min) > num/10. and (
          max -  min) < num :
@@ -201,7 +204,8 @@ def int_value(self,n,min,max):
          max -  min) < num/100. :
         m = (math.ceil(n*1000.))/1000.                      
     else :
-        m = n     
+        m = n  
+    print ('after function', m)       
     return m    
 def varmin(self,variable,vartype):
     if vartype == 0 :
@@ -262,7 +266,31 @@ def varmin(self,variable,vartype):
         n = 0.00005 
     self.watmin = int(np.floor(n))                          
     return self.watmin
-
+def ticks(min,max):
+    
+    if (max - min) >= 10000. :
+        ticks = np.arange(min,max+5000.,5000)
+    elif (max - min) >= 3000. and (
+       max - min) < 10000.  : 
+        ticks = np.arange(min,max+1000.,1000)        
+    elif (max - min) >= 1500. and ( 
+     max - min) < 3000. :
+        ticks = np.arange(min,max+500.,500)                        
+    elif (max - min) >= 300. and ( 
+     max - min) < 1500. :
+        ticks = np.arange(min,max+100.,100)        
+    elif (max - min) >= 100. and ( 
+     max - min) < 300. :
+        ticks = np.arange(min,max+50.,50) 
+    elif (max - min) >= 20. and ( 
+     max - min) < 100. :
+        ticks = np.arange(min,max+5.,5)
+    elif (max - min) >= 5. and ( 
+     max - min) < 20. :
+        ticks = np.arange(min,max+1.,1)          
+    else : 
+        ticks = np.arange(min,max+0.5, 0.5)                    
+    return ticks
 def maxmin(self):
     self.kzmin = self.watmin(self.kz)
     self.kzmax = self.watmax(self.kz)

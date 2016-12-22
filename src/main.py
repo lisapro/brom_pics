@@ -99,8 +99,8 @@ class Window(QtGui.QDialog):
         
         watmin = readdata.varmin(self,zz,0) #0 - water 
         watmax = readdata.varmax(self,zz,0)
-        var_sed_min = readdata.varmin(self,zz,1)# 1 - sed
-        var_sed_max = readdata.varmax(self,zz,1)  
+        sed_min = readdata.varmin(self,zz,1)# 1 - sed
+        sed_max = readdata.varmax(self,zz,1)  
         X,Y = np.meshgrid(x,y)
         X_sed,Y_sed = np.meshgrid(x,y_sed)
         ax = self.figure.add_subplot(gs[0])
@@ -117,7 +117,7 @@ class Window(QtGui.QDialog):
         cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
         
         wat_levs = np.linspace(watmin,watmax,num= self.num)
-        sed_levs = np.linspace(var_sed_min,var_sed_max,
+        sed_levs = np.linspace(sed_min,sed_max,
                              num = self.num)
                 
         int_wat_levs = []
@@ -129,11 +129,11 @@ class Window(QtGui.QDialog):
             int_wat_levs.append(n)
             
         for n in sed_levs:
-            n = readdata.int_value(self,n,var_sed_min,
-                                   var_sed_max)
+            n = readdata.int_value(self,n,sed_min,
+                                   sed_max)
             int_sed_levs.append(n)            
             
-        print (watmin,watmax, int_wat_levs)  
+        #print (watmin,watmax, int_wat_levs)  
           
         cmap1 = plt.cm.rainbow #define color maps
 
@@ -150,10 +150,15 @@ class Window(QtGui.QDialog):
         cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])
         #x,y,thick,length
         cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+        wat_ticks = readdata.ticks(watmin,watmax)
+        cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)
+        cb_sed = plt.colorbar(CS1,cax = cax1 )
+        cb.set_label('Water')
         
-        cb = plt.colorbar(CS,cax = cax)
-        cb1 = plt.colorbar(CS1,cax = cax1 )
-        
+        sed_ticks = readdata.ticks(sed_min,sed_max)
+        #cb.set_ticks(wat_ticks)
+        cb_sed.set_ticks(sed_ticks)
+        cb_sed.set_label('BBL, Sediment')
         #cb.ax.set_xticklabels(['Low', 'Medium', 'High']) 
         #loc = clevs + .1
         #cb.set_ticks(loc)
