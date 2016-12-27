@@ -88,11 +88,15 @@ def readdata_brom(self,fname):
 
     self.vars_year = ([],
                       [[self.no2],[self.no3],[self.nh4]],
-                      [[self.po4],[self.so4],[self.o2]],[]
+                      [[self.po4],[self.so4],[self.o2]],
+                      []
     )
     
     fh.close()
- 
+                          
+    self.monthes_start = [1,32,61,92,122,153,183,
+                          214,245,275,306,336,366]
+    
 def calculate_ywat(self):
     for n in range(0,(len(self.depth2)-1)):
         if self.depth2[n+1] - self.depth2[n] >= 0.5:
@@ -128,7 +132,7 @@ def calculate_ysed(self):
         if self.kz[1,n] == 0:
             ysed = self.depth_sed[n]  
             self.ysedmin =  ysed - 10
-            self.ysedmax =  ysed + 10 
+            self.ysedmax =  self.depth_sed[len(self.depth_sed)-1] 
             self.y3min = self.depth_sed[self.nbblmin+2]
             #here we cach part of BBL to add to 
             #the sediment image                
@@ -187,7 +191,7 @@ def varmax(self,variable,vartype):
 
 def int_value(self,n,min,max):
     num = self.num
-    print ('n',n) 
+    
     if (max - min) >= num*10. and ( 
      max - min) < num*100. :
         m = math.ceil(n/10)*10.
@@ -205,7 +209,7 @@ def int_value(self,n,min,max):
         m = (math.ceil(n*1000.))/1000.                      
     else :
         m = n  
-    print ('after function', m)       
+          
     return m    
 def varmin(self,variable,vartype):
     if vartype == 0 :
@@ -266,10 +270,13 @@ def varmin(self,variable,vartype):
         n = 0.00005 
     self.watmin = int(np.floor(n))                          
     return self.watmin
-def ticks(min,max):
-    
-    if (max - min) >= 10000. :
-        ticks = np.arange(min,max+5000.,5000)
+def ticks(min,max): 
+    if (max - min) >= 50000. :
+        ticks = np.arange(min,max+5000.,10000)
+        
+    elif (max - min) >= 10000. and (
+         max - min) < 50000.  :
+        ticks = np.arange(min,max+5000.,5000)        
     elif (max - min) >= 3000. and (
        max - min) < 10000.  : 
         ticks = np.arange(min,max+1000.,1000)        
@@ -285,13 +292,19 @@ def ticks(min,max):
     elif (max - min) >= 20. and ( 
      max - min) < 100. :
         ticks = np.arange(min,max+5.,5)
-    elif (max - min) >= 5. and ( 
+    elif (max - min) >= 3. and ( 
      max - min) < 20. :
-        ticks = np.arange(min,max+1.,1)          
+        ticks = np.arange(min,max+1.,1)
+    elif (max - min) >= 1. and ( 
+     max - min) < 3. :
+        ticks = np.arange(min,max+1.,0.5)         
+    elif (max - min) >= 0.2 and ( 
+     max - min) < 1. :
+        ticks = np.arange(min,max+1.,0.1)                  
     else : 
-        ticks = np.arange(min,max+0.5, 0.5)                    
+        ticks = np.arange(min,max+0.5, 0.05)                    
     return ticks
-def maxmin(self):
+def maxmin(self):   
     self.kzmin = self.watmin(self.kz)
     self.kzmax = self.watmax(self.kz)
     self.sed_kzmin = self.watmin(self.kz)

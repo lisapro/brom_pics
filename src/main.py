@@ -3,14 +3,14 @@
 # Import standard (i.e., non GOTM-GUI) modules.
 import os,sys
 from PyQt4 import QtGui,QtCore
-from PyQt4.QtGui import QSpinBox,QLabel
+from PyQt4.QtGui import QSpinBox,QLabel,QComboBox
 #from numpy import nan
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar)
 import matplotlib.pyplot as plt
-import readdata,colors
+import readdata, colors
 import numpy as np
 import matplotlib.gridspec as gridspec
 from matplotlib import style
@@ -60,26 +60,75 @@ class Window(QtGui.QDialog):
             self.all_year_box.addItem(str(i))
         self.all_year_box.currentIndexChanged.connect(
             self.all_year_charts) 
+         
+        self.one_day_box = QtGui.QComboBox()
+        oModel=self.one_day_box.model()
+        head_item = QtGui.QStandardItem('Day to plot')
+        oModel.appendRow(head_item)
+        self.numday = 1
+        
+        for n in range(1, self.monthes_start[1]):
+            item = QtGui.QStandardItem(str(n)+ '/1'+ 
+                     ' (' + str(self.numday) + ')')
+                                       
+            oModel.appendRow(item)
+            item.setBackground(QtGui.QColor(self.wint))
+            self.numday = self.numday +1 #self.monthes_start[1]        
+        for m in range(1,len(self.monthes_start)-1) : #np.arange(1,13):                    
+            start_date = self.monthes_start[m]
+            next_start_dat = self.monthes_start[m+1]
+            for n in range(1, int(next_start_dat - start_date)+1) :
+                item = QtGui.QStandardItem(str(n)+ '/' + str(m+1) + 
+                     ' (' + str(self.numday) + ')')
+                oModel.appendRow(item)
+                self.numday = self.numday +1 #i+1
                 
-        #self.time_prof_box.addItems(vars)
-        #self.button1.setStyleSheet(
-        #'QPushButton {background-color: #faebd7;}')      
-        #self.button1.clicked.connect(self.plot1)
-        #Plot PO4,SO4,o2     
-           
-      
+        self.one_day_box.currentIndexChanged.connect(
+            self.one_day_plot)  
+        
+                                          
+        self.one_day_box.setStyleSheet(
+        'QComboBox {background-color: #c2b4ae;}')      
+        self.all_year_box.setStyleSheet(
+        'QComboBox {background-color: #c2b4ae;}')           
+        self.time_prof_box.setStyleSheet(
+        'QComboBox {background-color: #c2b4ae;}')    
+        
 
         #set the layout
         layout = QtGui.QGridLayout()
         layout.addWidget(self.toolbar,0,1,1,7) 
         layout.addWidget(self.time_prof_box,0,4,1,1)   
         layout.addWidget(self.all_year_box,0,5,1,1)         
-                                              
-        layout.addWidget(self.canvas,2,1,1,8)#pos y,pos x,len y,lenx         
+        layout.addWidget(self.one_day_box,0,6,1,1) 
+        #layout.addWidget(self.tree,0,9,1,1)                                    
+        layout.addWidget(self.canvas,2,1,1,8)
+        #pos y,pos x,len y,lenx         
         #layout.addWidget(self.button1,3,1,1,1) 
                
-        self.setLayout(layout)        
-
+        self.setLayout(layout) 
+               
+    def fig2_txt(self):        
+        plt.text(1.1, 0.5,'Water ', fontweight='bold', # draw legend to Water
+        bbox={'facecolor': self.wat_col, 'alpha':0.5, 'pad':3},
+        fontsize=self.font_txt, rotation=90, 
+        transform= self.ax50.transAxes)         
+        plt.text(1.1, 0.8,'Water ', fontweight='bold', # draw legend to BBL
+        bbox={'facecolor': self.wat_col, 'alpha':0.5, 'pad':3},
+        fontsize=self.font_txt, rotation=90,
+        transform= self.ax51.transAxes)
+        plt.text(1.1, 0.3,'BBL ', fontweight='bold',  #draw legend to Sediment
+        bbox={'facecolor': self.bbl_col , 'alpha':0.6, 'pad':3},
+        fontsize=self.font_txt, rotation=90,
+        transform= self.ax51.transAxes)       
+        plt.text(1.1, 0.8,'BBL ', fontweight='bold',  # draw legend to BBL
+        bbox={'facecolor': self.bbl_col, 'alpha':0.5, 'pad':3},
+        fontsize=14, rotation=90,
+        transform= self.ax52.transAxes)
+        plt.text(1.1, 0.5,'Sediment ', fontweight='bold', #draw legend to Sediment
+        bbox={'facecolor': self.sed_col, 'alpha':0.6, 'pad':3},
+        fontsize=14, rotation=90,
+        transform= self.ax52.transAxes)  
     def time_profile(self):
 
         plt.clf()
@@ -113,7 +162,7 @@ class Window(QtGui.QDialog):
         ax2.set_ylim(self.ysedmax,self.y3min) #ysedmin
         ax.set_xlim(0,len(x))
         self.num = 50.    
-        #print ('watmax',watmax,np.ceil(watmax),np.round(watmax))      
+            
         cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
         
         wat_levs = np.linspace(watmin,watmax,num= self.num)
@@ -132,13 +181,9 @@ class Window(QtGui.QDialog):
             n = readdata.int_value(self,n,sed_min,
                                    sed_max)
             int_sed_levs.append(n)            
-            
-        #print (watmin,watmax, int_wat_levs)  
-          
+                      
         cmap1 = plt.cm.rainbow #define color maps
-
-        
-        
+       
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
                               cmap=cmap,
                               origin='lower')
@@ -288,7 +333,589 @@ class Window(QtGui.QDialog):
                 ax22.plot(z2[0][n],self.depth_sed,self.spr_aut,
                           alpha = self.a_aut)                                 
         self.canvas.draw() 
+  
+    def one_day_plot(self):
+        plt.clf() #clear figure before updating 
+        axis1 = 0
+        axis2 = 27
+        axis3 = 53
+        axis4 = 79
+        axis5 = 105 
+        #print (self.one_day_box.currentIndex()) #self.numday
+        # function to define 1 figure
         
+        self.numday = (self.one_day_box.currentIndex()) #take the input value of numday spinbox
+        style.use('ggplot')                 #use predefined style   
+        self.figure.patch.set_facecolor('white')  #Set the background     
+        wspace=0.40                         #define values for grid 
+        hspace = 0.05                       #define values for grid
+        gs = gridspec.GridSpec(2, 6) 
+        gs.update(left=0.06, right=0.93,top = 0.84,bottom = 0.4,
+                   wspace=wspace,hspace=hspace)
+        gs1 = gridspec.GridSpec(1, 6)
+        gs1.update(left=0.06, right=0.93, top = 0.26, bottom = 0.02,
+                    wspace=wspace,hspace=hspace)
+
+
+        #create subplots
+        self.ax00 = self.figure.add_subplot(gs[0]) # water
+        self.ax10 = self.figure.add_subplot(gs[1])
+        self.ax20 = self.figure.add_subplot(gs[2])
+        self.ax30 = self.figure.add_subplot(gs[3])        
+        self.ax40 = self.figure.add_subplot(gs[4])
+        self.ax50 = self.figure.add_subplot(gs[5])
+        
+        self.ax01 = self.figure.add_subplot(gs[6]) #BBL
+        self.ax11 = self.figure.add_subplot(gs[7])
+        self.ax21 = self.figure.add_subplot(gs[8])
+        self.ax31 = self.figure.add_subplot(gs[9])        
+        self.ax41 = self.figure.add_subplot(gs[10])
+        self.ax51 = self.figure.add_subplot(gs[11])  
+        
+        self.ax02 = self.figure.add_subplot(gs1[0]) #sediment
+        self.ax12 = self.figure.add_subplot(gs1[1])
+        self.ax22 = self.figure.add_subplot(gs1[2])
+        self.ax32 = self.figure.add_subplot(gs1[3])        
+        self.ax42 = self.figure.add_subplot(gs1[4])
+        self.ax52 = self.figure.add_subplot(gs1[5])     
+        
+        
+        #Create axes sharing y              
+        self.ax00_1 = self.ax00.twiny()  #water
+        self.ax00_2 = self.ax00.twiny()  
+        self.ax00_3 = self.ax00.twiny()        
+
+        self.ax10_1 = self.ax10.twiny() #water
+        self.ax10_2 = self.ax10.twiny() 
+        self.ax10_3 = self.ax10.twiny()        
+        self.ax10_4 = self.ax10.twiny()
+  
+        self.ax20_1 = self.ax20.twiny() 
+        self.ax20_2 = self.ax20.twiny() 
+        self.ax20_3 = self.ax20.twiny()        
+#        ax20_4 = ax20.twiny()  
+
+        self.ax30_1 = self.ax30.twiny() 
+        self.ax30_2 = self.ax30.twiny() 
+        self.ax30_3 = self.ax30.twiny()        
+        self.ax30_4 = self.ax30.twiny()            
+        self.ax30_5 = self.ax30.twiny()
+
+        self.ax40_1 = self.ax40.twiny() 
+        self.ax40_2 = self.ax40.twiny() 
+        self.ax40_3 = self.ax40.twiny()        
+        self.ax40_4 = self.ax40.twiny()  
+                        
+        self.ax50_1 = self.ax50.twiny() #water
+        self.ax50_2 = self.ax50.twiny() 
+        self.ax50_3 = self.ax50.twiny()        
+        self.ax50_4 = self.ax50.twiny() 
+        
+        
+        
+        
+        self.ax01_1 = self.ax01.twiny() #bbl
+        self.ax01_2 = self.ax01.twiny()
+        self.ax01_3 = self.ax01.twiny()
+
+        self.ax11_1 = self.ax11.twiny() #bbl
+        self.ax11_2 = self.ax11.twiny()
+        self.ax11_3 = self.ax11.twiny()
+        self.ax11_4 = self.ax11.twiny()  
+
+        self.ax21_1 = self.ax21.twiny() 
+        self.ax21_2 = self.ax21.twiny() 
+        self.ax21_3 = self.ax21.twiny()        
+#        ax21_4 = ax21.twiny()         
+        self.ax31_1 = self.ax31.twiny() 
+        self.ax31_2 = self.ax31.twiny() 
+        self.ax31_3 = self.ax31.twiny()        
+        self.ax31_4 = self.ax31.twiny()            
+        self.ax31_5 = self.ax31.twiny()        
+                 
+        self.ax41_1 = self.ax41.twiny() 
+        self.ax41_2 = self.ax41.twiny() 
+        self.ax41_3 = self.ax41.twiny()        
+        self.ax41_4 = self.ax41.twiny() 
+     
+        self.ax51_1 = self.ax51.twiny() #bbl
+        self.ax51_2 = self.ax51.twiny() 
+        self.ax51_3 = self.ax51.twiny()        
+        self.ax51_4 = self.ax51.twiny()  
+        
+        self.ax02_1 = self.ax02.twiny() #sediment
+        self.ax02_2 = self.ax02.twiny()
+        self.ax02_3 = self.ax02.twiny()
+                
+        self.ax12_1 = self.ax12.twiny() #sediment
+        self.ax12_2 = self.ax12.twiny()
+        self.ax12_3 = self.ax12.twiny()
+        self.ax12_4 = self.ax12.twiny()
+        
+        self.ax22_1 = self.ax22.twiny() 
+        self.ax22_2 = self.ax22.twiny() 
+        self.ax22_3 = self.ax22.twiny()          
+         
+        self.ax32_1 = self.ax32.twiny() 
+        self.ax32_2 = self.ax32.twiny() 
+        self.ax32_3 = self.ax32.twiny()        
+        self.ax32_4 = self.ax32.twiny()            
+        self.ax32_5 = self.ax32.twiny()               
+
+        self.ax42_1 = self.ax42.twiny() 
+        self.ax42_2 = self.ax42.twiny() 
+        self.ax42_3 = self.ax42.twiny()        
+        self.ax42_4 = self.ax42.twiny()
+
+        self.ax52_1 = self.ax52.twiny() #sediment
+        self.ax52_2 = self.ax52.twiny() 
+        self.ax52_3 = self.ax52.twiny()        
+        self.ax52_4 = self.ax52.twiny()      
+
+        for axis in (self.ax00, self.ax02,
+                     self.ax10, self.ax12,
+                     self.ax20, self.ax22,
+                     self.ax30, self.ax32,
+                     self.ax40, self.ax42,
+                     self.ax50, self.ax52): 
+            axis.xaxis.set_label_position('top')
+            axis.xaxis.tick_top() 
+            
+        #remove axis from bbl
+        for axis in (self.ax01,self.ax01_1, self.ax01_2, self.ax01_3,
+                     self.ax11,self.ax11_1, self.ax11_2, self.ax11_3,
+                     self.ax11_4,
+                     self.ax21,self.ax21_1, self.ax21_2, self.ax21_3,
+                     self.ax31,self.ax31_1, self.ax31_2, self.ax31_3,
+                     self.ax31_4,self.ax31_5,
+                     self.ax41,self.ax41_1, self.ax41_2, self.ax41_3,
+                     self.ax41_4,
+                     self.ax51,self.ax51_1, self.ax51_2, self.ax51_3,
+                     self.ax51_4):
+            axis.tick_params(
+            axis='x',          # changes apply to the x-axis
+            which='both',      # both major and minor ticks are affected
+            bottom='off',      # ticks along the bottom edge are off
+            top='off',
+            labelbottom='off',         # ticks along the top edge are off
+            labeltop='off') # labels along the bottom edge are off
+            
+            #for spine in axis.spines.iteritems():
+            #    spine.set_visible(False) 
+        #self.ax01.xaxis.set_ticks_position('top')
+        #self.ax01.set_title('bottom-left spines')      
+        #self.ax01.spines['top'].set_visible(False)  
+        
+        for axis in (self.ax00,
+                     self.ax00_1,self.ax00_2,self.ax00_3,
+                     self.ax02,
+                     self.ax02_1,self.ax02_2,self.ax02_3,
+                     self.ax10,
+                     self.ax10_1,self.ax10_2,self.ax10_3,self.ax10_4,
+                     self.ax12,
+                     self.ax12_1,self.ax12_2, self.ax12_3, self.ax12_4, 
+                     self.ax20,
+                     self.ax20_1,self.ax20_2,self.ax20_3, 
+                     self.ax22,
+                     self.ax22_1,self.ax22_2,self.ax22_3, 
+                     self.ax30,
+                     self.ax30_1,self.ax30_2,self.ax30_3,self.ax30_4,
+                     self.ax30_5,
+                     self.ax32,
+                     self.ax32_1,self.ax32_2,self.ax32_3,self.ax32_4,
+                     self.ax32_5,
+                     self.ax40,
+                     self.ax40_1,self.ax40_2,self.ax40_3,self.ax40_4,
+                     self.ax42,
+                     self.ax42_1,self.ax42_2, self.ax42_3,self.ax42_4,
+                     self.ax50,
+                     self.ax50_1,self.ax50_2,self.ax50_3,self.ax50_4,
+                     self.ax52,
+                     self.ax52_1,self.ax52_2,self.ax52_3,self.ax52_4):
+                
+            for spinename, spine in axis.spines.iteritems():
+                if spinename != 'top':
+                    spine.set_visible(False) 
+                                   
+        for axis in (self.ax00_1,self.ax02_1,self.ax10_1,self.ax12_1,self.ax20_1,
+                     self.ax22_1,self.ax30_1,self.ax32_1,
+                     self.ax40_1,self.ax42_1,self.ax50_1,self.ax52_1):
+            axis.spines['top'].set_position(('outward', axis1))
+            axis.spines['top'].set_color('g')                   
+        for axis in (self.ax00_2,self.ax02_2,self.ax10_2,self.ax12_2,self.ax20_2,
+                     self.ax22_2,self.ax30_2,self.ax32_2,
+                      self.ax40_2,self.ax42_2,self.ax50_2,self.ax52_2):    
+            axis.spines['top'].set_position(('outward', axis2))
+            axis.spines['top'].set_color('r')   
+        for axis in (self.ax10_3,self.ax12_3,self.ax30_3,self.ax32_3,
+                     self.ax40_3,self.ax42_3,
+            self.ax50_3,self.ax52_3,self.ax00_3,
+            self.ax02_3,self.ax20_3,self.ax22_3):    
+            axis.spines['top'].set_position(('outward', axis3))
+            axis.spines['top'].set_color('b') 
+        for axis in (self.ax10_4,self.ax12_4,
+                     self.ax30_4,self.ax32_4,self.ax40_4,
+            self.ax42_4,self.ax50_4,self.ax52_4):
+            axis.spines['top'].set_position(('outward', axis4))
+            axis.spines['top'].set_color('m')
+            #self.readdata.spines(axis)
+        for axis in (self.ax30_5,self.ax32_5):
+            axis.spines['top'].set_position(('outward', axis5))
+            axis.spines['top'].set_color('c')              
+                    
+        
+        
+        
+        self.fig2_txt()
+        
+        plt.text(0, 1.61,'{}{}'.format('day', self.numday) ,
+         fontweight='bold', # Write number of day to Figure
+        bbox={'facecolor': self.wat_col, 'alpha':0.5, 'pad':10}, 
+        fontsize=14,
+        transform= self.ax00.transAxes)
+        
+                
+        self.canvas.draw()
+        '''
+        for axis in (self.ax00,self.ax10,self.ax20,self.ax30,self.ax40,
+        self.ax50,
+                    self.ax01,self.ax11,self.ax21,self.ax31,self.ax41,
+                    self.ax51,
+                    self.ax02,self.ax12,self.ax22,self.ax32,self.ax42,
+                    self.ax52):
+            self.y_lim1(axis)     
+                                                                                     
+        self.ax00.set_ylabel('Depth (m)',fontsize=14) #Label y axis
+        self.ax01.set_ylabel('Depth (m)',fontsize=14)   
+        self.ax02.set_ylabel('Depth (cm)',fontsize=14)                
+
+
+        
+
+#        for axis in (self.ax00_1,self.ax20_1,self.ax30_1):
+#            axis.spines['top'].set_position(('outward', self.axis1))
+#            axis.spines['top'].set_color1('g')  
+                
+                    
+
+        for axis in (self.ax00_1,self.ax01_1):        
+            axis.set_xlim([self.kzmin,self.kzmax])
+            axis.set_xticks(np.arange(self.kzmin,self.kzmax+
+            ((self.kzmax -self.kzmin)/2.),((self.kzmax - self.kzmin)/2.))) 
+            axis.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))                           
+        self.ax00_1.annotate(r'$\rm Kz $', 
+        xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = 
+        self.xlabel_fontsize,color='g')
+ 
+            
+        self.ax02_1.set_xlim([self.sed_kzmin,self.sed_kzmax])
+        self.ax02_1.set_xticks(np.arange(self.sed_kzmin,self.sed_kzmax+
+                        ((self.sed_kzmax - self.sed_kzmin)/2.),((self.sed_kzmax - self.sed_kzmin)/2.)))            
+        self.ax02_1.annotate(r'$\rm Kz $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')
+        self.ax02_1.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e')) 
+                        
+        for axis in (self.ax00, self.ax00_2, self.ax01_2,self.ax02_2):  
+            axis.set_xlim([self.salmin,self.salmax])
+            axis.set_xticks(np.arange(self.salmin,self.salmax+((self.salmax - self.salmin)/2.),((self.salmax - self.salmin)/2.))) 
+        self.ax02_2.annotate(r'$\rm S $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='r')
+        self.ax00_2.annotate(r'$\rm S $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='r') 
+                             
+        for axis in ( self.ax00_3,  self.ax01_3,self.ax02_3):   
+            axis.set_xlim([self.tempmin,self.tempmax])
+            axis.set_xticks(np.arange(self.tempmin,self.tempmax+((self.tempmax - self.tempmin)/2.),
+                            ((self.tempmax - self.tempmin)/2.))) 
+        self.ax02_3.annotate(r'$\rm T $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='b')
+        self.ax00_3.annotate(r'$\rm T $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='b')                                        
+        for axis in (self.ax10, self.ax10_1,self.ax11_1, self.ax11):  
+            axis.set_xlim([self.o2min,self.o2max])
+            axis.set_xticks(np.arange(self.o2min,self.o2max+((self.o2max - self.o2min)/2.),((self.o2max - self.o2min)/2.)))   
+        for axis in (self.ax12,self.ax12_1):  
+            axis.set_xlim([self.sed_o2min,self.sed_o2max])
+            axis.set_xticks(np.arange(self.sed_o2min,self.sed_o2max+
+                            ((self.sed_o2max - self.sed_o2min)/2.),((self.sed_o2max - self.sed_o2min)/2.)))  
+        self.ax12_1.annotate(r'$\rm O _2 $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')   
+        self.ax10_1.annotate(r'$\rm O _2 $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')                              
+        for axis in ( self.ax10_2,  self.ax11_2):  
+            axis.set_xlim([self.nh4min,self.nh4max])
+            axis.set_xticks(np.arange(self.nh4min,self.nh4max+(self.nh4max /2.),(self.nh4max/2.)))    
+            self.ax12_2.set_xlim([0,self.sed_nh4max])
+            self.ax12_2.set_xticks(np.arange(0,self.sed_nh4max+(self.sed_nh4max /2.),(self.sed_nh4max/2.)))   
+            self.ax12_2.annotate(r'$\rm NH _4 $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='r') 
+            self.ax10_2.annotate(r'$\rm NH _4 $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='bottom',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='r')                                          
+        for axis in ( self.ax10_3,  self.ax11_3):  
+            axis.set_xlim([0,self.no2max])
+            axis.set_xticks(np.arange(0,self.no2max+(self.no2max /2.),(self.no2max/2.))) 
+            self.ax12_3.set_xlim([0,self.sed_no2max])
+            self.ax12_3.set_xticks(np.arange(0,self.sed_no2max+(self.sed_no2max /2.),(self.sed_no2max/2.))) 
+            self.ax10_3.annotate(r'$\rm NO _2 $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='bottom',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='b')   
+            self.ax12_3.annotate(r'$\rm NO _2 $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='bottom',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='b')                                                
+        for axis in ( self.ax10_4,  self.ax11_4):  
+            axis.set_xlim([0,self.no3max])
+            axis.set_xticks(np.arange(0,self.no3max+(self.no3max /2.),(self.no3max/2.)))                   
+        self.ax10_4.annotate(r'$\rm NO _3 $', xy=(self.labelaxis_x,self.labelaxis4_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='m')                              
+        self.ax12_4.set_xlim([0,self.sed_no3max])
+        self.ax12_4.set_xticks(np.arange(0,self.sed_no3max+(self.sed_no3max /2.),(self.sed_no3max/2.)))         
+        self.ax12_4.annotate(r'$\rm NO _3 $', xy=(self.labelaxis_x,self.labelaxis4_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='m')     
+              
+        for axis in ( self.ax20, self.ax20_1,  self.ax21_1, self.ax21):  
+            axis.set_xlim([0,self.po4max])
+            axis.set_xticks(np.arange(0,self.po4max+(self.po4max /2.),(self.po4max /2.)))   
+        for axis in ( self.ax22,  self.ax22_1):
+            axis.set_xlim([0,self.sed_po4max])
+            axis.set_xticks(np.arange(0,self.sed_po4max+(self.sed_po4max /2.),(self.sed_po4max /2.)))  
+            axis.annotate(r'$\rm PO _4 $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')    
+        self.ax20_1.annotate(r'$\rm PO _4 $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')                              
+        for axis in ( self.ax20_2,  self.ax21_2):  
+            axis.set_xlim([0,self.ponmax])
+            axis.set_xticks(np.arange(0,self.ponmax+(self.ponmax /2.),(self.ponmax/2.))) 
+        self.ax22_2.set_xlim([0,self.sed_ponmax])
+        self.ax22_2.set_xticks(np.arange(0,self.sed_ponmax+(self.sed_ponmax /2.),(self.sed_ponmax/2.))) 
+        self.ax22_2.annotate(r'$\rm PON $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='r')    
+        self.ax20_2.annotate(r'$\rm PON $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='r') 
+                                      
+        for axis in ( self.ax20_3,  self.ax21_3):  
+            axis.set_xlim([0,self.donmax])
+            axis.set_xticks(np.arange(0,self.donmax+(self.donmax /2.),(self.donmax/2.)))                
+        self.ax22_3.set_xlim([0,self.sed_donmax])
+        self.ax22_3.set_xticks(np.arange(0,self.sed_donmax+(self.sed_donmax /2.),(self.sed_donmax/2.)))    
+        self.ax20_3.annotate(r'$\rm DON $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='b') 
+        self.ax22_3.annotate(r'$\rm DON $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='b') 
+                                                                                                                                                                        
+        for axis in ( self.ax30, self.ax30_1,  self.ax31_1, self.ax31):  
+            axis.set_xlim([0,self.mn2max])
+            axis.set_xticks(np.arange(0,(round(self.mn2max+(self.mn2max /2.),5)),self.mn2max/2.))                     
+        for axis in ( self.ax32,  self.ax32_1):  
+            axis.set_xlim([0,self.sed_mn2max])
+            axis.set_xticks(np.arange(0,(round(self.sed_mn2max+(self.sed_mn2max /2.),5)),self.sed_mn2max/2.))                     
+            axis.annotate(r'$\rm MnII $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')    
+            self.ax30_1.annotate(r'$\rm MnII $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='bottom',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')                                        
+        for axis in ( self.ax30_2,  self.ax31_2):  
+            axis.set_xlim([0,self.mn3max])
+            axis.set_xticks(np.arange(0,(round(self.mn3max+(self.mn3max /2.),5)),self.mn3max/2.))                  
+        self.ax32_2.set_xlim([0,self.sed_mn3max])
+        self.ax32_2.set_xticks(np.arange(0,(round(self.sed_mn3max+(self.sed_mn3max /2.),5)),self.sed_mn3max/2.))                     
+        self.ax32_2.annotate(r'$\rm MnIII $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='r')        
+        self.ax30_2.annotate(r'$\rm MnIII $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='r')                           
+        for axis in ( self.ax30_3,  self.ax31_3):  
+            axis.set_xlim([0,self.mn4max])
+            axis.set_xticks(np.arange(0,(round(self.mn4max+(self.mn4max /2.),5)),self.mn4max/2.))                      
+        self.ax32_3.set_xlim([0,self.sed_mn4max])
+        self.ax32_3.set_xticks(np.arange(0,self.sed_mn4max+(self.sed_mn4max /2.),(self.sed_mn4max/2.)))      
+        self.ax32_3.annotate(r'$\rm MnIV $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='b')   
+        self.ax30_3.annotate(r'$\rm MnIV $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='b')                                          
+        for axis in ( self.ax30_4,  self.ax31_4):  
+            axis.set_xlim([0,self.mnsmax])
+            axis.set_xticks(np.arange(0,(round(self.mnsmax+(self.mnsmax /2.),5)),self.mnsmax/2.))    
+            axis.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))                
+        self.ax32_4.set_xlim([0,self.sed_mnsmax])
+        self.ax32_4.set_xticks(np.arange(0,(round(self.sed_mnsmax+(self.sed_mnsmax /2.),5)),self.sed_mnsmax/2.))                      
+        self.ax32_4.annotate(r'$\rm MnS $', xy=(self.labelaxis_x,self.labelaxis4_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='m')     
+        self.ax30_4.annotate(r'$\rm MnS $', xy=(self.labelaxis_x,self.labelaxis4_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='m')                                                          
+        for axis in ( self.ax30_5, self.ax31_5):  
+            axis.set_xlim([0,self.mnco3max])
+            axis.set_xticks(np.arange(0,self.mnco3max+(self.mnco3max /2.),(self.mnco3max/2.))) 
+            axis.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))     
+        self.ax32_5.set_xlim([0,self.sed_mnco3max])
+        self.ax32_5.set_xticks(np.arange(0,self.sed_mnco3max+(self.sed_mnco3max /2.),(self.sed_mnco3max/2.)))  
+        self.ax32_5.annotate(r'$\rm MnCO _3 $', xy=(self.labelaxis_x,self.labelaxis5_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='c') 
+        self.ax30_5.annotate(r'$\rm MnCO _3 $', xy=(self.labelaxis_x,self.labelaxis5_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='c')                                               
+        for axis in (self.ax40,self.ax40_1, self.ax41_1,self.ax41):  
+            axis.set_xlim([0,self.fe2max])
+            axis.set_xticks(np.arange(0,(round(self.fe2max+(self.fe2max /2.),5)),self.fe2max/2.))                   
+        for axis in (self.ax42, self.ax42_1):     
+            axis.set_xlim([0,self.sed_fe2max])        
+            axis.set_xticks(np.arange(0,self.sed_fe2max+(self.sed_fe2max/2.),(self.sed_fe2max/2.)))       
+            axis.annotate(r'$\rm FeII $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')
+        self.ax40_1.annotate(r'$\rm FeII $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')                                                        
+        for axis in (self.ax40_2, self.ax41_2):  
+            axis.set_xlim([0,self.fe3max])
+            axis.set_xticks(np.arange(0,(round(self.fe3max+(self.fe3max /2.),5)),self.fe3max/2.))                   
+        self.ax42_2.set_xlim([0,self.sed_fe3max])
+        self.ax42_2.set_xticks(np.arange(0,self.sed_fe3max+(self.sed_fe3max /2.),(self.sed_fe3max/2.)))    
+        self.ax42_2.annotate(r'$\rm FeIII $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='r')  
+        self.ax40_2.annotate(r'$\rm FeIII $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='r')                                                             
+        for axis in (self.ax40_3, self.ax41_3):  
+            axis.set_xlim([0,self.fesmax])
+            axis.set_xticks(np.arange(0,self.fesmax+(self.fesmax),(self.fesmax))) 
+            axis.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))                  
+        self.ax42_3.set_xlim([0,self.sed_fesmax])
+        self.ax42_3.set_xticks(np.arange(0,self.sed_fesmax+(self.sed_fesmax /2.),(self.sed_fesmax/2.)))   
+        self.ax42_3.annotate(r'$\rm FeS $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='b')  
+        self.ax40_3.annotate(r'$\rm FeS $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='b')                                                                  
+        for axis in (self.ax40_4, self.ax41_4):  
+            axis.set_xlim([0,self.fes2max])
+            axis.set_xticks(np.arange(0,self.fes2max+(self.fes2max /2.),(self.fes2max/2.)))  
+            axis.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))                 
+        self.ax42_4.set_xlim([0,self.sed_fes2max])
+        self.ax42_4.set_xticks(np.arange(0,self.sed_fes2max+(self.sed_fes2max /2.),(self.sed_fes2max/2.)))  
+        self.ax42_4.annotate(r'$\rm FeS _2 $', xy=(self.labelaxis_x,self.labelaxis4_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='m')
+        self.ax40_4.annotate(r'$\rm FeS _2 $', xy=(self.labelaxis_x,self.labelaxis4_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='m')     
+                                  
+        for axis in (self.ax50,self.ax50_1, self.ax51_1,self.ax51):  
+            axis.set_xlim([self.so4min,self.so4max])
+            axis.set_xticks(np.arange(self.so4min,self.so4max+((self.so4max-self.so4min)/2.),((self.so4max-self.so4min)/2.)))              
+#            axis.set_xticks(np.arange(0,self.so4max+(self.so4max/2.),(self.so4max/2.)))  
+        for axis in (self.ax52, self.ax52_1):
+            axis.set_xlim([self.sed_so4min,self.sed_so4max])
+            axis.set_xticks(np.arange(self.sed_so4min,self.sed_so4max+((self.sed_so4max-self.sed_so4min)/2.),
+                                      ((self.sed_so4max-self.sed_so4min)/2.)))  
+            axis.annotate(r'$\rm SO _4 $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='g')   
+            self.ax50_1.annotate(r'$\rm SO _4 $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='bottom',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='g')                                                 
+        for axis in (self.ax50_2, self.ax51_2):  
+            axis.set_xlim([0,self.s0max])
+            axis.set_xticks(np.arange(0,self.s0max+(self.s0max /2.),(self.s0max/2.)))
+        self.ax52_2.set_xlim([0,self.sed_s0max])
+        self.ax52_2.set_xticks(np.arange(0,self.sed_s0max+(self.sed_s0max /2.),(self.sed_s0max/2.)))  
+        self.ax52_2.annotate(r'$\rm S ^0 $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='center',
+        xycoords='axes fraction', fontsize = self.xlabel_fontsize,color='r')      
+        self.ax50_1.annotate(r'$\rm S ^0 $', xy=(self.labelaxis_x,self.labelaxis2_y), ha='left', va='bottom',
+        xycoords='axes fraction', fontsize = self.xlabel_fontsize,color='r')                                   
+        for axis in (self.ax50_3, self.ax51_3):  
+            axis.set_xlim([0,self.h2smax])
+            axis.set_xticks(np.arange(0,self.h2smax+(self.h2smax /2.),(self.h2smax/2.)))  
+        self.ax52_3.set_xlim([0,self.sed_h2smax])
+        self.ax52_3.set_xticks(np.arange(0,self.sed_h2smax+(self.sed_h2smax /2.),(self.sed_h2smax/2.)))
+        self.ax52_3.annotate(r'$\rm H _2 S $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='b') 
+        self.ax50_3.annotate(r'$\rm H _2 S $', xy=(self.labelaxis_x,self.labelaxis3_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize, color='b')                                                     
+        for axis in (self.ax50_4, self.ax51_4):
+            axis.set_xlim([0,self.s2o3max])
+            axis.set_xticks(np.arange(0,(round(self.s2o3max+(self.s2o3max /2.),5)),self.s2o3max/2.))                            
+        self.ax52_4.set_xlim([0,self.sed_s2o3max])
+        self.ax52_4.set_xticks(np.arange(0,(round(self.sed_s2o3max+(self.sed_s2o3max /2.),5)),self.sed_s2o3max/2.))                
+        self.ax52_4.annotate(r'$\rm S _2 O _3 $', xy=(self.labelaxis_x,self.labelaxis4_y), ha='left', va='center',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='m')
+        self.ax50_4.annotate(r'$\rm S _2 O _3 $', xy=(self.labelaxis_x,self.labelaxis4_y), ha='left', va='bottom',
+        xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='m')
+
+                    
+        # plot data
+        self.ax00_1.plot(self.kz[self.numday],self.depth2,'g-')  
+        self.ax01_1.plot(self.kz[self.numday],self.depth2,'go-')  #
+        self.ax00_1.annotate(r'$\rm Kz $', xy=(self.labelaxis_x,self.labelaxis1_y), ha='left', va='center',
+            xycoords='axes fraction',  fontsize = self.xlabel_fontsize,color='g')
+        self.ax00_1.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))  
+                
+        self.ax02_1.plot(self.kz[self.numday],self.depth_sed2,'go-')                          
+        self.ax00_2.plot(self.sal[self.numday],self.depth,'r-')   
+        self.ax01_2.plot(self.sal[self.numday],self.depth,'ro-')   
+        self.ax02_2.plot(self.sal[self.numday],self.depth_sed,'ro-') 
+        self.ax00_3.plot(self.temp[self.numday],self.depth,'b-') 
+        self.ax01_3.plot(self.temp[self.numday],self.depth,'bo-')  
+        self.ax02_3.plot(self.temp[self.numday],self.depth_sed,'bo-')                 
+                            
+        self.ax10_1.plot(self.o2[self.numday], self.depth, 'g-')
+        self.ax11_1.plot(self.o2[self.numday], self.depth, 'go-')
+        self.ax12_1.plot(self.o2[self.numday], self.depth_sed, 'go-')                 
+        self.ax10_2.plot(self.nh4[self.numday], self.depth, 'r-')
+        self.ax11_2.plot(self.nh4[self.numday], self.depth, 'ro-') 
+        self.ax12_2.plot(self.nh4[self.numday], self.depth_sed, 'ro-')                
+        self.ax10_3.plot(self.no2[self.numday], self.depth, 'b-')
+        self.ax11_3.plot(self.no2[self.numday], self.depth, 'bo-') 
+        self.ax12_3.plot(self.no2[self.numday], self.depth_sed, 'bo-')                 
+        self.ax10_4.plot(self.no3[self.numday], self.depth, 'm-')        
+        self.ax11_4.plot(self.no3[self.numday], self.depth, 'mo-')  
+        self.ax12_4.plot(self.no3[self.numday], self.depth_sed, 'mo-') 
+                       
+        self.ax20_1.plot(self.po4[self.numday], self.depth, 'g-') 
+        self.ax21_1.plot(self.po4[self.numday], self.depth, 'go-') 
+        self.ax22_1.plot(self.po4[self.numday], self.depth_sed, 'go-')  
+                      
+        self.ax20_2.plot(self.pon[self.numday], self.depth, 'r-')
+        self.ax21_2.plot(self.pon[self.numday], self.depth, 'ro-')
+        self.ax22_2.plot(self.pon[self.numday], self.depth_sed, 'ro-')   
+                     
+        self.ax20_3.plot(self.don[self.numday], self.depth, 'b-') 
+        self.ax21_3.plot(self.don[self.numday], self.depth, 'bo-')  
+        self.ax22_3.plot(self.don[self.numday], self.depth_sed, 'bo-')                
+               
+        self.ax30_1.plot(self.mn2[self.numday], self.depth, 'g-') 
+        self.ax31_1.plot(self.mn2[self.numday], self.depth, 'go-') 
+        self.ax32_1.plot(self.mn2[self.numday], self.depth_sed, 'go-')               
+        self.ax30_2.plot(self.mn3[self.numday], self.depth, 'r-')
+        self.ax31_2.plot(self.mn3[self.numday], self.depth, 'ro-') 
+        self.ax32_2.plot(self.mn3[self.numday], self.depth_sed, 'ro-')                
+        self.ax30_3.plot(self.mn4[self.numday], self.depth, 'b-') 
+        self.ax31_3.plot(self.mn4[self.numday], self.depth, 'bo-') 
+        self.ax32_3.plot(self.mn4[self.numday], self.depth_sed, 'bo-')                
+        self.ax30_4.plot(self.mns[self.numday], self.depth, 'm-')  
+        self.ax31_4.plot(self.mns[self.numday], self.depth, 'mo-') 
+        self.ax32_4.plot(self.mns[self.numday], self.depth_sed, 'mo-')                     
+        self.ax30_5.plot(self.mnco3[self.numday], self.depth, 'c-')   
+        self.ax31_5.plot(self.mnco3[self.numday], self.depth, 'co-')  
+        self.ax32_5.plot(self.mnco3[self.numday], self.depth_sed, 'co-')                       
+
+        self.ax40_1.plot(self.fe2[self.numday], self.depth, 'g-') 
+        self.ax41_1.plot(self.fe2[self.numday], self.depth, 'g-')  
+        self.ax42_1.plot(self.fe2[self.numday], self.depth_sed, 'go-')               
+        self.ax40_2.plot(self.fe3[self.numday], self.depth, 'r-')
+        self.ax41_2.plot(self.fe3[self.numday], self.depth, 'ro-') 
+        self.ax42_2.plot(self.fe3[self.numday], self.depth_sed, 'ro-')                
+        self.ax40_3.plot(self.fes[self.numday], self.depth, 'b-') 
+        self.ax41_3.plot(self.fes[self.numday], self.depth, 'bo-')  
+        self.ax42_3.plot(self.fes[self.numday], self.depth_sed, 'bo-')              
+        self.ax40_4.plot(self.fes2[self.numday], self.depth, 'm-')  
+        self.ax41_4.plot(self.fes2[self.numday], self.depth, 'mo-')
+        self.ax42_4.plot(self.fes2[self.numday], self.depth_sed, 'mo-')
+        self.ax50_1.plot(self.so4[self.numday], self.depth, 'g-') 
+        self.ax51_1.plot(self.so4[self.numday], self.depth, 'go-') 
+        self.ax52_1.plot(self.so4[self.numday], self.depth_sed, 'go-')                
+        self.ax50_2.plot(self.s0[self.numday], self.depth, 'r-')
+        self.ax51_2.plot(self.s0[self.numday], self.depth, 'ro-') 
+        self.ax52_2.plot(self.s0[self.numday], self.depth_sed, 'ro-')                
+        self.ax50_3.plot(self.h2s[self.numday], self.depth, 'b-') 
+        self.ax51_3.plot(self.h2s[self.numday], self.depth, 'bo-')  
+        self.ax52_3.plot(self.h2s[self.numday], self.depth_sed, 'bo-')              
+        self.ax50_4.plot(self.s2o3[self.numday], self.depth, 'm-')  
+        self.ax51_4.plot(self.s2o3[self.numday], self.depth, 'mo-')
+        self.ax52_4.plot(self.s2o3[self.numday], self.depth_sed, 'mo-')
+
+
+        '''
+        
+        
+                
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setStyle("plastique")
