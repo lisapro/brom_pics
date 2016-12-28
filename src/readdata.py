@@ -7,6 +7,21 @@ from netCDF4 import Dataset
 import main
 import numpy as np
 import math
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+import calc_resolution
+from PyQt4 import QtGui
+import sys 
+#getcontext().prec = 6 
+majorLocator = mtick.MultipleLocator(2.)
+majorFormatter = mtick.ScalarFormatter(useOffset=False)   #format y scales to be scalar 
+minorLocator = mtick.MultipleLocator(1.)
+
+app1 = QtGui.QApplication(sys.argv)
+screen_rect = app1.desktop().screenGeometry()
+width, height = screen_rect.width(), screen_rect.height()
+print (width, height)    
+    
 def readdata_brom(self,fname): 
 
     fh = Dataset(fname)
@@ -79,23 +94,40 @@ def readdata_brom(self,fname):
     self.var_names_charts_year = (('All year charts'),
         ('NO2','NO3','NH4'),
         ('PO4','SO4',' O2'),
-        ('H2S, PON, DON'),('DIC, Phy, Het'), 
+        ('H2S', 'PON', 'DON'),('DIC, Phy, Het'), 
     ('MNII,MnIII,MnIV'),('MnS', 'MnCO3'), 
     ('FeII,FeIII' ), ('FeS,FeCO3,FeS2'),  
     ('S0' ,'S2O3'),('Si,Si_part,pH'),
     ('baae, bhae,baan,bhan'),('caco3', 'ch4', 'pco2','om_ca'), 
-    ('om_ar', 'co3', 'ca'), ('sal,Temperature'))  
+    ('om_ar', 'co3', 'ca'), ('sal,Temperature')) 
+    
+    
+    self.titles_all_year = (('All year charts'),
+        (r'$\rm NO _2 $',r'$\rm NO _3 $',r'$\rm NH _4 $'),
+        ('PO4','SO4',' O2'),
+        ('H2S', 'PON', 'DON'),('DIC, Phy, Het'), 
+    ('MNII,MnIII,MnIV'),('MnS', 'MnCO3'), 
+    ('FeII,FeIII' ), ('FeS,FeCO3,FeS2'),  
+    ('S0' ,'S2O3'),('Si,Si_part,pH'),
+    ('baae, bhae,baan,bhan'),('caco3', 'ch4', 'pco2','om_ca'), 
+    ('om_ar', 'co3', 'ca'), ('sal,Temperature'))     
+     
 
     self.vars_year = ([],
                       [[self.no2],[self.no3],[self.nh4]],
                       [[self.po4],[self.so4],[self.o2]],
-                      []
+                      [[self.h2s],[self.pon],[self.don]],
+                      [[self.dic],[self.phy],[self.het]],
+                      [[self.mn2],[self.mn3],[self.mn4]],
     )
     
     fh.close()
                           
     self.monthes_start = [1,32,61,92,122,153,183,
                           214,245,275,306,336,366]
+
+
+
     
 def calculate_ywat(self):
     for n in range(0,(len(self.depth2)-1)):
@@ -159,7 +191,17 @@ def depth_sed(self):
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed.append(v)
         self.depth_sed = depth_sed
-  
+
+def depth_sed2(self):
+    to_float = []
+    for item in self.depth2:
+        to_float.append(float(item)) #make a list of floats from tuple 
+    depth_sed2 = [] # list for storing final depth data for sediment 
+    v=0  
+    for i in to_float:
+        v = (i- self.y2max)*100  #convert depth from m to cm
+        depth_sed2.append(v)
+        self.depth_sed2 = depth_sed2  
                    
 def varmax(self,variable,vartype):
     if vartype == 0: #water
@@ -168,15 +210,15 @@ def varmax(self,variable,vartype):
     elif vartype == 1 :#sediment
         n = variable[self.nbblmin:,:].max()
     if n > 10000. and n <= 100000.:  
-        n = int(math.ceil(n / 1000.0)) * 1000  
+        n = int(math.ceil(n/ 1000.0)) * 1000 + 1000
     elif n > 1000. and n <= 10000.:  
-        n = int(math.ceil(n / 100.0)) * 100                                   
+        n = int(math.ceil(n / 100.0)) * 100  + 100                                 
     elif n >= 100. and n < 1000.:
-        n = int(math.ceil(n / 10.0)) * 10
+        n = int(math.ceil(n / 10.0)) * 10 + 10
     elif n >= 1. and n < 100. :
-        n =  int(np.ceil(n)) 
+        n =  int(np.ceil(n))  + 1
     elif n >= 0.1 and n < 1. :
-        n =  (math.ceil(n*10.))/10.  
+        n =  (math.ceil(n*10.))/10. + 0.1  
     elif n >= 0.01 and n < 0.1 :
         n =  (math.ceil(n*100.))/100. 
     elif n >= 0.001 and n < 0.01 :
@@ -304,185 +346,91 @@ def ticks(min,max):
     else : 
         ticks = np.arange(min,max+0.5, 0.05)                    
     return ticks
-def maxmin(self):   
-    self.kzmin = self.watmin(self.kz)
-    self.kzmax = self.watmax(self.kz)
-    self.sed_kzmin = self.watmin(self.kz)
-    self.sed_kzmax = self.watmax(self.kz)        
-    self.salmin = self.watmin(self.sal)
-    self.salmax  = self.watmax(self.sal) 
-    self.sed_salmin = self.sedmin(self.sal)
-    self.sed_salmax = self.sedmax(self.sal)
-    self.tempmin = self.watmin(self.temp)
-    self.tempmax  = self.watmax(self.temp)
-    self.po4max = self.watmax(self.po4) 
-    self.po4min = self.watmin(self.po4)
-    self.sed_po4min = self.sedmin(self.po4) 
-    self.sed_po4max = self.sedmax(self.po4)  
-    self.ponmax = self.watmax(self.pon) 
-    self.ponmin = self.watmin(self.pon)
-    self.sed_ponmin = self.sedmin(self.pon) 
-    self.sed_ponmax = self.sedmax(self.pon)        
-    self.donmax = self.watmax(self.don) 
-    self.donmin = self.watmin(self.don)
-    self.sed_donmin = self.sedmin(self.don) 
-    self.sed_donmax = self.sedmax(self.don)         
-    self.so4min = self.watmin(self.so4)
-    self.so4max = self.watmax(self.so4)
-    self.sed_so4min = self.sedmin(self.so4)
-    self.sed_so4max = self.sedmax(self.so4) 
-    self.o2min = self.watmin(self.o2)
-    self.o2max = self.watmax(self.o2)            
-    self.sed_o2min = self.sedmin(self.o2)            
-    self.sed_o2max = self.sedmax(self.o2)
-    self.no2min = self.watmin(self.no2)
-    self.no2max = self.watmax(self.no2)
-    self.sed_no2min = self.sedmin(self.no2)
-    self.sed_no2max = self.sedmax(self.no2)
-    self.no3min = self.watmin(self.no3)
-    self.no3max = self.watmax(self.no3)
-    self.sed_no3min = self.sedmin(self.no3)
-    self.sed_no3max = self.sedmax(self.no3)             
-    self.nh4min = self.watmin(self.nh4)
-    self.nh4max = self.watmax(self.nh4)
-    self.sed_nh4min = self.sedmin(self.nh4)
-    self.sed_nh4max = self.sedmax(self.nh4)        
-    self.simin = self.watmin(self.si)
-    self.simax = self.watmax(self.si)   
-    self.sed_simin = self.sedmin(self.si)
-    self.sed_simax = self.sedmax(self.si)   
-    self.phmin = self.watmin(self.ph)
-    self.phmax = self.watmax(self.ph)   
-    self.sed_phmin = self.sedmin(self.ph)
-    self.sed_phmax = self.sedmax(self.ph) 
 
-    self.fe2min = self.watmin(self.fe2)
-    self.fe2max = self.watmax(self.fe2)
-    self.sed_fe2min = self.sedmin(self.fe2)
-    self.sed_fe2max = self.sedmax(self.fe2)      
+def y_lim1(self,axis): 
 
-    self.fe3min = self.watmin(self.fe3)
-    self.fe3max = self.watmax(self.fe3)
-    self.sed_fe3min = self.sedmin(self.fe3)
-    self.sed_fe3max = self.sedmax(self.fe3) 
+    self.xticks =(np.arange(0,100000))#function to define y limits 
+    if axis in (self.ax00,self.ax10,self.ax20,
+                self.ax30,self.ax40,self.ax50):   #water
+        axis.set_ylim([self.y2min, 0])
+        axis.yaxis.grid(True,'minor')
+        axis.xaxis.grid(True,'major')                
+        axis.yaxis.grid(True,'major') 
+#            axis.fill_between(self.xticks1, self.y1max, self.y1min, facecolor= self.wat_color1, alpha=self.alpha_wat)
+    elif axis in (self.ax01,self.ax11,self.ax21,
+        self.ax31,self.ax41,self.ax51):  #BBL
+        axis.set_ylim([self.y2max, self.y2min])
+        axis.fill_between(self.xticks, self.y2max,
+            self.y2min_fill_bbl,
+            facecolor= self.bbl_col, 
+            alpha=self.a_bbl)
+        axis.yaxis.grid(True,'minor')
+        axis.yaxis.grid(True,'major')   
+        axis.xaxis.grid(True,'major')              
+#            axis.fill_between(self.xticks1, self.y2max_fill_water, self.y2min, facecolor= self.wat_color, alpha= self.alpha_wat) 
+#            axis.fill_between(self.xticks1, self.y2max, self.y2min_fill_bbl, facecolor= self.bbl_color, alpha= self.alpha_bbl)
+        plt.setp(axis.get_xticklabels(), visible=False) 
+    elif axis in (self.ax02,self.ax12,
+            self.ax22,self.ax32,self.ax42,self.ax52): #sediment 
+        axis.set_ylim([self.ysedmax, self.ysedmin])   #[y3max, y3min]   
+        axis.fill_between(self.xticks,
+            self.ysedmax_fill_bbl, self.ysedmin,
+            facecolor= self.bbl_col,
+            alpha=self.a_bbl)  
+        axis.fill_between(self.xticks,
+            self.ysedmax, self.ysedmin_fill_sed,
+            facecolor= self.sed_col,
+            alpha=self.a_s)    
+        axis.yaxis.set_major_locator(majorLocator)
+        #define yticks
+        axis.yaxis.set_major_formatter(majorFormatter)
+        axis.yaxis.set_minor_locator(minorLocator)
+        axis.yaxis.grid(True,'minor')
+        axis.yaxis.grid(True,'major')
+        axis.xaxis.grid(True,'major')      
+        
+        
+def setmaxmin(self,axis,var,type):
+    min = varmin(self,var,type) #0 - water 
+    max = varmax(self,var,type)
+    axis.set_xlim([min,max])  
+    #tick = ticks(watmin,watmax)
+    axis.set_xticks(np.arange(min,max+((max - min)/2.),
+            ((max - min)/2.)))      
+        
+        
+        
+def colors(self):
+    self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
+    self.wint = '#8dc0e7' 
+    self.summ = '#d0576f' 
+    self.a_w = 0.5 #alpha (transparency) for winter
+    self.a_bbl = 0.3 
+    self.a_s = 0.5 #alpha (transparency) for summer
+    self.a_aut = 0.5 #alpha (transparency) for autumn and spring    
+    self.wat_col = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
+    self.bbl_col = '#2873b8' # for plot 1,2,3,4,5,1_1,2_2,etc.
+    self.sed_col= '#916012'
 
-    self.fesmin = self.watmin(self.fes)
-    self.fesmax = self.watmax(self.fes)
-    self.sed_fesmin = self.sedmin(self.fes)
-    self.sed_fesmax = self.sedmax(self.fes) 
 
-    self.fes2min = self.watmin(self.fes2)
-    self.fes2max = self.watmax(self.fes2)
-    self.sed_fes2min = self.sedmin(self.fes2)
-    self.sed_fes2max = self.sedmax(self.fes2) 
-              
-    self.h2smin = self.watmin(self.h2s)
-    self.h2smax = self.watmax(self.h2s)
-    self.sed_h2smin = self.sedmin(self.h2s)
-    self.sed_h2smax = self.sedmax(self.h2s)
     
-    self.mn2min = self.watmin(self.mn2)
-    self.mn2max = self.watmax(self.mn2)
-    self.sed_mn2min = self.sedmin(self.mn2)
-    self.sed_mn2max = self.sedmax(self.mn2)       
+    self.labelaxis_x =  1.10 #positions of labels 
+    self.labelaxis1_y = 1.02
+    dx = (height / 30000.) #0.1
+    
+    self.labelaxis2_y = 1.02 + dx
+    self.labelaxis3_y = 1.02 + dx * 2.
+    self.labelaxis4_y = 1.02 + dx * 3.
+    self.labelaxis5_y = 1.02 + dx * 4.
 
-    self.mn3min = self.watmin(self.mn3)
-    self.mn3max = self.watmax(self.mn3)
-    self.sed_mn3min = self.sedmin(self.mn3)
-    self.sed_mn3max = self.sedmax(self.mn3) 
+    self.axis1 = 0
+    self.axis2 = 27
+    self.axis3 = 53
+    self.axis4 = 79
+    self.axis5 = 105   
 
-    self.mn4min = self.watmin(self.mn4)
-    self.mn4max = self.watmax(self.mn4)
-    self.sed_mn4min = self.sedmin(self.mn4)
-    self.sed_mn4max = self.sedmax(self.mn4) 
-    
-    self.mnsmin = self.watmin(self.mns)
-    self.mnsmax = self.watmax(self.mns)
-    self.sed_mnsmin = self.sedmin(self.mns)
-    self.sed_mnsmax = self.sedmax(self.mns) 
-    
-    self.mnco3min = self.watmin(self.mnco3)
-    self.mnco3max = self.watmax(self.mnco3)
-    self.sed_mnco3min = self.sedmin(self.mnco3)
-    self.sed_mnco3max = self.sedmax(self.mnco3) 
-    
-    self.s0min = self.watmin(self.s0)
-    self.s0max = self.watmax(self.s0)
-    self.sed_s0min = self.sedmin(self.s0)
-    self.sed_s0max = self.sedmax(self.s0) 
-    
-    self.s2o3min = self.watmin(self.s2o3)
-    self.s2o3max = self.watmax(self.s2o3)
-    self.sed_s2o3min = self.sedmin(self.s2o3)
-    self.sed_s2o3max = self.sedmax(self.s2o3) 
-      
-    self.baanmin = self.watmin(self.baan)
-    self.baanmax = self.watmax(self.baan)
-    self.sed_baanmin = self.sedmin(self.baan)
-    self.sed_baanmax = self.sedmax(self.baan)              
-
-    self.baaemin = self.watmin(self.baae)
-    self.baaemax = self.watmax(self.baae)
-    self.sed_baaemin = self.sedmin(self.baae)
-    self.sed_baaemax = self.sedmax(self.baae)
-    
-    self.bhaemin = self.watmin(self.bhae)
-    self.bhaemax = self.watmax(self.bhae)
-    self.sed_bhaemin = self.sedmin(self.bhae)
-    self.sed_bhaemax = self.sedmax(self.bhae)        
-    
-    self.bhanmin = self.watmin(self.bhan)
-    self.bhanmax = self.watmax(self.bhan)
-    self.sed_bhanmin = self.sedmin(self.bhan)
-    self.sed_bhanmax = self.sedmax(self.bhan)        
-    
-    self.phymin = self.watmin(self.phy)
-    self.phymax = self.watmax(self.phy)
-    self.sed_phymin = self.sedmin(self.phy)
-    self.sed_phymax = self.sedmax(self.phy)        
-    
-    self.hetmin = self.watmin(self.het)
-    self.hetmax = self.watmax(self.het)
-    self.sed_hetmin = self.sedmin(self.het)
-    self.sed_hetmax = self.sedmax(self.het)        
-
-    self.simin = self.watmin(self.si)
-    self.simax = self.watmax(self.si)
-    self.sed_simin = self.sedmin(self.si)
-    self.sed_simax = self.sedmax(self.si)     
-    
-    self.si_partmin = self.watmin(self.si_part)
-    self.si_partmax = self.watmax(self.si_part)
-    self.sed_si_partmin = self.sedmin(self.si_part)
-    self.sed_si_partmax = self.sedmax(self.si_part)        
-    
-    self.phmin = self.watmin(self.ph)
-    self.phmax = self.watmax(self.ph)
-    self.sed_phmin = self.sedmin(self.ph)
-    self.sed_phmax = self.sedmax(self.ph)          
-    
-    self.alkmin = self.watmin(self.alk)
-    self.alkmax = self.watmax(self.alk)
-    self.sed_alkmin = self.sedmin(self.alk)
-    self.sed_alkmax = self.sedmax(self.alk)  
-    
-    self.dicmin = self.watmin(self.dic)
-    self.dicmax = self.watmax(self.dic)
-    self.sed_dicmin = self.sedmin(self.dic)
-    self.sed_dicmax = self.sedmax(self.dic)          
-
-    self.pco2min = self.watmin(self.pco2)
-    self.pco2max = self.watmax(self.pco2)
-    self.sed_pco2min = self.sedmin(self.pco2)
-    self.sed_pco2max = self.sedmax(self.pco2)  
-
-    self.ch4min = self.watmin(self.ch4)
-    self.ch4max = self.watmax(self.ch4)
-    self.sed_ch4min = self.sedmin(self.ch4)
-    self.sed_ch4max = self.sedmax(self.ch4)    
-    
-    self.om_armin = self.watmin(self.om_ar)
-    self.om_armax = self.watmax(self.om_ar)
-    self.sed_om_armin = self.sedmin(self.om_ar)
-    self.sed_om_armax = self.sedmax(self.om_ar)
+    self.font_txt = (height / 190.)  # text on figure 2 (Water; BBL, Sed) 
+    self.xlabel_fontsize = (height / 170.) #14 #axis labels      
+    self.ticklabel_fontsize = (height / 190.) #14 #axis labels           
+    print (self.xlabel_fontsize)
     
