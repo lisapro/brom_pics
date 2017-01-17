@@ -20,7 +20,7 @@ minorLocator = mtick.MultipleLocator(1.)
 app1 = QtGui.QApplication(sys.argv)
 screen_rect = app1.desktop().screenGeometry()
 width, height = screen_rect.width(), screen_rect.height()
-print (width, height)    
+#print (width, height)    
     
 def readdata_brom(self,fname): 
 
@@ -80,49 +80,71 @@ def readdata_brom(self,fname):
     [self.so4], [self.si_part], [self.baae], [self.bhae],
     [self.baan], [self.bhan], [self.caco3], [self.ch4],
     [self.ph], [self.pco2], [self.om_ca], [self.om_ar],
-    [self.co3], [self.ca],[self.sal], [self.temp])
+    [self.co3], [self.ca],[self.sal], [self.temp],[self.kz])
     
-    self.var_names_profile = ('Time profile','O2' ,'no3' ,'no2', 'si', 'alk',
-    'po4','nh4', 'h2s','pon',  'don',  'dic','phy', 'het', 
-    'mn2',  'mn3',  'mn4','mns', 'mnco3', 
-    'fe2' ,'fe3' , 'fes','feco3', 'fes2',  
-    's0' ,'s2o3', 'so4', 'si_part',
+    #Variable names to add to combobox with time profiles
+    self.var_names_profile = ('Time profile','O2' ,'NO3' ,'no2', 'Si', 'Alk',
+    'PO4','NH4', 'H2S','PON',  'DON',  'DIC','Phy', 'Het', 
+    'MnII',  'MnIII',  'MnIV','MnS', 'MnCO3', 
+    'FeII' ,'FeIII' , 'FeS','FeCO3', 'FeS2',  
+    'S0' ,'S2O3', 'SO4', 'Si_part',
     'baae', 'bhae', 'baan', 'bhan',
-    'caco3', 'ch4', 'ph', 'pco2','om_ca', 
-    'om_ar', 'co3', 'ca', 'sal', 'Temperature')    
-
+    'CaCO3', 'CH4', 'pH', 'pCO2','om_Ca', 
+    'om_ar', 'CO3', 'ca', 'sal', 'Temperature')  
+      
+    # list of names to add to Combobox All year charts
     self.var_names_charts_year = (('All year charts'),
-        ('NO2','NO3','NH4'),
+        ('NO2, NO3, NH4'),
         ('PO4','SO4',' O2'),
         ('H2S', 'PON', 'DON'),('DIC, Phy, Het'), 
-    ('MNII,MnIII,MnIV'),('MnS', 'MnCO3'), 
-    ('FeII,FeIII' ), ('FeS,FeCO3,FeS2'),  
-    ('S0' ,'S2O3'),('Si,Si_part,pH'),
-    ('baae, bhae,baan,bhan'),('caco3', 'ch4', 'pco2','om_ca'), 
-    ('om_ar', 'co3', 'ca'), ('sal,Temperature')) 
+        ('pCO2','pH','Alk'),
+        ('MNII','MnIII','MnIV'),
+        ('MnS', 'MnCO3','bhan'), 
+        ('FeII','FeIII','FeS'),
+        ('FeCO3','FeS2','Si'),  
+        ('S0' ,'S2O3','Si_part'),
+        ('baae', 'bhae','baan'),
+        ('caco3', 'ch4', 'om_ca'), 
+        ('om_ar', 'co3', 'ca'),
+        ('sal','Temperature','Kz'))  
     
-    
+    # list of titles to add to figures at All year charts    
     self.titles_all_year = (('All year charts'),
         (r'$\rm NO _2 $',r'$\rm NO _3 $',r'$\rm NH _4 $'),
         ('PO4','SO4',' O2'),
-        ('H2S', 'PON', 'DON'),('DIC, Phy, Het'), 
-    ('MNII,MnIII,MnIV'),('MnS', 'MnCO3'), 
-    ('FeII,FeIII' ), ('FeS,FeCO3,FeS2'),  
-    ('S0' ,'S2O3'),('Si,Si_part,pH'),
-    ('baae, bhae,baan,bhan'),('caco3', 'ch4', 'pco2','om_ca'), 
-    ('om_ar', 'co3', 'ca'), ('sal,Temperature'))     
+        ('H2S', 'PON', 'DON'),
+        ('DIC', 'Phy', 'Het'), 
+        ('pCO2','pH','Alk'),
+        ('MNII','MnIII','MnIV'),
+        ('MnS', 'MnCO3','bhan'), 
+        ('FeII','FeIII','FeS'),
+        ('FeCO3','FeS2','Si'),  
+        ('S0' ,'S2O3','Si_part'),
+        ('baae', 'bhae','baan'),
+        ('caco3', 'ch4', 'om_ca'), 
+        ('om_ar', 'co3', 'ca'),
+        ('sal','Temperature','Kz'))     
      
-
+    # list of variable names to connect titles and variables 
     self.vars_year = ([],
                       [[self.no2],[self.no3],[self.nh4]],
                       [[self.po4],[self.so4],[self.o2]],
                       [[self.h2s],[self.pon],[self.don]],
                       [[self.dic],[self.phy],[self.het]],
+                      [[self.pco2],[self.ph],[self.alk]],                      
                       [[self.mn2],[self.mn3],[self.mn4]],
+                      [[self.mns],[self.mnco3],[self.bhan]], 
+                      [[self.fe2],[self.fe3],[self.fes]],
+                      [[self.feco3],[self.fes2],[self.si]],
+                      [[self.s0],[self.s2o3],[self.si_part]], 
+                      [[self.baae],[self.bhae],[self.baan]],                                                                                        
+                      [[self.caco3],[self.ch4],[self.om_ca]],     
+                      [[self.om_ar],[self.co3],[self.ca]],       
+                      [[self.sal],[self.temp],[self.kz]],                                                                                 
     )
     
     fh.close()
-                          
+    # numbers of first days of each month to add to combobox 'One day'                           
     self.monthes_start = [1,32,61,92,122,153,183,
                           214,245,275,306,336,366]
 
@@ -312,10 +334,10 @@ def varmin(self,variable,vartype):
         n = 0.00005 
     self.watmin = int(np.floor(n))                          
     return self.watmin
-def ticks(min,max): 
-    if (max - min) >= 50000. :
-        ticks = np.arange(min,max+5000.,10000)
-        
+def ticks(min,max):      
+    if (max - min) >= 50000. and (
+         max - min) < 150000.  :
+        ticks = np.arange(min,max+10000.,50000)        
     elif (max - min) >= 10000. and (
          max - min) < 50000.  :
         ticks = np.arange(min,max+5000.,5000)        
@@ -331,8 +353,11 @@ def ticks(min,max):
     elif (max - min) >= 100. and ( 
      max - min) < 300. :
         ticks = np.arange(min,max+50.,50) 
-    elif (max - min) >= 20. and ( 
+    elif (max - min) >= 50. and ( 
      max - min) < 100. :
+        ticks = np.arange(min,max+10.,10)        
+    elif (max - min) >= 20. and ( 
+     max - min) < 50. :
         ticks = np.arange(min,max+5.,5)
     elif (max - min) >= 3. and ( 
      max - min) < 20. :
@@ -344,8 +369,25 @@ def ticks(min,max):
      max - min) < 1. :
         ticks = np.arange(min,max+1.,0.1)                  
     else : 
-        ticks = np.arange(min,max+0.5, 0.05)                    
+        #ticks = np.arange(min,max+0.05, 0.005)    
+        ticks = np.arange(min,max + (max - min)/2., (max - min)/2.)                   
     return ticks
+
+    def y_lim(self,axis): #function to define y limits 
+        if axis in (self.ax00,self.ax10,self.ax20):   #water          
+            axis.fill_between(self.xticks, self.y1max, self.y1min,
+                              facecolor= self.wat_color, alpha=self.alpha_wat)  
+        elif axis in (self.ax01,self.ax11,self.ax21):  #BBL
+            axis.fill_between(self.xticks, self.y2max, self.y2min_fill_bbl,
+                               facecolor= self.bbl_color, alpha=self.alpha_bbl)
+            #plt.setp(axis.get_xticklabels(), visible=False)                                           
+        elif axis in (self.ax02,self.ax12,self.ax22): #sediment 
+            axis.fill_between(self.xticks, self.ysedmax_fill_bbl,
+                               self.ysedmin, facecolor= self.bbl_color, alpha=self.alpha_bbl)  
+            axis.fill_between(self.xticks, self.ysedmax, self.ysedmin_fill_sed, facecolor= self.sed_color, alpha=self.alpha_sed)    
+
+
+
 
 def y_lim1(self,axis): 
 
@@ -416,21 +458,21 @@ def colors(self):
     
     self.labelaxis_x =  1.10 #positions of labels 
     self.labelaxis1_y = 1.02
-    dx = (height / 30000.) #0.1
-    
+    dx = 0.15#(height / 30000.) #0.1
+    dy = 14 #height/96
     self.labelaxis2_y = 1.02 + dx
     self.labelaxis3_y = 1.02 + dx * 2.
     self.labelaxis4_y = 1.02 + dx * 3.
     self.labelaxis5_y = 1.02 + dx * 4.
 
     self.axis1 = 0
-    self.axis2 = 27
-    self.axis3 = 53
-    self.axis4 = 79
-    self.axis5 = 105   
+    self.axis2 = 0 + dy 
+    self.axis3 = 0 + dy * 2
+    self.axis4 = 0 + dy * 3
+    self.axis5 = 0 + dy * 4  
 
-    self.font_txt = (height / 190.)  # text on figure 2 (Water; BBL, Sed) 
-    self.xlabel_fontsize = (height / 170.) #14 #axis labels      
-    self.ticklabel_fontsize = (height / 190.) #14 #axis labels           
-    print (self.xlabel_fontsize)
+    self.font_txt = 15 #(height / 190.)  # text on figure 2 (Water; BBL, Sed) 
+    self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
+    self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels           
+    #print (self.xlabel_fontsize)
     

@@ -11,13 +11,16 @@ from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar)
 import matplotlib.pyplot as plt
 import readdata
-import calc_resolution
+#import calc_resolution
 import numpy as np
 import matplotlib.gridspec as gridspec
 from matplotlib import style
 import matplotlib.ticker as mtick
 import matplotlib as mpl
 import math
+
+
+#print (sys.version_info)
 
 class Window(QtGui.QDialog):
      
@@ -30,12 +33,12 @@ class Window(QtGui.QDialog):
         app1 = QtGui.QApplication(sys.argv)
         screen_rect = app1.desktop().screenGeometry()
         width, height = screen_rect.width(), screen_rect.height()
-        font = (height/1000.)
+        font = (height/10000.)
         #print (width, height)
         
         #self.figure = plt.figure(figsize = (width,height), dpi= 200,
         #                          facecolor='white')
-        self.figure = plt.figure(figsize = (width,height),dpi= 150,
+        self.figure = plt.figure(figsize = (width,height),dpi= 100,
                                   facecolor='white')        
         
         
@@ -94,7 +97,7 @@ class Window(QtGui.QDialog):
                 item = QtGui.QStandardItem(str(n)+ '/' + str(m+1) + 
                      ' (' + str(self.numday) + ')')
                 font = item.font()
-                font.setPointSize(150)
+                #font.setPointSize(10)
                 item.setFont(font)                
                 oModel.appendRow(item)
                 
@@ -105,13 +108,13 @@ class Window(QtGui.QDialog):
        
         self.one_day_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae; border-width: 10px;'
-        '  padding: 6px; font: bold 25px; }')        
+        '  padding: 6px; font: bold 16px; }')        
         self.all_year_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
-         'font: bold 25px;}')           
+         'font: bold 16px;}')           
         self.time_prof_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
-         'font: bold 25px;}')    
+         'font: bold 16px;}')    
         
 
         #set the layout
@@ -128,51 +131,7 @@ class Window(QtGui.QDialog):
         self.grid.addWidget(self.time_prof_box,1,1,1,1)  
         self.grid.addWidget(self.all_year_box,1,2,1,1)       
         self.grid.addWidget(self.one_day_box,1,3,1,1) 
-        #layout.addWidget(self.tree,0,9,1,1)                                    
-        #layout.addWidget(self.canvas,2,1,1,8)
-        #pos y,pos x,len y,lenx         
-        #layout.addWidget(self.button1,3,1,1,1) 
-               
-        #self.setLayout(layout) 
-        self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored,
-                                             QtGui.QSizePolicy.Ignored))          
-        #self.setMinSize(14)
-        
-    '''def setMinSize(self, minfs):        
 
-        f = self.font()
-        f.setPixelSize(minfs)
-        br = QtGui.QFontMetrics(f).boundingRect(self.text())
-
-        self.setMinimumSize(br.width(), br.height())
-    def resizeEvent(self, event):
-        super(Window, self).resizeEvent(event)
-
-        #if not self.text():
-        #    return
-
-        #--- fetch current parameters ----
-
-        f = self.font()
-        cr = self.contentsRect()
-
-        #--- find the font size that fits the contentsRect ---
-
-        fs = 1                    
-        while True:
-
-            f.setPixelSize(fs)
-            br =  QtGui.QFontMetrics(f).boundingRect(self.text())
-
-            if br.height() <= cr.height() and br.width() <= cr.width():
-                fs += 1
-            else:
-                f.setPixelSize(max(fs - 1, 1)) # backtrack
-                break  
-
-        #--- update font size ---
-
-        self.setFont(16) '''
 
                
     def fig2_txt(self):        
@@ -239,6 +198,12 @@ class Window(QtGui.QDialog):
         ax2.set_ylim(self.ysedmax,self.y3min) #ysedmin
         ax.set_xlim(0,len(x))
         self.num = 50.    
+
+
+        ax.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis 
+        ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
+        ax2.set_xlabel('Number of day',fontsize= self.font_txt) 
+
             
         cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
         
@@ -264,23 +229,28 @@ class Window(QtGui.QDialog):
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
                               cmap=cmap,
                               origin='lower')
-        
+
         CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = int_sed_levs,
                               cmap=cmap1,
                               origin='lower')
-        
+       
         cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])
+        
+        
+        
+        
         #x,y,thick,length
         cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
         wat_ticks = readdata.ticks(watmin,watmax)
         cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)
         cb_sed = plt.colorbar(CS1,cax = cax1 )
-        cb.set_label('Water')
+        #cb.set_label('Water')
         
         sed_ticks = readdata.ticks(sed_min,sed_max)
         #cb.set_ticks(wat_ticks)
-        cb_sed.set_ticks(sed_ticks)
-        cb_sed.set_label('BBL, Sediment')
+        cb_sed.set_ticks(sed_ticks)  
+        ax2.axhline(0, color='white', linestyle = '--')     
+        #cb_sed.set_label('BBL, Sediment')
         #cb.ax.set_xticklabels(['Low', 'Medium', 'High']) 
         #loc = clevs + .1
         #cb.set_ticks(loc)
@@ -294,6 +264,7 @@ class Window(QtGui.QDialog):
         #plt.show()   
 
         self.canvas.draw() 
+        
     def all_year_charts(self):            
         plt.clf()
         gs = gridspec.GridSpec(3,3) 
@@ -313,12 +284,7 @@ class Window(QtGui.QDialog):
         ax02 = self.figure.add_subplot(gs[6])    
         ax12 = self.figure.add_subplot(gs[7])
         ax22 = self.figure.add_subplot(gs[8])
-
-
    
-
-
-
         ax00.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis
         ax01.set_ylabel('Depth (m)',fontsize= self.font_txt)   
         ax02.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
@@ -576,10 +542,14 @@ class Window(QtGui.QDialog):
                      self.ax40, self.ax42,
                      self.ax50, self.ax52): 
             axis.xaxis.set_label_position('top')
+          
             axis.xaxis.tick_top() 
             
         #remove axis from bbl
-        for axis in (self.ax00, self.ax01,self.ax01_1, self.ax01_2, self.ax01_3,
+        for axis in (self.ax00,self.ax02,self.ax10,self.ax12,self.ax20,
+                     self.ax22,self.ax30,self.ax32,self.ax40,self.ax42,
+                     self.ax50,self.ax52,
+                     self.ax01,self.ax01_1, self.ax01_2, self.ax01_3,
                      self.ax11,self.ax11_1, self.ax11_2, self.ax11_3,
                      self.ax11_4,
                      self.ax21,self.ax21_1, self.ax21_2, self.ax21_3,
@@ -595,7 +565,8 @@ class Window(QtGui.QDialog):
             bottom='off',      # ticks along the bottom edge are off
             top='off',
             labelbottom='off',         # ticks along the top edge are off
-            labeltop='off') # labels along the bottom edge are off
+            labeltop='off',    # labels along the bottom edge are of
+            ) 
             
             #for spine in axis.spines.iteritems():
             #    spine.set_visible(False) 
@@ -604,31 +575,23 @@ class Window(QtGui.QDialog):
         #self.ax01.spines['top'].set_visible(False)  
         
         for axis in (self.ax00_1,self.ax00_2,self.ax00_3,
-                     self.ax02,
-                     self.ax02_1,self.ax02_2,self.ax02_3,
-                     self.ax10,
-                     self.ax10_1,self.ax10_2,self.ax10_3,self.ax10_4,
-                     self.ax12,
-                     self.ax12_1,self.ax12_2, self.ax12_3, self.ax12_4, 
-                     self.ax20,
-                     self.ax20_1,self.ax20_2,self.ax20_3, 
-                     self.ax22,
-                     self.ax22_1,self.ax22_2,self.ax22_3, 
-                     self.ax30,
+                     
+                     self.ax02_1,self.ax02_2,self.ax02_3,                     
+                     self.ax10_1,self.ax10_2,self.ax10_3,self.ax10_4,                     
+                     self.ax12_1,self.ax12_2, self.ax12_3, self.ax12_4,                      
+                     self.ax20_1,self.ax20_2,self.ax20_3,                      
+                     self.ax22_1,self.ax22_2,self.ax22_3,                      
                      self.ax30_1,self.ax30_2,self.ax30_3,self.ax30_4,
-                     self.ax30_5,
-                     self.ax32,
+                     self.ax30_5,                     
                      self.ax32_1,self.ax32_2,self.ax32_3,self.ax32_4,
-                     self.ax32_5,
-                     self.ax40,
-                     self.ax40_1,self.ax40_2,self.ax40_3,self.ax40_4,
-                     self.ax42,
-                     self.ax42_1,self.ax42_2, self.ax42_3,self.ax42_4,
-                     self.ax50,
+                     self.ax32_5,                     
+                     self.ax40_1,self.ax40_2,self.ax40_3,self.ax40_4,                     
+                     self.ax42_1,self.ax42_2, self.ax42_3,self.ax42_4,                     
                      self.ax50_1,self.ax50_2,self.ax50_3,self.ax50_4,
-                     self.ax52,
                      self.ax52_1,self.ax52_2,self.ax52_3,self.ax52_4):
-            axis.tick_params(labelsize= self.ticklabel_fontsize)
+            axis.tick_params(labelsize= self.ticklabel_fontsize,
+            pad = 0.5, length=2)              
+            
             for spinename, spine in axis.spines.iteritems():
                 if spinename != 'top':
                     spine.set_visible(False) 
