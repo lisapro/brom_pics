@@ -334,62 +334,64 @@ class Window(QtGui.QDialog):
         
                 
         for n in range(0,len(self.time)):
-            if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                  
+            if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter" 
+                linewidth = self.linewidth
+                                  
                 ax00.plot(z0[0][n],self.depth,self.wint,alpha = 
-                          self.a_w) 
+                          self.a_w, linewidth = linewidth ) 
                 ax10.plot(z1[0][n],self.depth,self.wint,alpha = 
-                          self.a_w)
+                          self.a_w, linewidth = linewidth )
                 ax20.plot(z2[0][n],self.depth,self.wint,alpha = 
-                          self.a_w)  
+                          self.a_w, linewidth = linewidth )  
                 
                 ax01.plot(z0[0][n],self.depth,self.wint,alpha = 
-                          self.a_w) 
+                          self.a_w, linewidth = linewidth ) 
                 ax11.plot(z1[0][n],self.depth,self.wint,alpha = 
-                          self.a_w)
+                          self.a_w, linewidth = linewidth )
                 ax21.plot(z2[0][n],self.depth,self.wint,alpha = 
-                          self.a_w) 
+                          self.a_w, linewidth = linewidth ) 
     
                 ax02.plot(z0[0][n],self.depth_sed,self.wint,alpha = 
-                          self.a_w) 
+                          self.a_w, linewidth = linewidth ) 
                 ax12.plot(z1[0][n],self.depth_sed,self.wint,alpha = 
-                          self.a_w)
+                          self.a_w, linewidth = linewidth )
                 ax22.plot(z2[0][n],self.depth_sed,self.wint,alpha = 
-                          self.a_w) 
+                          self.a_w, linewidth = linewidth ) 
             elif n >= 150 and n < 249: #"summer"
                 ax00.plot(z0[0][n],self.depth,self.summ,alpha = 
-                          self.a_s) 
+                          self.a_s, linewidth = linewidth ) 
                 ax10.plot(z1[0][n],self.depth,self.summ,alpha = 
-                          self.a_s)
+                          self.a_s, linewidth = linewidth )
                 ax20.plot(z2[0][n],self.depth,self.summ,alpha = 
-                          self.a_s)  
+                          self.a_s, linewidth = linewidth )  
                 
                 ax01.plot(z0[0][n],self.depth,self.summ,alpha = 
-                          self.a_s) 
+                          self.a_s, linewidth = linewidth ) 
                 ax11.plot(z1[0][n],self.depth,self.summ,alpha = 
-                          self.a_s)
+                          self.a_s, linewidth = linewidth )
                 ax21.plot(z2[0][n],self.depth,self.summ,alpha = 
-                          self.a_s) 
+                          self.a_s, linewidth = linewidth ) 
     
                 ax02.plot(z0[0][n],self.depth_sed,self.summ,alpha = 
-                          self.a_s) 
+                          self.a_s, linewidth = linewidth ) 
                 ax12.plot(z1[0][n],self.depth_sed,self.summ,alpha = 
-                          self.a_s)
+                          self.a_s, linewidth = linewidth )
                 ax22.plot(z2[0][n],self.depth_sed,self.summ,alpha = 
-                          self.a_s) 
+                          self.a_s, linewidth = linewidth ) 
             else : #"autumn and spring"
                 ax00.plot(z0[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut) 
+                          self.a_aut, linewidth = linewidth ) 
                 ax10.plot(z1[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut)
+                          self.a_aut, linewidth = linewidth )
                 ax20.plot(z2[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut)  
+                          self.a_aut, linewidth = linewidth )  
                 
                 ax01.plot(z0[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut) 
+                          self.a_aut, linewidth = linewidth ) 
                 ax11.plot(z1[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut)
+                          self.a_aut, linewidth = linewidth )
                 ax21.plot(z2[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut) 
+                          self.a_aut, linewidth = linewidth ) 
     
                 ax02.plot(z0[0][n],self.depth_sed,self.spr_aut,
                           alpha = self.a_aut) 
