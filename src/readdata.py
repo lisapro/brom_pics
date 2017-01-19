@@ -9,7 +9,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
-import calc_resolution
+
 from PyQt4 import QtGui
 import sys 
 #getcontext().prec = 6 

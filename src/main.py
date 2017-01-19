@@ -1,6 +1,4 @@
-#!/usr/bin/python
-# Filename: readfile.py
-# Import standard (i.e., non GOTM-GUI) modules.
+
 import os,sys
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtGui import QSpinBox,QLabel,QComboBox
@@ -16,8 +14,8 @@ import numpy as np
 import matplotlib.gridspec as gridspec
 from matplotlib import style
 import matplotlib.ticker as mtick
-import matplotlib as mpl
-import math
+#import matplotlib as mpl
+
 
 
 #print (sys.version_info)
