@@ -38,6 +38,7 @@ class Window(QtGui.QDialog):
         
         self.figure = plt.figure(figsize = (20,10),
                                   facecolor='white')
+        self.figure.set_size_inches(11.69,8.27)
         #self.figure = plt.figure(figsize = (width,height),dpi= 100,
         #                          facecolor='white')        
         
@@ -116,8 +117,8 @@ class Window(QtGui.QDialog):
              
         #self.resize_box.addItem(str((500, 540)))
         # self.resize_box.addItem(str((1200, 2040)))        
-        self.resize_box.currentIndexChanged.connect(
-            self.resolution_box)  
+        #self.resize_box.currentIndexChanged.connect(
+        #    self.resolution_box)  
 
 
 
@@ -150,15 +151,18 @@ class Window(QtGui.QDialog):
         self.grid.addWidget(self.one_day_box,1,3,1,1) 
         self.grid.addWidget(self.resize_box,1,4,1,1)
 
-    def resolution_box(self,):  
-        s = self.resize_box.currentIndex()
+    def resolution_box(self):  
+        plt.clf()
+        self.figure.set_size_inches(11.69,8.27)
+        ''''s = self.resize_box.currentIndex()
         if s != 0 : 
             m = self.resolutions[s]       
         #print ( type(m), m)
             self.resize(m[0],m[1])
         else : 
-            pass    
-
+            pass '''   
+        #self.figure = plt.figure(figsize = (20,10),dpi = 200, 
+        #                          facecolor='white')
            
     def fig2_txt(self):        
         plt.text(1.1, 0.5,'Water ', fontweight='bold', # draw legend to Water
