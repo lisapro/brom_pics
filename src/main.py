@@ -33,13 +33,13 @@ class Window(QtGui.QDialog):
         app1 = QtGui.QApplication(sys.argv)
         screen_rect = app1.desktop().screenGeometry()
         width, height = screen_rect.width(), screen_rect.height()
-        font = (height/10000.)
+        #font = (height/10000.)
         #print (width, height)
         
-        #self.figure = plt.figure(figsize = (width,height), dpi= 200,
-        #                          facecolor='white')
-        self.figure = plt.figure(figsize = (width,height),dpi= 100,
-                                  facecolor='white')        
+        self.figure = plt.figure(figsize = (20,10),
+                                  facecolor='white')
+        #self.figure = plt.figure(figsize = (width,height),dpi= 100,
+        #                          facecolor='white')        
         
         
         #print(plt.style.available)
