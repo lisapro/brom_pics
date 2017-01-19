@@ -147,7 +147,9 @@ def readdata_brom(self,fname):
     # numbers of first days of each month to add to combobox 'One day'                           
     self.monthes_start = [1,32,61,92,122,153,183,
                           214,245,275,306,336,366]
-
+    
+    self.resolutions = [('Resoluton'),(1000,700),(842,595),(2339,1654),(3508,2480),
+                        (4677,3307),(40,10)]
 
 
     

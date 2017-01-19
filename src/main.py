@@ -64,7 +64,8 @@ class Window(QtGui.QDialog):
         readdata.y_coords(self)  
               
         #readdata.calculate_sedmax(self)  
-       
+
+                       
         self.time_prof_box = QtGui.QComboBox()
         for i in self.var_names_profile:
             self.time_prof_box.addItem(str(i))
@@ -102,9 +103,25 @@ class Window(QtGui.QDialog):
                 oModel.appendRow(item)
                 
                 self.numday = self.numday + 1 #i+1
-                
+        
+        
+
+              
         self.one_day_box.currentIndexChanged.connect(
             self.one_day_plot)  
+
+        self.resize_box = QtGui.QComboBox()  
+        for i in self.resolutions:
+            self.resize_box.addItem(str(i))       
+             
+        #self.resize_box.addItem(str((500, 540)))
+        # self.resize_box.addItem(str((1200, 2040)))        
+        self.resize_box.currentIndexChanged.connect(
+            self.resolution_box)  
+
+
+
+
        
         self.one_day_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae; border-width: 10px;'
@@ -126,14 +143,23 @@ class Window(QtGui.QDialog):
         
         self.grid = QtGui.QGridLayout(self)
         self.grid.addLayout(layout, 0, 0)
-        self.grid.addWidget(self.canvas, 2, 0,1,4) 
+        self.grid.addWidget(self.canvas, 2, 0,1,5) 
         self.grid.addWidget(self.toolbar,1,0,1,1)    
         self.grid.addWidget(self.time_prof_box,1,1,1,1)  
         self.grid.addWidget(self.all_year_box,1,2,1,1)       
         self.grid.addWidget(self.one_day_box,1,3,1,1) 
+        self.grid.addWidget(self.resize_box,1,4,1,1)
 
+    def resolution_box(self,):  
+        s = self.resize_box.currentIndex()
+        if s != 0 : 
+            m = self.resolutions[s]       
+        #print ( type(m), m)
+            self.resize(m[0],m[1])
+        else : 
+            pass    
 
-               
+           
     def fig2_txt(self):        
         plt.text(1.1, 0.5,'Water ', fontweight='bold', # draw legend to Water
         bbox={'facecolor': self.wat_col, 'alpha':0.5, 'pad':3},
