@@ -32,11 +32,11 @@ class Window(QtGui.QDialog):
         screen_rect = app1.desktop().screenGeometry()
         width, height = screen_rect.width(), screen_rect.height()
         #font = (height/10000.)
-        #print (width, height)
+        print (width, height)
         
-        self.figure = plt.figure(figsize = (20,10),
+        self.figure = plt.figure(figsize = (1200,1920),
                                   facecolor='white')
-        self.figure.set_size_inches(11.69,8.27)
+        self.figure.set_size_inches(11.69,8.27) #(15,10.61) #(20,14.15)
         #self.figure = plt.figure(figsize = (width,height),dpi= 100,
         #                          facecolor='white')        
         
@@ -124,13 +124,13 @@ class Window(QtGui.QDialog):
        
         self.one_day_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae; border-width: 10px;'
-        '  padding: 6px; font: bold 16px; }')        
+        '  padding: 6px; font: bold 25px; }')        
         self.all_year_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
-         'font: bold 16px;}')           
+         'font: bold 25px;}')           
         self.time_prof_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
-         'font: bold 16px;}')    
+         'font: bold 25px;}')    
         
 
         #set the layout
@@ -151,7 +151,7 @@ class Window(QtGui.QDialog):
 
     def resolution_box(self):  
         plt.clf()
-        self.figure.set_size_inches(11.69,8.27)
+        self.figure.set_size_inches(50,35.37) #(11.69,8.27) #(15,10.61) #(20,14.15)
         ''''s = self.resize_box.currentIndex()
         if s != 0 : 
             m = self.resolutions[s]       
