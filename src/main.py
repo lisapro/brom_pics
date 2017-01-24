@@ -1,5 +1,8 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import os,sys
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtGui import QSpinBox,QLabel,QComboBox
 #from numpy import nan
@@ -15,7 +18,8 @@ import matplotlib.gridspec as gridspec
 from matplotlib import style
 import matplotlib.ticker as mtick
 #import matplotlib as mpl
-
+import math
+from matplotlib import rc
 
 
 #print (sys.version_info)
@@ -36,7 +40,7 @@ class Window(QtGui.QDialog):
         
         self.figure = plt.figure(figsize = (1200,1920),
                                   facecolor='white')
-        self.figure.set_size_inches(11.69,8.27) #(15,10.61) #(20,14.15)
+        self.figure.set_size_inches(11.69,9.27) #(15,10.61) #(20,14.15)
         #self.figure = plt.figure(figsize = (width,height),dpi= 100,
         #                          facecolor='white')        
         
@@ -64,7 +68,11 @@ class Window(QtGui.QDialog):
               
         #readdata.calculate_sedmax(self)  
 
-                       
+        self.fick_box = QtGui.QComboBox()
+        self.fick_box.addItem("Fluxes")
+        self.fick_box.addItem("print")        
+        self.fick_box.currentIndexChanged.connect(
+            self.fluxes)                       
         self.time_prof_box = QtGui.QComboBox()
         for i in self.var_names_profile:
             self.time_prof_box.addItem(str(i))
@@ -131,7 +139,9 @@ class Window(QtGui.QDialog):
         self.time_prof_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
          'font: bold 25px;}')    
-        
+        self.fick_box.setStyleSheet(
+        'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
+         'font: bold 25px;}')          
 
         #set the layout
         #layout = QtGui.QGridLayout()
@@ -147,8 +157,8 @@ class Window(QtGui.QDialog):
         self.grid.addWidget(self.time_prof_box,1,1,1,1)  
         self.grid.addWidget(self.all_year_box,1,2,1,1)       
         self.grid.addWidget(self.one_day_box,1,3,1,1) 
-        self.grid.addWidget(self.resize_box,1,4,1,1)
-
+        #self.grid.addWidget(self.resize_box,1,4,1,1)
+        self.grid.addWidget(self.fick_box,1,4,1,1)
     def resolution_box(self):  
         plt.clf()
         self.figure.set_size_inches(50,35.37) #(11.69,8.27) #(15,10.61) #(20,14.15)
@@ -192,7 +202,196 @@ class Window(QtGui.QDialog):
         fontsize=14,
         transform= self.ax00.transAxes)        
         
+    def fluxes(self):  
+        #print (self.fick_o2) 
+        plt.clf()
+        rc('font', **{'sans-serif' : 'Arial',
+                           'family' : 'sans-serif'})        
+        style.use('ggplot')
+        gs = gridspec.GridSpec(5,2) 
+        gs.update(left=0.09, right=0.98,top = 0.94,bottom = 0.06,
+                   wspace=0.2,hspace=0.3)   
+        self.figure.patch.set_facecolor('white') 
+        #self.figure.patch.set_facecolor(self.background) 
+        #Set the background color  
+        ax00 = self.figure.add_subplot(gs[0]) # water 
+    
+        ax01 = self.figure.add_subplot(gs[1]) # water
+       
+        ax02 = self.figure.add_subplot(gs[2]) # water  
+        #,ax10,ax11,ax12,ax20, ax21  
+        ax10 = self.figure.add_subplot(gs[3])  
+                
+        ax11 = self.figure.add_subplot(gs[4])
+        ax12 = self.figure.add_subplot(gs[5])
+
+        ax20 = self.figure.add_subplot(gs[6])    
+        ax21 = self.figure.add_subplot(gs[7])
+        ax22 = self.figure.add_subplot(gs[8])
+   
+        ax00.set_ylabel('Fluxes') #Label y axis
+        #ax21.set_xlabel('Julian day')
+        #ax22.set_xlabel('Julian day')   
+        ax21.set_xlabel(u'номер дня в году')
+        ax22.set_xlabel(u'номер дня в году') 
+                      
+        ax00.set_title('O2')
+        ax01.set_title('NO2')        
+        ax02.set_title('NO3')       
+        ax10.set_title('Si')              
+        ax11.set_title('H2S')
+        ax12.set_title('NH4')   
+        ax20.set_title('DIC')          
+        ax21.set_title('Alk') 
+        ax22.set_title('PO4')         
+             
+        #ax01.set_ylabel('Depth (m)',fontsize= self.font_txt)   
+        #ax02.set_ylabel('Depth (cm)',fontsize= self.font_txt)
         
+
+        #print (len(self.fick_o2[0:365]))    
+        #print   (len(self.time))            
+        #ax00.plot(self.fick_o2[0:365][50][0],self.time,self.wint,alpha = 
+        #            self.a_w, linewidth = 1 , zorder = 10)   
+
+        fick_o2 = []
+        fick_no2 = [] 
+        fick_si = []  
+        fick_h2s = []         
+        fick_no3 = []         
+        fick_nh4 = []         
+        fick_dic = []         
+        fick_alk = []
+        fick_po4 = []
+                                           
+        for n in range(0,365): 
+            fick_o2.append(self.fick_o2[n][self.nysedmin][0])
+            fick_no2.append(self.fick_no2[n][self.nysedmin][0])      
+            fick_si.append(self.fick_si[n][self.nysedmin][0])  
+            fick_h2s.append(self.fick_h2s[n][self.nysedmin][0])              
+            fick_no3.append(self.fick_no3[n][self.nysedmin][0])              
+            fick_nh4.append(self.fick_nh4[n][self.nysedmin][0])              
+            fick_dic.append(self.fick_dic[n][self.nysedmin][0])              
+            fick_alk.append(self.fick_alk[n][self.nysedmin][0])  
+            fick_po4.append(self.fick_po4[n][self.nysedmin][0])            
+                               
+            # fick_o2.append(self.fick_o2[n][self.nysedmin][0]) 
+        #print (np.shape(fick_0),np.shape(fick_o2))
+        #fick_0_np = np.array(fick_0)
+        fick_o2_np = np.array(fick_o2) 
+        fick_no2_np = np.array(fick_no2) 
+        fick_si_np = np.array(fick_si) 
+        fick_h2s_np = np.array(fick_h2s)         
+        fick_no3_np = np.array(fick_no3)         
+        fick_nh4_np = np.array(fick_nh4)         
+        fick_dic_np = np.array(fick_dic)         
+        fick_alk_np = np.array(fick_alk)  
+        fick_po4_np = np.array(fick_po4)  
+
+        ax00.set_ylim(max(fick_o2_np),min(fick_o2_np))    
+        ax01.set_ylim(max(fick_no2_np),min(fick_no2_np))   
+        ax02.set_ylim(max(fick_no3_np),min(fick_no3_np))           
+        ax10.set_ylim(max(fick_si_np),min(fick_si_np))   
+        ax11.set_ylim(max(fick_h2s_np),min(fick_h2s_np))           
+        ax12.set_ylim(max(fick_nh4_np),min(fick_nh4_np)) 
+        ax20.set_ylim(max(fick_dic_np),min(fick_dic_np))  
+        ax21.set_ylim(max(fick_alk_np),min(fick_alk_np))                   
+        ax22.set_ylim(max(fick_po4_np),min(fick_po4_np))           
+        
+        
+        
+                               
+        for axis in (ax00,ax01,ax02,ax10,ax11,ax12,ax20, ax21                   
+                     ) :
+            axis.axhline(0, color='black', linestyle = '--') 
+            axis.set_xlim(0, 366)       
+        tosed = '#d3b886'
+        towater = "#c9ecfd"  
+        
+        #rc('font',**{'family':'serif'})
+
+        #unicode_font = ImageFont.truetype("DejaVuSans.ttf", font_size) 
+                      
+        ax00.plot(self.time,fick_o2_np, linewidth = 1 , zorder = 10, 
+                  color = "#1da181")    
+        ax00.fill_between(self.time,  fick_o2_np , 0 ,
+                          where= fick_o2_np > 0.,color = tosed, label= u"в осадок" ) 
+        ax00.fill_between(self.time,  fick_o2_np , 0 ,
+                          where= fick_o2_np < 0.,color = towater, label=u"из осадка")        
+        #ax00.fill_between(self.time,  fick_o2_np , 0 ,
+        #                  where= fick_o2_np > 0.,color = tosed, label= u"в осадок" ) 
+        #ax00.fill_between(self.time,  fick_o2_np , 0 ,
+        #                  where= fick_o2_np < 0.,color = towater, label="up")         
+        
+        #ax00.axhline(0, color='black', linestyle = '--')            
+               
+        ax01.plot(self.time,fick_no2,linewidth = 1 , zorder = 10, 
+                  color = "#1da181")    
+        ax01.fill_between(self.time,  fick_no2_np , 0 ,
+                          where= fick_o2_np > 0.,color = tosed) 
+        ax01.fill_between(self.time,  fick_no2_np , 0 ,
+                          where= fick_no2_np < 0.,color = towater)       
+             
+        ax02.plot(self.time,fick_no3,linewidth = 1 , zorder = 10, 
+                  color = "#1da181")  
+        
+        ax02.fill_between(self.time,  fick_no3_np , 0 ,
+                          where= fick_no3_np > 0.,color = tosed) 
+        ax02.fill_between(self.time,  fick_no3_np , 0 ,
+                          where= fick_no3_np < 0.,color = towater)          
+
+        #ax02.axhline(0, color='black', linestyle = '--')      
+        ax10.plot(self.time,fick_si,linewidth = 1 , zorder = 10, 
+                  color = "#1da181")       
+        
+        ax10.fill_between(self.time,  fick_si_np , 0 ,
+                          where= fick_si_np > 0.,color = tosed) 
+        ax10.fill_between(self.time,  fick_si_np , 0 ,
+                          where= fick_si_np < 0.,color = towater)             
+               
+        ax11.plot(self.time,fick_h2s,linewidth = 1 , zorder = 10, 
+                  color = "#1da181")    
+        
+        ax11.fill_between(self.time,  fick_h2s_np , 0 ,
+                          where= fick_h2s_np > 0.,color = tosed) 
+        ax11.fill_between(self.time,  fick_h2s_np , 0 ,
+                          where= fick_h2s_np < 0.,color = towater)             
+        
+        
+                  
+        ax12.plot(self.time,fick_nh4,linewidth = 1 , zorder = 10, 
+                  color = "#1da181")    
+        
+        ax12.fill_between(self.time,  fick_nh4_np , 0 ,
+                          where= fick_nh4_np > 0.,color = tosed) 
+        ax12.fill_between(self.time,  fick_nh4_np , 0 ,
+                          where= fick_nh4_np < 0.,color = towater)           
+                  
+        ax20.plot(self.time,fick_dic,linewidth = 1 , zorder = 10, 
+                  color = "#1da181") 
+        
+        ax20.fill_between(self.time,  fick_dic_np , 0 ,
+                          where= fick_dic_np > 0.,color = tosed) 
+        ax20.fill_between(self.time,  fick_dic_np , 0 ,
+                          where= fick_dic_np < 0.,color = towater)           
+ 
+                     
+        ax21.plot(self.time,fick_alk,linewidth = 1 , zorder = 10, 
+                  color = "#1da181")          
+        
+        ax21.fill_between(self.time,  fick_alk_np , 0 ,
+                          where= fick_alk_np > 0.,color = tosed) 
+        ax21.fill_between(self.time,  fick_alk_np , 0 ,
+                          where= fick_alk_np < 0.,color = towater)      
+
+        #legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        legend = ax00.legend(loc='best', shadow=False)  
+        frame = legend.get_frame()
+        frame.set_facecolor('white')  
+                 
+        #print (len(fick))      
+        self.canvas.draw()
+         
     def time_profile(self):
 
         plt.clf()
@@ -200,7 +399,7 @@ class Window(QtGui.QDialog):
             if (self.time_prof_box.currentIndex() == n) :
                 z = self.vars[n] #self.po4
                 title = self.time_prof_box.currentText() 
-                  
+                self.num_var = n  
                                  
         gs = gridspec.GridSpec(2, 1) 
         x = self.time #np.arange(6)
@@ -212,8 +411,23 @@ class Window(QtGui.QDialog):
         
         watmin = readdata.varmin(self,zz,0) #0 - water 
         watmax = readdata.varmax(self,zz,0)
-        sed_min = readdata.varmin(self,zz,1)# 1 - sed
+        sed_min = readdata.varmin(self,zz,1)
+
         sed_max = readdata.varmax(self,zz,1)  
+
+        if self.num_var == 34: #pH
+            watmax = 9
+            watmin = 6.5
+            sed_max = 10
+            sed_min = 6 
+        elif self.num_var == 1: #o2
+            watmin = 100                   
+        elif self.num_var == 35:
+            sed_min = 0                      
+        else:
+            pass
+
+
         X,Y = np.meshgrid(x,y)
         X_sed,Y_sed = np.meshgrid(x,y_sed)
         ax = self.figure.add_subplot(gs[0])
@@ -304,7 +518,7 @@ class Window(QtGui.QDialog):
         ax00 = self.figure.add_subplot(gs[0]) # water         
         ax10 = self.figure.add_subplot(gs[1]) # water
         ax20 = self.figure.add_subplot(gs[2]) # water 
-        
+ 
         ax01 = self.figure.add_subplot(gs[3])          
         ax11 = self.figure.add_subplot(gs[4])
         ax21 = self.figure.add_subplot(gs[5])
@@ -328,10 +542,10 @@ class Window(QtGui.QDialog):
                 fontsize=self.xlabel_fontsize, fontweight='bold') 
                 ax20.set_title(str(self.titles_all_year[n][2]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold')                                 
-                #title0 = self.var_titles_charts_year[n][0] 
+                self.num_var = n #title0 = self.var_titles_charts_year[n][0] 
                 #title1 = self.var_titles_charts_year[n][1] 
                 #title2 = self.var_titles_charts_year[n][2]
-                
+              
         #ax00.set_title(title0) 
         #ax10.set_title(title1)
         #ax20.set_title(title2)
@@ -352,13 +566,134 @@ class Window(QtGui.QDialog):
         ax10.set_ylim(self.y1max,0)  
         ax20.set_ylim(self.y1max,0) 
         
-        ax01.set_ylim(self.y2max, self.y1max)   
-        ax11.set_ylim(self.y2max, self.y1max)  
-        ax21.set_ylim(self.y2max, self.y1max) 
+        ax01.set_ylim(self.y2max, self.y2min)   
+        ax11.set_ylim(self.y2max, self.y2min)  
+        ax21.set_ylim(self.y2max, self.y2min) 
 
         ax02.set_ylim(self.ysedmax, self.ysedmin)   
         ax12.set_ylim(self.ysedmax, self.ysedmin)  
         ax22.set_ylim(self.ysedmax, self.ysedmin) 
+        #
+        #n0 = self.varmax(self,z0,1) #[0:self.y2max_fill_water,:].max() 
+
+        watmin0 = readdata.varmin(self,z0,0) #0 - water 
+        watmin1 = readdata.varmin(self,z1,0) #0 - water 
+        watmin2 = readdata.varmin(self,z2,0) #0 - water          
+
+        watmax0 =  z0[0:self.ny2max-3,:].max() # readdata.varmax(self,z0,0)
+        watmax1 = readdata.varmax(self,z1,0)
+        watmax2 = readdata.varmax(self,z2,0)  
+         
+         
+        sed_min0 = readdata.varmin(self,z0,1) #0 - water 
+        sed_min1 = readdata.varmin(self,z1,1) #0 - water 
+        sed_min2 = readdata.varmin(self,z2,1) #0 - water    
+
+        sed_max0 = z0[:,self.ny2min:].max() 
+        sed_max1 = z1[:,self.ny2min:].max()         
+        sed_max2 = z2[:,self.ny2min:].max()         
+        
+        #n = variable[:,self.ny2min:].min() 
+        #sed_max1 = z1[self.nbblmin-10:self.ysedmax,:].max()
+        #sed_max2 = z2[self.nbblmin-10:self.ysedmax,:].max()#readdata.varmax(self,z0,1)
+        #print (sed_min0, sed_max0)
+        #sed_max1 = readdata.varmax(self,z1,1)
+        #sed_max2 = readdata.varmax(self,z2,1)                     
+        #sed_min0 = readdata.varmin(self,z0,1)# 1 - sed
+        #sed_max0 = readdata.varmax(self,z0,1)          
+        
+        
+        if self.num_var == 5: 
+            watmax1 = 9
+            watmin1 = 6.5
+        else:
+            pass
+                    
+        
+        self.m0ticks = readdata.ticks(watmin0,watmax0)
+        self.m1ticks = readdata.ticks(watmin1,watmax1)
+        self.m2ticks = readdata.ticks(watmin2,watmax2)  
+        
+        self.sed_m0ticks = readdata.ticks(sed_min0,sed_max0)
+        self.sed_m1ticks = readdata.ticks(sed_min1,sed_max1)
+        self.sed_m2ticks = readdata.ticks(sed_min2,sed_max2)                 
+        #for axis in (ax00,ax10,ax20):             
+        
+        
+        
+
+        ax00.set_xlim(watmin0,watmax0)   
+        ax01.set_xlim(watmin0,watmax0)         
+        ax02.set_xlim(sed_min0,sed_max0)
+        
+        ax10.set_xlim(watmin1,watmax1)   
+        ax11.set_xlim(watmin1,watmax1)         
+        ax12.set_xlim(sed_min1,sed_max1)         
+        
+         
+        ax20.set_xlim(watmin2,watmax2)   
+        ax21.set_xlim(watmin2,watmax2)         
+        ax22.set_xlim(sed_min2,sed_max2) 
+        
+                
+        ax10.set_xlim(watmin1,watmax1)   
+        ax11.set_xlim(watmin1,watmax1)         
+        #ax12.set_xlim(sed_min1,sed_max1) 
+                     
+        ax20.set_xlim(watmin2,watmax2)   
+        ax21.set_xlim(watmin2,watmax2)         
+        #ax22.set_xlim(sed_min2,sed_max2)                  
+        #water
+
+                     
+        ax00.fill_between(
+                        self.m0ticks, self.y1max, 0,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w
+        ax01.fill_between(
+                        self.m0ticks, self.y2min_fill_bbl ,self.y2min,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w    
+        ax01.fill_between(self.m0ticks, self.y2max, self.y2min_fill_bbl,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl) 
+            
+        ax02.fill_between(self.sed_m0ticks,self.ysedmin_fill_sed,-10,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl)          
+        ax02.fill_between(self.sed_m0ticks, self.ysedmax, self.ysedmin_fill_sed,
+                               facecolor= self.sed_col1, alpha=self.a_s)          
+        
+            #axis.fill_between(self.xticks, self.y2max, self.y2min_fill_bbl,
+            #                   facecolor= self.bbl_color, alpha=self.alpha_bbl)        
+            
+        ax10.fill_between(
+                        self.m1ticks, self.y1max, 0,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w
+        
+        ax11.fill_between(
+                        self.m1ticks, self.y2min_fill_bbl ,self.y2min,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w    
+        ax11.fill_between(self.m1ticks, self.y2max, self.y2min_fill_bbl,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl)      
+        ax12.fill_between(self.sed_m1ticks,self.ysedmin_fill_sed,-10,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl) 
+        ax12.fill_between(self.sed_m1ticks, self.ysedmax, self.ysedmin_fill_sed,
+                              facecolor= self.sed_col1, alpha=self.a_s)
+
+
+        
+        ax20.fill_between(
+                        self.m2ticks, self.y1max, 0,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w
+        
+        ax21.fill_between(
+                        self.m2ticks, self.y2min_fill_bbl ,self.y2min,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w    
+        ax21.fill_between(self.m2ticks, self.y2max, self.y2min_fill_bbl,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl)     
+        ax22.fill_between(self.sed_m2ticks,self.ysedmin_fill_sed,-10,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl)                         
+        ax22.fill_between(self.sed_m2ticks, self.ysedmax, self.ysedmin_fill_sed,
+                               facecolor= self.sed_col1, alpha=self.a_s) 
+                            
+
         
                 
         for n in range(0,len(self.time)):
@@ -366,67 +701,67 @@ class Window(QtGui.QDialog):
                 linewidth = self.linewidth
                                   
                 ax00.plot(z0[0][n],self.depth,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth ) 
+                          self.a_w, linewidth = linewidth , zorder = 10) 
                 ax10.plot(z1[0][n],self.depth,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth )
+                          self.a_w, linewidth = linewidth , zorder = 10)
                 ax20.plot(z2[0][n],self.depth,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth )  
+                          self.a_w, linewidth = linewidth, zorder = 10 )  
                 
                 ax01.plot(z0[0][n],self.depth,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth ) 
+                          self.a_w, linewidth = linewidth, zorder = 10 ) 
                 ax11.plot(z1[0][n],self.depth,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth )
+                          self.a_w, linewidth = linewidth , zorder = 10)
                 ax21.plot(z2[0][n],self.depth,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth ) 
+                          self.a_w, linewidth = linewidth, zorder = 10 ) 
     
                 ax02.plot(z0[0][n],self.depth_sed,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth ) 
+                          self.a_w, linewidth = linewidth, zorder = 10 ) 
                 ax12.plot(z1[0][n],self.depth_sed,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth )
+                          self.a_w, linewidth = linewidth, zorder = 10 )
                 ax22.plot(z2[0][n],self.depth_sed,self.wint,alpha = 
-                          self.a_w, linewidth = linewidth ) 
+                          self.a_w, linewidth = linewidth, zorder = 10 ) 
             elif n >= 150 and n < 249: #"summer"
                 ax00.plot(z0[0][n],self.depth,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth ) 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
                 ax10.plot(z1[0][n],self.depth,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth )
+                          self.a_s, linewidth = linewidth, zorder = 10 )
                 ax20.plot(z2[0][n],self.depth,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth )  
+                          self.a_s, linewidth = linewidth, zorder = 10 )  
                 
                 ax01.plot(z0[0][n],self.depth,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth ) 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
                 ax11.plot(z1[0][n],self.depth,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth )
+                          self.a_s, linewidth = linewidth, zorder = 10 )
                 ax21.plot(z2[0][n],self.depth,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth ) 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
     
                 ax02.plot(z0[0][n],self.depth_sed,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth ) 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
                 ax12.plot(z1[0][n],self.depth_sed,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth )
+                          self.a_s, linewidth = linewidth, zorder = 10 )
                 ax22.plot(z2[0][n],self.depth_sed,self.summ,alpha = 
-                          self.a_s, linewidth = linewidth ) 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
             else : #"autumn and spring"
                 ax00.plot(z0[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut, linewidth = linewidth ) 
+                          self.a_aut, linewidth = linewidth, zorder = 10 ) 
                 ax10.plot(z1[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut, linewidth = linewidth )
+                          self.a_aut, linewidth = linewidth, zorder = 10 )
                 ax20.plot(z2[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut, linewidth = linewidth )  
+                          self.a_aut, linewidth = linewidth, zorder = 10 )  
                 
                 ax01.plot(z0[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut, linewidth = linewidth ) 
+                          self.a_aut, linewidth = linewidth, zorder = 10 ) 
                 ax11.plot(z1[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut, linewidth = linewidth )
+                          self.a_aut, linewidth = linewidth, zorder = 10 )
                 ax21.plot(z2[0][n],self.depth,self.spr_aut,alpha = 
-                          self.a_aut, linewidth = linewidth ) 
+                          self.a_aut, linewidth = linewidth, zorder = 10 ) 
     
                 ax02.plot(z0[0][n],self.depth_sed,self.spr_aut,
-                          alpha = self.a_aut) 
+                          alpha = self.a_aut, zorder = 10) 
                 ax12.plot(z1[0][n],self.depth_sed,self.spr_aut,
-                          alpha = self.a_aut)
+                          alpha = self.a_aut, zorder = 10)
                 ax22.plot(z2[0][n],self.depth_sed,self.spr_aut,
-                          alpha = self.a_aut)                                 
+                          alpha = self.a_aut, zorder = 10)                                 
         self.canvas.draw() 
   
     def one_day_plot(self):
@@ -436,7 +771,7 @@ class Window(QtGui.QDialog):
         # function to define 1 figure
         
         self.numday = (self.one_day_box.currentIndex()) #take the input value of numday spinbox
-        style.use('ggplot')  ,
+        style.use('ggplot')  
         #plt.style.use('presentation')   
  
         self.figure.patch.set_facecolor('white')  #Set the background     

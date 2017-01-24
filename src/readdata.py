@@ -70,6 +70,19 @@ def readdata_brom(self,fname):
     self.co3 =  fh.variables['CO3'][:,:]
     self.ca =  fh.variables['Ca'][:,:]
     self.time =  fh.variables['time'][:]
+    self.fick_o2 = fh.variables['fick:O2'][:]
+    self.fick_no2 = fh.variables['fick:NO2'][:]    
+    self.fick_no3 = fh.variables['fick:NO3'][:]        
+    self.fick_si = fh.variables['fick:Si'][:]  
+    self.fick_h2s = fh.variables['fick:H2S'][:]              
+    self.fick_nh4 = fh.variables['fick:NH4'][:]        
+    self.fick_dic = fh.variables['fick:DIC'][:]        
+    self.fick_alk = fh.variables['fick:Alk'][:]        
+    self.fick_po4 = fh.variables['fick:PO4'][:]    
+    
+    
+    
+    
     
     self.vars = ([],[self.o2],[self.no3 ],[self.no2],
     [self.si], [self.alk],[self.po4],[self.nh4],
@@ -80,7 +93,7 @@ def readdata_brom(self,fname):
     [self.so4], [self.si_part], [self.baae], [self.bhae],
     [self.baan], [self.bhan], [self.caco3], [self.ch4],
     [self.ph], [self.pco2], [self.om_ca], [self.om_ar],
-    [self.co3], [self.ca],[self.sal], [self.temp],[self.kz])
+    [self.co3], [self.ca],[self.sal], [self.temp])
     
     #Variable names to add to combobox with time profiles
     self.var_names_profile = ('Time profile','O2' ,'NO3' ,'no2', 'Si', 'Alk',
@@ -106,7 +119,7 @@ def readdata_brom(self,fname):
         ('baae', 'bhae','baan'),
         ('caco3', 'ch4', 'om_ca'), 
         ('om_ar', 'co3', 'ca'),
-        ('sal','Temperature','Kz'))  
+        ('sal','Temperature','O2'))  
     
     # list of titles to add to figures at All year charts    
     self.titles_all_year = (('All year charts'),
@@ -123,7 +136,7 @@ def readdata_brom(self,fname):
         ('baae', 'bhae','baan'),
         ('caco3', 'ch4', 'om_ca'), 
         ('om_ar', 'co3', 'ca'),
-        ('sal','Temperature','Kz'))     
+        ('sal','Temperature','O2'))     
      
     # list of variable names to connect titles and variables 
     self.vars_year = ([],
@@ -140,7 +153,7 @@ def readdata_brom(self,fname):
                       [[self.baae],[self.bhae],[self.baan]],                                                                                        
                       [[self.caco3],[self.ch4],[self.om_ca]],     
                       [[self.om_ar],[self.co3],[self.ca]],       
-                      [[self.sal],[self.temp],[self.kz]],                                                                                 
+                      [[self.sal],[self.temp],[self.o2]],                                                                                 
     )
     
     fh.close()
@@ -190,13 +203,16 @@ def calculate_ysed(self):
             self.ysedmin =  ysed - 10
             self.ysedmax =  self.depth_sed[len(self.depth_sed)-1] 
             self.y3min = self.depth_sed[self.nbblmin+2]
+            self.nysedmin = n 
             #here we cach part of BBL to add to 
             #the sediment image                
             break            
 def y_coords(self):       
-#        self.y2min = self.y2max - 2*(self.y2max - self.y1max)   #calculate the position of y2min, for catching part of BBL 
+    #self.y2min = self.y2max - 2*(self.y2max - self.y1max)
+    #calculate the position of y2min, for catching part of BBL 
     self.ny2min = self.ny2max - 2*(self.ny2max - self.ny1max) 
-    self.y2min_fill_bbl = self.y2max_fill_water = self.y1max #y2max_fill_water() #109.5 #BBL-water interface
+    self.y2min_fill_bbl = self.y2max_fill_water = self.y1max #y2max_fill_water()
+    #109.5 #BBL-water interface
     self.ysedmax_fill_bbl = 0
     self.ysedmin_fill_sed = 0
     self.y1min = 0
@@ -232,7 +248,7 @@ def varmax(self,variable,vartype):
         n = variable[0:self.ny2max-1,:].max() 
            
     elif vartype == 1 :#sediment
-        n = variable[self.nbblmin:,:].max()
+        n = variable[:,self.ny2min:].max()
     if n > 10000. and n <= 100000.:  
         n = int(math.ceil(n/ 1000.0)) * 1000 + 1000
     elif n > 1000. and n <= 10000.:  
@@ -279,9 +295,10 @@ def int_value(self,n,min,max):
     return m    
 def varmin(self,variable,vartype):
     if vartype == 0 :
-        n = np.round(variable[0:365].min())
+        n = np.round(variable[0:self.ny2min,0:365].min())
     elif vartype == 1 : 
-        n = variable[:,self.ny2min:].min()            
+        n = np.round(variable[0:365,self.ny2min-6:].min())     
+       
     if n >= 28000.:
         n = 28000. #np.ceil(n)        
     if n >= 27000 and n < 28000:
@@ -300,31 +317,35 @@ def varmin(self,variable,vartype):
         n = 7000                     
     elif n >= 5000 and n < 7000:  
         n =5000         
-    elif n >= 1000 and n < 5000:  
-        n = 1000        
-    elif n >= 500 and n < 1000:  
+    elif n >= 3000 and n < 5000:  
+        n = 3000    
+    elif n >= 2000 and n < 3000:  
+        n = 2000          
+    elif n >= 1000 and n < 2000:  
+        n = 1000                     
+    elif n > 500 and n < 1000:  
         n = 500 
-    elif n >= 350 and n < 500:  
-        n = 350.                       
+    elif n >= 350 and n <= 500:  
+        n = 350                       
     elif n >= 200. and n < 350:  
         n = 200          
     elif n >= 100 and n < 200:  
         n = 100          
     elif n >= 50 and n < 100:
         n = 50    
-    elif n >= 25 and n < 50:
+    elif n > 25 and n < 50:
         n = 25                             
-    elif n >= 10 and n < 25:
+    elif n >= 10 and n <= 25:
         n = 10            
-    elif n >= 6 and n < 10:
+    elif n > 7 and n < 10:
         n = 6
-    elif n >= 5 and n < 6:
-        n = 5            
-    elif n >= 2.5 and n < 5:
+    elif n > 5 and n <= 6:
+        n = 4            
+    elif n > 2.5 and n <= 5:
         n = 2.5     
-    elif n >= 1. and n < 2.5:
-        n = 1.                     
-    elif n >=  0.5 and n <1:
+    elif n > 1. and n <= 2.5:
+        n = 0.                     
+    elif n >=  0.5 and n <= 1:
         n = 0.5                     
     elif n >= 0.05 and n < 0.5:
         n = 0.05           
@@ -334,41 +355,46 @@ def varmin(self,variable,vartype):
         n = 0.0005
     elif n >=  0.00005 and  n  <0.0005 :
         n = 0.00005 
-    self.watmin = int(np.floor(n))                          
+       
+    #self.watmin =  n         
+    self.watmin = int(np.floor(n))                         
     return self.watmin
-def ticks(min,max):      
+def ticks(min,max): 
+         
     if (max - min) >= 50000. and (
          max - min) < 150000.  :
         ticks = np.arange(min,max+10000.,50000)        
     elif (max - min) >= 10000. and (
          max - min) < 50000.  :
         ticks = np.arange(min,max+5000.,5000)        
-    elif (max - min) >= 3000. and (
+    elif (max - min) > 3000. and (
        max - min) < 10000.  : 
         ticks = np.arange(min,max+1000.,1000)        
-    elif (max - min) >= 1500. and ( 
-     max - min) < 3000. :
+    elif (max - min) > 1500. and ( 
+     max - min) <= 3000. :
         ticks = np.arange(min,max+500.,500)                        
     elif (max - min) >= 300. and ( 
-     max - min) < 1500. :
-        ticks = np.arange(min,max+100.,100)        
+     max - min) <= 1500. :
+        ticks = np.arange((math.trunc(min/10)*10),max+100.,100)   
+        if min < 100 :
+            ticks = np.arange(0,max+100.,100)              
     elif (max - min) >= 100. and ( 
      max - min) < 300. :
-        ticks = np.arange(min,max+50.,50) 
-    elif (max - min) >= 50. and ( 
+        ticks = np.arange(min-10,max+50.,50) 
+    elif (max - min) > 50. and ( 
      max - min) < 100. :
         ticks = np.arange(min,max+10.,10)        
-    elif (max - min) >= 20. and ( 
-     max - min) < 50. :
+    elif (max - min) > 20. and ( 
+     max - min) <= 50. :
         ticks = np.arange(min,max+5.,5)
-    elif (max - min) >= 3. and ( 
-     max - min) < 20. :
+    elif (max - min) > 3. and ( 
+     max - min) <= 20. :
         ticks = np.arange(min,max+1.,1)
     elif (max - min) >= 1. and ( 
-     max - min) < 3. :
+     max - min) <= 3. :
         ticks = np.arange(min,max+1.,0.5)         
-    elif (max - min) >= 0.2 and ( 
-     max - min) < 1. :
+    elif (max - min) > 0.2 and ( 
+     max - min) <= 1. :
         ticks = np.arange(min,max+1.,0.1)                  
     else : 
         #ticks = np.arange(min,max+0.05, 0.005)    
@@ -386,9 +412,11 @@ def ticks(min,max):
         elif axis in (self.ax02,self.ax12,self.ax22): #sediment 
             axis.fill_between(self.xticks, self.ysedmax_fill_bbl,
                                self.ysedmin, facecolor= self.bbl_color, alpha=self.alpha_bbl)  
-            axis.fill_between(self.xticks, self.ysedmax, self.ysedmin_fill_sed, facecolor= self.sed_color, alpha=self.alpha_sed)    
+            axis.fill_between(self.xticks, self.ysedmax, self.ysedmin_fill_sed,
+                               facecolor= self.sed_color, alpha=self.alpha_sed)    
 
-
+#def fill_all_year(self,axis):
+ 
 
 
 def y_lim1(self,axis): 
@@ -446,21 +474,24 @@ def setmaxmin(self,axis,var,type):
         
 def colors(self):
     self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
-    self.wint = '#8dc0e7' 
+    self.wint =  '#8dc0e7'
     self.summ = '#d0576f' 
-    self.a_w = 0.5 #alpha (transparency) for winter
+    self.a_w = 0.4 #alpha (transparency) for winter
     self.a_bbl = 0.3 
-    self.a_s = 0.5 #alpha (transparency) for summer
-    self.a_aut = 0.5 #alpha (transparency) for autumn and spring    
+    
+    self.a_s = 0.4 #alpha (transparency) for summer
+    self.a_aut = 0.4 #alpha (transparency) for autumn and spring    
     self.wat_col = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
     self.bbl_col = '#2873b8' # for plot 1,2,3,4,5,1_1,2_2,etc.
     self.sed_col= '#916012'
-
+    self.wat_col1 = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
+    self.bbl_col1 = '#ccd6de' # for plot 1,2,3,4,5,1_1,2_2,etc.
+    self.sed_col1 = '#a3abb1'
 
     
     self.labelaxis_x =  1.10 #positions of labels 
     self.labelaxis1_y = 1.02
-    dx = 0.15#(height / 30000.) #0.1
+    dx = 0.1#(height / 30000.) #0.1
     dy = 14 #height/96
     self.labelaxis2_y = 1.02 + dx
     self.labelaxis3_y = 1.02 + dx * 2.
