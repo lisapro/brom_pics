@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os,sys
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+#from import Image, ImageDraw, ImageFont, ImageFilter
 from PyQt4 import QtGui,QtCore
 from PyQt4.QtGui import QSpinBox,QLabel,QComboBox
 #from numpy import nan
@@ -22,7 +22,7 @@ import math
 from matplotlib import rc
 
 
-#print (sys.version_info)
+print (sys.version_info)
 
 class Window(QtGui.QDialog):
      
@@ -36,14 +36,15 @@ class Window(QtGui.QDialog):
         screen_rect = app1.desktop().screenGeometry()
         width, height = screen_rect.width(), screen_rect.height()
         #font = (height/10000.)
-        print (width, height)
+        #print (width, height)
         
         self.figure = plt.figure(figsize = (1200,1920),
                                   facecolor='white')
         self.figure.set_size_inches(11.69,9.27) #(15,10.61) #(20,14.15)
         #self.figure = plt.figure(figsize = (width,height),dpi= 100,
         #                          facecolor='white')        
-        
+        rc('font', **{'sans-serif' : 'Arial', #for unicode text
+                           'family' : 'sans-serif'})          
         
         #print(plt.style.available)
         #text(1, 1, 's', fontdict=None, )
@@ -53,7 +54,7 @@ class Window(QtGui.QDialog):
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavigationToolbar(self.canvas, self)
         
-        fname = unicode(QtGui.QFileDialog.getOpenFileName(self,
+        fname = str(QtGui.QFileDialog.getOpenFileName(self, #unicode
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))   
         readdata.readdata_brom(self,fname) 
         readdata.colors(self)  
@@ -205,8 +206,7 @@ class Window(QtGui.QDialog):
     def fluxes(self):  
         #print (self.fick_o2) 
         plt.clf()
-        rc('font', **{'sans-serif' : 'Arial',
-                           'family' : 'sans-serif'})        
+      
         style.use('ggplot')
         gs = gridspec.GridSpec(5,2) 
         gs.update(left=0.09, right=0.98,top = 0.94,bottom = 0.06,
@@ -421,7 +421,8 @@ class Window(QtGui.QDialog):
             sed_max = 10
             sed_min = 6 
         elif self.num_var == 1: #o2
-            watmin = 100                   
+            watmin = 100   
+                    
         elif self.num_var == 35:
             sed_min = 0                      
         else:
@@ -580,7 +581,7 @@ class Window(QtGui.QDialog):
         watmin1 = readdata.varmin(self,z1,0) #0 - water 
         watmin2 = readdata.varmin(self,z2,0) #0 - water          
 
-        watmax0 =  z0[0:self.ny2max-3,:].max() # readdata.varmax(self,z0,0)
+        watmax0 =  z0[0:self.ny2max-4,:].max() # readdata.varmax(self,z0,0)
         watmax1 = readdata.varmax(self,z1,0)
         watmax2 = readdata.varmax(self,z2,0)  
          
@@ -606,6 +607,16 @@ class Window(QtGui.QDialog):
         if self.num_var == 5: 
             watmax1 = 9
             watmin1 = 6.5
+        elif self.num_var == 2:#po4
+            watmax0 = 3            
+            field_po4_1 = [8.724, 69.930, 171.588, 256.714,334.804,
+                        311.588, 270.432, 239.477, 234.905, 250.382]
+            field_po4_2 = [2.967,3.868, 18.138, 29.555, 44.576, 66.207,            
+                           73.095, 78.020, 82.241, 99.829 ]
+            field_depth =[ -1.5, 1.,3.5,6.,8.5,11.,13.5,16.,18.5,23.5]
+            ax02.plot(field_po4_1,field_depth,'o-')
+            ax02.plot(field_po4_2,field_depth,'o-')  
+                        
         else:
             pass
                     
@@ -761,7 +772,12 @@ class Window(QtGui.QDialog):
                 ax12.plot(z1[0][n],self.depth_sed,self.spr_aut,
                           alpha = self.a_aut, zorder = 10)
                 ax22.plot(z2[0][n],self.depth_sed,self.spr_aut,
-                          alpha = self.a_aut, zorder = 10)                                 
+                          alpha = self.a_aut, zorder = 10)      
+
+
+           
+            
+                          
         self.canvas.draw() 
   
     def one_day_plot(self):
