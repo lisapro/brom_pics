@@ -3,7 +3,7 @@
 
 import os,sys
 #from import Image, ImageDraw, ImageFont, ImageFilter
-from PyQt4 import QtGui,QtCore
+from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QSpinBox,QLabel,QComboBox
 #from numpy import nan
 from matplotlib.backends.backend_qt4agg import (
@@ -22,7 +22,7 @@ import math
 from matplotlib import rc
 
 
-print (sys.version_info)
+#print (sys.version_info)
 
 class Window(QtGui.QDialog):
      
@@ -35,22 +35,13 @@ class Window(QtGui.QDialog):
         app1 = QtGui.QApplication(sys.argv)
         screen_rect = app1.desktop().screenGeometry()
         width, height = screen_rect.width(), screen_rect.height()
-        #font = (height/10000.)
-        #print (width, height)
         
-        self.figure = plt.figure(figsize = (1200,1920),
-                                  facecolor='white')
-        self.figure.set_size_inches(11.69,9.27) #(15,10.61) #(20,14.15)
-        #self.figure = plt.figure(figsize = (width,height),dpi= 100,
-        #                          facecolor='white')        
+        self.figure = plt.figure(figsize=(11.69, 8.27), dpi=100,
+                                  facecolor='white') 
+             
         rc('font', **{'sans-serif' : 'Arial', #for unicode text
                            'family' : 'sans-serif'})          
         
-        #print(plt.style.available)
-        #text(1, 1, 's', fontdict=None, )
-        #self.ax.set_text('s')
-        # this is the Canvas Widget that displays the `figure`
-        # it takes the `figure` instance as a parameter to __init__
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavigationToolbar(self.canvas, self)
         
@@ -61,13 +52,12 @@ class Window(QtGui.QDialog):
       
         readdata.calculate_ywat(self)
         readdata.calculate_ybbl(self) 
-        readdata.depth_sed(self) #calc depthes in cm 
-        readdata.depth_sed2(self) #calc depthes in cm for kz         
+        readdata.depth_sed(self) #calc depths in cm 
+        readdata.depth_sed2(self) #calc depths in cm for kz         
         readdata.y2max_fill_water(self)                
         readdata.calculate_ysed(self)
         readdata.y_coords(self)  
               
-        #readdata.calculate_sedmax(self)  
 
         self.fick_box = QtGui.QComboBox()
         self.fick_box.addItem("Fluxes")
@@ -92,16 +82,16 @@ class Window(QtGui.QDialog):
         oModel.appendRow(head_item)
         self.numday = 1
         
-        for n in range(1, self.monthes_start[1]):
+        for n in range(1, self.months_start[1]):
             item = QtGui.QStandardItem(str(n)+ '/1'+ 
                      ' (' + str(self.numday) + ')')
                                        
             oModel.appendRow(item)
             item.setBackground(QtGui.QColor(self.wint))
-            self.numday = self.numday + 1 #self.monthes_start[1]        
-        for m in range(1,len(self.monthes_start)-1) : #np.arange(1,13):                    
-            start_date = self.monthes_start[m]
-            next_start_dat = self.monthes_start[m+1]
+            self.numday = self.numday + 1 #self.months_start[1]        
+        for m in range(1,len(self.months_start)-1) : #np.arange(1,13):                    
+            start_date = self.months_start[m]
+            next_start_dat = self.months_start[m+1]
             for n in range(1, int(next_start_dat - start_date)+1) :
                 item = QtGui.QStandardItem(str(n)+ '/' + str(m+1) + 
                      ' (' + str(self.numday) + ')')
@@ -112,9 +102,7 @@ class Window(QtGui.QDialog):
                 
                 self.numday = self.numday + 1 #i+1
         
-        
 
-              
         self.one_day_box.currentIndexChanged.connect(
             self.one_day_plot)  
 
@@ -122,15 +110,7 @@ class Window(QtGui.QDialog):
         for i in self.resolutions:
             self.resize_box.addItem(str(i))       
              
-        #self.resize_box.addItem(str((500, 540)))
-        # self.resize_box.addItem(str((1200, 2040)))        
-        #self.resize_box.currentIndexChanged.connect(
-        #    self.resolution_box)  
 
-
-
-
-       
         self.one_day_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae; border-width: 10px;'
         '  padding: 6px; font: bold 25px; }')        
@@ -160,19 +140,7 @@ class Window(QtGui.QDialog):
         self.grid.addWidget(self.one_day_box,1,3,1,1) 
         #self.grid.addWidget(self.resize_box,1,4,1,1)
         self.grid.addWidget(self.fick_box,1,4,1,1)
-    def resolution_box(self):  
-        plt.clf()
-        self.figure.set_size_inches(50,35.37) #(11.69,8.27) #(15,10.61) #(20,14.15)
-        ''''s = self.resize_box.currentIndex()
-        if s != 0 : 
-            m = self.resolutions[s]       
-        #print ( type(m), m)
-            self.resize(m[0],m[1])
-        else : 
-            pass '''   
-        #self.figure = plt.figure(figsize = (20,10),dpi = 200, 
-        #                          facecolor='white')
-           
+
     def fig2_txt(self):        
         plt.text(1.1, 0.5,'Water ', fontweight='bold', # draw legend to Water
         bbox={'facecolor': self.wat_col, 'alpha':0.5, 'pad':3},
@@ -214,26 +182,21 @@ class Window(QtGui.QDialog):
         self.figure.patch.set_facecolor('white') 
         #self.figure.patch.set_facecolor(self.background) 
         #Set the background color  
-        ax00 = self.figure.add_subplot(gs[0]) # water 
-    
-        ax01 = self.figure.add_subplot(gs[1]) # water
-       
+        ax00 = self.figure.add_subplot(gs[0]) # water     
+        ax01 = self.figure.add_subplot(gs[1]) # water       
         ax02 = self.figure.add_subplot(gs[2]) # water  
-        #,ax10,ax11,ax12,ax20, ax21  
-        ax10 = self.figure.add_subplot(gs[3])  
-                
+        ax10 = self.figure.add_subplot(gs[3])                  
         ax11 = self.figure.add_subplot(gs[4])
         ax12 = self.figure.add_subplot(gs[5])
-
         ax20 = self.figure.add_subplot(gs[6])    
         ax21 = self.figure.add_subplot(gs[7])
         ax22 = self.figure.add_subplot(gs[8])
    
         ax00.set_ylabel('Fluxes') #Label y axis
-        #ax21.set_xlabel('Julian day')
-        #ax22.set_xlabel('Julian day')   
-        ax21.set_xlabel(u'номер дня в году')
-        ax22.set_xlabel(u'номер дня в году') 
+        ax21.set_xlabel('Julian day')
+        ax22.set_xlabel('Julian day')   
+        #ax21.set_xlabel(u'номер дня в году')
+        #ax22.set_xlabel(u'номер дня в году') 
                       
         ax00.set_title('O2')
         ax01.set_title('NO2')        
@@ -264,7 +227,8 @@ class Window(QtGui.QDialog):
         fick_alk = []
         fick_po4 = []
                                            
-        for n in range(0,365): 
+        for n in range(0,self.lentime): 
+            # take values for fluxes at sed-vat interf
             fick_o2.append(self.fick_o2[n][self.nysedmin][0])
             fick_no2.append(self.fick_no2[n][self.nysedmin][0])      
             fick_si.append(self.fick_si[n][self.nysedmin][0])  
@@ -288,6 +252,7 @@ class Window(QtGui.QDialog):
         fick_alk_np = np.array(fick_alk)  
         fick_po4_np = np.array(fick_po4)  
 
+        # reverse the y axis direction 
         ax00.set_ylim(max(fick_o2_np),min(fick_o2_np))    
         ax01.set_ylim(max(fick_no2_np),min(fick_no2_np))   
         ax02.set_ylim(max(fick_no3_np),min(fick_no3_np))           
@@ -297,27 +262,24 @@ class Window(QtGui.QDialog):
         ax20.set_ylim(max(fick_dic_np),min(fick_dic_np))  
         ax21.set_ylim(max(fick_alk_np),min(fick_alk_np))                   
         ax22.set_ylim(max(fick_po4_np),min(fick_po4_np))           
-        
-        
-        
-                               
-        for axis in (ax00,ax01,ax02,ax10,ax11,ax12,ax20, ax21                   
-                     ) :
+                                       
+        for axis in (ax00,ax01,ax02,ax10,ax11,ax12,ax20,ax21):
+            # draw horizontal line at the y=0 value
             axis.axhline(0, color='black', linestyle = '--') 
-            axis.set_xlim(0, 366)       
+            axis.set_xlim(0, self.lentime) 
+                  
         tosed = '#d3b886'
         towater = "#c9ecfd"  
-        
+        linecolor = "#1da181" 
         #rc('font',**{'family':'serif'})
-
         #unicode_font = ImageFont.truetype("DejaVuSans.ttf", font_size) 
                       
         ax00.plot(self.time,fick_o2_np, linewidth = 1 , zorder = 10, 
-                  color = "#1da181")    
+                  color = linecolor)    
         ax00.fill_between(self.time,  fick_o2_np , 0 ,
-                          where= fick_o2_np > 0.,color = tosed, label= u"в осадок" ) 
+                          where= fick_o2_np > 0.,color = tosed, label= u"down" ) 
         ax00.fill_between(self.time,  fick_o2_np , 0 ,
-                          where= fick_o2_np < 0.,color = towater, label=u"из осадка")        
+                          where= fick_o2_np < 0.,color = towater, label=u"up")        
         #ax00.fill_between(self.time,  fick_o2_np , 0 ,
         #                  where= fick_o2_np > 0.,color = tosed, label= u"в осадок" ) 
         #ax00.fill_between(self.time,  fick_o2_np , 0 ,
@@ -326,15 +288,15 @@ class Window(QtGui.QDialog):
         #ax00.axhline(0, color='black', linestyle = '--')            
                
         ax01.plot(self.time,fick_no2,linewidth = 1 , zorder = 10, 
-                  color = "#1da181")    
+                  color = linecolor)
+        print self.time[1500:]    
         ax01.fill_between(self.time,  fick_no2_np , 0 ,
                           where= fick_o2_np > 0.,color = tosed) 
         ax01.fill_between(self.time,  fick_no2_np , 0 ,
-                          where= fick_no2_np < 0.,color = towater)       
+                          where= fick_no2_np < 0.,color = towater)  
              
         ax02.plot(self.time,fick_no3,linewidth = 1 , zorder = 10, 
-                  color = "#1da181")  
-        
+                  color = linecolor)          
         ax02.fill_between(self.time,  fick_no3_np , 0 ,
                           where= fick_no3_np > 0.,color = tosed) 
         ax02.fill_between(self.time,  fick_no3_np , 0 ,
@@ -342,25 +304,23 @@ class Window(QtGui.QDialog):
 
         #ax02.axhline(0, color='black', linestyle = '--')      
         ax10.plot(self.time,fick_si,linewidth = 1 , zorder = 10, 
-                  color = "#1da181")       
-        
+                  color = linecolor)               
         ax10.fill_between(self.time,  fick_si_np , 0 ,
                           where= fick_si_np > 0.,color = tosed) 
         ax10.fill_between(self.time,  fick_si_np , 0 ,
                           where= fick_si_np < 0.,color = towater)             
                
         ax11.plot(self.time,fick_h2s,linewidth = 1 , zorder = 10, 
-                  color = "#1da181")    
+                  color = linecolor)    
         
         ax11.fill_between(self.time,  fick_h2s_np , 0 ,
                           where= fick_h2s_np > 0.,color = tosed) 
         ax11.fill_between(self.time,  fick_h2s_np , 0 ,
                           where= fick_h2s_np < 0.,color = towater)             
         
-        
-                  
+                          
         ax12.plot(self.time,fick_nh4,linewidth = 1 , zorder = 10, 
-                  color = "#1da181")    
+                  color = linecolor)    
         
         ax12.fill_between(self.time,  fick_nh4_np , 0 ,
                           where= fick_nh4_np > 0.,color = tosed) 
@@ -368,7 +328,7 @@ class Window(QtGui.QDialog):
                           where= fick_nh4_np < 0.,color = towater)           
                   
         ax20.plot(self.time,fick_dic,linewidth = 1 , zorder = 10, 
-                  color = "#1da181") 
+                  color = linecolor) 
         
         ax20.fill_between(self.time,  fick_dic_np , 0 ,
                           where= fick_dic_np > 0.,color = tosed) 
@@ -377,19 +337,26 @@ class Window(QtGui.QDialog):
  
                      
         ax21.plot(self.time,fick_alk,linewidth = 1 , zorder = 10, 
-                  color = "#1da181")          
-        
+                  color = linecolor)                  
         ax21.fill_between(self.time,  fick_alk_np , 0 ,
                           where= fick_alk_np > 0.,color = tosed) 
         ax21.fill_between(self.time,  fick_alk_np , 0 ,
                           where= fick_alk_np < 0.,color = towater)      
+
+        ax22.plot(self.time,fick_po4,linewidth = 1 , zorder = 10, 
+                  color = linecolor)                  
+        ax22.fill_between(self.time,  fick_po4_np , 0 ,
+                          where= fick_alk_np > 0.,color = tosed) 
+        ax22.fill_between(self.time,  fick_po4_np , 0 ,
+                          where= fick_alk_np < 0.,color = towater)  
+
 
         #legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
         legend = ax00.legend(loc='best', shadow=False)  
         frame = legend.get_frame()
         frame.set_facecolor('white')  
                  
-        #print (len(fick))      
+          
         self.canvas.draw()
          
     def time_profile(self):
@@ -492,7 +459,7 @@ class Window(QtGui.QDialog):
         sed_ticks = readdata.ticks(sed_min,sed_max)
         #cb.set_ticks(wat_ticks)
         cb_sed.set_ticks(sed_ticks)  
-        ax2.axhline(0, color='white', linestyle = '--')     
+        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )     
         #cb_sed.set_label('BBL, Sediment')
         #cb.ax.set_xticklabels(['Low', 'Medium', 'High']) 
         #loc = clevs + .1
@@ -597,7 +564,7 @@ class Window(QtGui.QDialog):
         #n = variable[:,self.ny2min:].min() 
         #sed_max1 = z1[self.nbblmin-10:self.ysedmax,:].max()
         #sed_max2 = z2[self.nbblmin-10:self.ysedmax,:].max()#readdata.varmax(self,z0,1)
-        #print (sed_min0, sed_max0)
+       
         #sed_max1 = readdata.varmax(self,z1,1)
         #sed_max2 = readdata.varmax(self,z2,1)                     
         #sed_min0 = readdata.varmin(self,z0,1)# 1 - sed
@@ -608,15 +575,9 @@ class Window(QtGui.QDialog):
             watmax1 = 9
             watmin1 = 6.5
         elif self.num_var == 2:#po4
-            watmax0 = 3            
-            field_po4_1 = [8.724, 69.930, 171.588, 256.714,334.804,
-                        311.588, 270.432, 239.477, 234.905, 250.382]
-            field_po4_2 = [2.967,3.868, 18.138, 29.555, 44.576, 66.207,            
-                           73.095, 78.020, 82.241, 99.829 ]
-            field_depth =[ -1.5, 1.,3.5,6.,8.5,11.,13.5,16.,18.5,23.5]
-            ax02.plot(field_po4_1,field_depth,'o-')
-            ax02.plot(field_po4_2,field_depth,'o-')  
-                        
+            watmax0 = 3  
+            watmax1 = 7000.          
+            watmin1 = 4000.            
         else:
             pass
                     

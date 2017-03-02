@@ -1,17 +1,26 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 '''
 Created on 14. des. 2016
 
 @author: ELP
 '''
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# This Python file uses the following encoding: utf-8
+
 from netCDF4 import Dataset
 import main
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
+from matplotlib import rc
 
 from PyQt4 import QtGui
-import sys 
+import os, sys 
 #getcontext().prec = 6 
 majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   #format y scales to be scalar 
@@ -20,8 +29,9 @@ minorLocator = mtick.MultipleLocator(1.)
 app1 = QtGui.QApplication(sys.argv)
 screen_rect = app1.desktop().screenGeometry()
 width, height = screen_rect.width(), screen_rect.height()
-#print (width, height)    
-    
+
+rc('font', **{'sans-serif' : 'Arial', #for unicode text
+                'family' : 'sans-serif'})        
 def readdata_brom(self,fname): 
 
     fh = Dataset(fname)
@@ -79,11 +89,7 @@ def readdata_brom(self,fname):
     self.fick_dic = fh.variables['fick:DIC'][:]        
     self.fick_alk = fh.variables['fick:Alk'][:]        
     self.fick_po4 = fh.variables['fick:PO4'][:]    
-    
-    
-    
-    
-    
+        
     self.vars = ([],[self.o2],[self.no3 ],[self.no2],
     [self.si], [self.alk],[self.po4],[self.nh4],
     [self.h2s ],[self.pon], [self.don],[self.dic],[self.phy],
@@ -123,8 +129,9 @@ def readdata_brom(self,fname):
     
     # list of titles to add to figures at All year charts    
     self.titles_all_year = (('All year charts'),
-        (r'$\rm NO _2 $',r'$\rm NO _3 $',r'$\rm NH _4 $'),
-        ('PO4','SO4',' O2'),
+        (r'$\rm NO _2   \mu M/l$',r'$\rm NO _3  \mu M/l $',
+         r'$\rm NH _4   \mu M/l$'),#
+        ('PO4','SO4', r'$\rm O _2 \mu M/l $'),
         ('H2S', 'PON', 'DON'),
         ('DIC', 'Phy', 'Het'), 
         ('pCO2','pH','Alk'),
@@ -157,8 +164,9 @@ def readdata_brom(self,fname):
     )
     
     fh.close()
+    self.lentime = len(self.time)
     # numbers of first days of each month to add to combobox 'One day'                           
-    self.monthes_start = [1,32,61,92,122,153,183,
+    self.months_start = [1,32,61,92,122,153,183,
                           214,245,275,306,336,366]
     
     self.resolutions = [('Resoluton'),(1000,700),(842,595),(2339,1654),(3508,2480),
@@ -243,9 +251,9 @@ def depth_sed2(self):
         depth_sed2.append(v)
         self.depth_sed2 = depth_sed2  
                    
-def varmax(self,variable,vartype):
+def varmax(self,variable,vartype): 
     if vartype == 0: #water
-        n = variable[0:self.ny2max-1,:].max() 
+        n = variable[0:self.ny2min,0:self.lentime].max() 
            
     elif vartype == 1 :#sediment
         n = variable[:,self.ny2min:].max()
@@ -266,7 +274,8 @@ def varmax(self,variable,vartype):
     elif n >= 0.0001 and n < 0.001 :
         n =  (math.ceil(n*10000))/10000  
     elif n >= 0.00001 and n < 0.0001 :
-        n =  (math.ceil(n*100000))/100000                                                                                         
+        n =  (math.ceil(n*100000))/100000  
+                                                                                               
     self.watmax =  n
     
     return self.watmax
@@ -295,9 +304,9 @@ def int_value(self,n,min,max):
     return m    
 def varmin(self,variable,vartype):
     if vartype == 0 :
-        n = np.round(variable[0:self.ny2min,0:365].min())
+        n = np.floor(variable[0:self.ny2min,0:self.lentime].min())
     elif vartype == 1 : 
-        n = np.round(variable[0:365,self.ny2min-6:].min())     
+        n = np.floor(variable[0:self.lentime,self.ny2min-6:].min())     
        
     if n >= 28000.:
         n = 28000. #np.ceil(n)        
@@ -333,13 +342,15 @@ def varmin(self,variable,vartype):
         n = 100          
     elif n >= 50 and n < 100:
         n = 50    
-    elif n > 25 and n < 50:
-        n = 25                             
-    elif n >= 10 and n <= 25:
-        n = 10            
-    elif n > 7 and n < 10:
-        n = 6
-    elif n > 5 and n <= 6:
+    elif n > 25. and n < 50.:
+        n = 25.                             
+    elif n >= 10. and n <= 25.:
+        n = 10.            
+    elif n > 7. and n < 10.:
+        n = 6.
+    elif n > 6. and n <= 7.:
+        n = 5.                
+    elif n > 5. and n <= 6.:
         n = 4            
     elif n > 2.5 and n <= 5:
         n = 2.5     
@@ -357,7 +368,7 @@ def varmin(self,variable,vartype):
         n = 0.00005 
        
     #self.watmin =  n         
-    self.watmin = int(np.floor(n))                         
+    self.watmin = int(np.floor(n))                        
     return self.watmin
 def ticks(min,max): 
          
@@ -508,5 +519,5 @@ def colors(self):
     self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
     self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
     self.linewidth = 0.7        
-    #print (self.xlabel_fontsize)
+    
     
