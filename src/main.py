@@ -260,10 +260,10 @@ class Window(QtGui.QDialog):
         ax11.set_ylim(max(fick_h2s_np),min(fick_h2s_np))           
         ax12.set_ylim(max(fick_nh4_np),min(fick_nh4_np)) 
         ax20.set_ylim(max(fick_dic_np),min(fick_dic_np))  
-        ax21.set_ylim(max(fick_alk_np),min(fick_alk_np))                   
+        ax21.set_ylim(max(fick_alk_np),min(fick_alk_np))                          
         ax22.set_ylim(max(fick_po4_np),min(fick_po4_np))           
                                        
-        for axis in (ax00,ax01,ax02,ax10,ax11,ax12,ax20,ax21):
+        for axis in (ax00,ax01,ax02,ax10,ax11,ax12,ax20,ax21,ax22):
             # draw horizontal line at the y=0 value
             axis.axhline(0, color='black', linestyle = '--') 
             axis.set_xlim(0, self.lentime) 
@@ -289,7 +289,7 @@ class Window(QtGui.QDialog):
                
         ax01.plot(self.time,fick_no2,linewidth = 1 , zorder = 10, 
                   color = linecolor)
-        print self.time[1500:]    
+        
         ax01.fill_between(self.time,  fick_no2_np , 0 ,
                           where= fick_o2_np > 0.,color = tosed) 
         ax01.fill_between(self.time,  fick_no2_np , 0 ,
@@ -348,7 +348,7 @@ class Window(QtGui.QDialog):
         ax22.fill_between(self.time,  fick_po4_np , 0 ,
                           where= fick_alk_np > 0.,color = tosed) 
         ax22.fill_between(self.time,  fick_po4_np , 0 ,
-                          where= fick_alk_np < 0.,color = towater)  
+                          where= fick_alk_np < 0.,color = towater)
 
 
         #legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
@@ -501,9 +501,11 @@ class Window(QtGui.QDialog):
                                      
         for n in range(1,len(self.var_names_charts_year)):
             if (self.all_year_box.currentIndex() == n) :
-                z0 = np.array(self.vars_year[n][0])
-                z1 = np.array(self.vars_year[n][1]) #self.po4
-                z2 = np.array(self.vars_year[n][2])
+                z0 = np.array(self.vars_year[n][0][0][self.start_last_year:])
+                #[self.start_last_year:]
+                #print z0.shape
+                z1 = np.array(self.vars_year[n][1][0][self.start_last_year:]) #self.po4
+                z2 = np.array(self.vars_year[n][2][0][self.start_last_year:])
                 ax00.set_title(str(self.titles_all_year[n][0]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold') 
                 ax10.set_title(str(self.titles_all_year[n][1]), 
@@ -668,71 +670,71 @@ class Window(QtGui.QDialog):
 
         
                 
-        for n in range(0,len(self.time)):
+        for n in range(0,365):
             if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter" 
                 linewidth = self.linewidth
                                   
-                ax00.plot(z0[0][n],self.depth,self.wint,alpha = 
+                ax00.plot(z0[n],self.depth,self.wint,alpha = 
                           self.a_w, linewidth = linewidth , zorder = 10) 
-                ax10.plot(z1[0][n],self.depth,self.wint,alpha = 
+                ax10.plot(z1[n],self.depth,self.wint,alpha = 
                           self.a_w, linewidth = linewidth , zorder = 10)
-                ax20.plot(z2[0][n],self.depth,self.wint,alpha = 
+                ax20.plot(z2[n],self.depth,self.wint,alpha = 
                           self.a_w, linewidth = linewidth, zorder = 10 )  
                 
-                ax01.plot(z0[0][n],self.depth,self.wint,alpha = 
+                ax01.plot(z0[n],self.depth,self.wint,alpha = 
                           self.a_w, linewidth = linewidth, zorder = 10 ) 
-                ax11.plot(z1[0][n],self.depth,self.wint,alpha = 
+                ax11.plot(z1[n],self.depth,self.wint,alpha = 
                           self.a_w, linewidth = linewidth , zorder = 10)
-                ax21.plot(z2[0][n],self.depth,self.wint,alpha = 
+                ax21.plot(z2[n],self.depth,self.wint,alpha = 
                           self.a_w, linewidth = linewidth, zorder = 10 ) 
     
-                ax02.plot(z0[0][n],self.depth_sed,self.wint,alpha = 
+                ax02.plot(z0[n],self.depth_sed,self.wint,alpha = 
                           self.a_w, linewidth = linewidth, zorder = 10 ) 
-                ax12.plot(z1[0][n],self.depth_sed,self.wint,alpha = 
+                ax12.plot(z1[n],self.depth_sed,self.wint,alpha = 
                           self.a_w, linewidth = linewidth, zorder = 10 )
-                ax22.plot(z2[0][n],self.depth_sed,self.wint,alpha = 
+                ax22.plot(z2[n],self.depth_sed,self.wint,alpha = 
                           self.a_w, linewidth = linewidth, zorder = 10 ) 
             elif n >= 150 and n < 249: #"summer"
-                ax00.plot(z0[0][n],self.depth,self.summ,alpha = 
+                ax00.plot(z0[n],self.depth,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 ) 
-                ax10.plot(z1[0][n],self.depth,self.summ,alpha = 
+                ax10.plot(z1[n],self.depth,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 )
-                ax20.plot(z2[0][n],self.depth,self.summ,alpha = 
+                ax20.plot(z2[n],self.depth,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 )  
                 
-                ax01.plot(z0[0][n],self.depth,self.summ,alpha = 
+                ax01.plot(z0[n],self.depth,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 ) 
-                ax11.plot(z1[0][n],self.depth,self.summ,alpha = 
+                ax11.plot(z1[n],self.depth,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 )
-                ax21.plot(z2[0][n],self.depth,self.summ,alpha = 
+                ax21.plot(z2[n],self.depth,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 ) 
     
-                ax02.plot(z0[0][n],self.depth_sed,self.summ,alpha = 
+                ax02.plot(z0[n],self.depth_sed,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 ) 
-                ax12.plot(z1[0][n],self.depth_sed,self.summ,alpha = 
+                ax12.plot(z1[n],self.depth_sed,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 )
-                ax22.plot(z2[0][n],self.depth_sed,self.summ,alpha = 
+                ax22.plot(z2[n],self.depth_sed,self.summ,alpha = 
                           self.a_s, linewidth = linewidth, zorder = 10 ) 
             else : #"autumn and spring"
-                ax00.plot(z0[0][n],self.depth,self.spr_aut,alpha = 
+                ax00.plot(z0[n],self.depth,self.spr_aut,alpha = 
                           self.a_aut, linewidth = linewidth, zorder = 10 ) 
-                ax10.plot(z1[0][n],self.depth,self.spr_aut,alpha = 
+                ax10.plot(z1[n],self.depth,self.spr_aut,alpha = 
                           self.a_aut, linewidth = linewidth, zorder = 10 )
-                ax20.plot(z2[0][n],self.depth,self.spr_aut,alpha = 
+                ax20.plot(z2[n],self.depth,self.spr_aut,alpha = 
                           self.a_aut, linewidth = linewidth, zorder = 10 )  
                 
-                ax01.plot(z0[0][n],self.depth,self.spr_aut,alpha = 
+                ax01.plot(z0[n],self.depth,self.spr_aut,alpha = 
                           self.a_aut, linewidth = linewidth, zorder = 10 ) 
-                ax11.plot(z1[0][n],self.depth,self.spr_aut,alpha = 
+                ax11.plot(z1[n],self.depth,self.spr_aut,alpha = 
                           self.a_aut, linewidth = linewidth, zorder = 10 )
-                ax21.plot(z2[0][n],self.depth,self.spr_aut,alpha = 
+                ax21.plot(z2[n],self.depth,self.spr_aut,alpha = 
                           self.a_aut, linewidth = linewidth, zorder = 10 ) 
     
-                ax02.plot(z0[0][n],self.depth_sed,self.spr_aut,
+                ax02.plot(z0[n],self.depth_sed,self.spr_aut,
                           alpha = self.a_aut, zorder = 10) 
-                ax12.plot(z1[0][n],self.depth_sed,self.spr_aut,
+                ax12.plot(z1[n],self.depth_sed,self.spr_aut,
                           alpha = self.a_aut, zorder = 10)
-                ax22.plot(z2[0][n],self.depth_sed,self.spr_aut,
+                ax22.plot(z2[n],self.depth_sed,self.spr_aut,
                           alpha = self.a_aut, zorder = 10)      
 
 

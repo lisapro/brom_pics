@@ -112,7 +112,7 @@ def readdata_brom(self,fname):
     'om_ar', 'CO3', 'ca', 'sal', 'Temperature')  
       
     # list of names to add to Combobox All year charts
-    self.var_names_charts_year = (('All year charts'),
+    self.var_names_charts_year = (('All year(last) graphs'),
         ('NO2, NO3, NH4'),
         ('PO4','SO4',' O2'),
         ('H2S', 'PON', 'DON'),('DIC, Phy, Het'), 
@@ -172,7 +172,46 @@ def readdata_brom(self,fname):
     self.resolutions = [('Resoluton'),(1000,700),(842,595),(2339,1654),(3508,2480),
                         (4677,3307),(40,10)]
 
+    #def calc_last_year(self):
+    self.start_last_year = self.lentime - 365  
+    #self.last_year_time = self.time[self.start_last_year:]
+    
+def colors(self):
+    self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
+    self.wint =  '#8dc0e7'
+    self.summ = '#d0576f' 
+    self.a_w = 0.4 #alpha (transparency) for winter
+    self.a_bbl = 0.3 
+    
+    self.a_s = 0.4 #alpha (transparency) for summer
+    self.a_aut = 0.4 #alpha (transparency) for autumn and spring    
+    self.wat_col = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
+    self.bbl_col = '#2873b8' # for plot 1,2,3,4,5,1_1,2_2,etc.
+    self.sed_col= '#916012'
+    self.wat_col1 = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
+    self.bbl_col1 = '#ccd6de' # for plot 1,2,3,4,5,1_1,2_2,etc.
+    self.sed_col1 = '#a3abb1'
 
+    
+    self.labelaxis_x =  1.10 #positions of labels 
+    self.labelaxis1_y = 1.02
+    dx = 0.1#(height / 30000.) #0.1
+    dy = 14 #height/96
+    self.labelaxis2_y = 1.02 + dx
+    self.labelaxis3_y = 1.02 + dx * 2.
+    self.labelaxis4_y = 1.02 + dx * 3.
+    self.labelaxis5_y = 1.02 + dx * 4.
+
+    self.axis1 = 0
+    self.axis2 = 0 + dy 
+    self.axis3 = 0 + dy * 2
+    self.axis4 = 0 + dy * 3
+    self.axis5 = 0 + dy * 4  
+
+    self.font_txt = 15 #(height / 190.)  # text on figure 2 (Water; BBL, Sed) 
+    self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
+    self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
+    self.linewidth = 0.7            
     
 def calculate_ywat(self):
     for n in range(0,(len(self.depth2)-1)):
@@ -338,9 +377,9 @@ def varmin(self,variable,vartype):
         n = 350                       
     elif n >= 200. and n < 350:  
         n = 200          
-    elif n >= 100 and n < 200:  
+    elif n > 100 and n < 200:  
         n = 100          
-    elif n >= 50 and n < 100:
+    elif n >= 50 and n <= 100:
         n = 50    
     elif n > 25. and n < 50.:
         n = 25.                             
@@ -483,41 +522,6 @@ def setmaxmin(self,axis,var,type):
         
         
         
-def colors(self):
-    self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
-    self.wint =  '#8dc0e7'
-    self.summ = '#d0576f' 
-    self.a_w = 0.4 #alpha (transparency) for winter
-    self.a_bbl = 0.3 
-    
-    self.a_s = 0.4 #alpha (transparency) for summer
-    self.a_aut = 0.4 #alpha (transparency) for autumn and spring    
-    self.wat_col = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
-    self.bbl_col = '#2873b8' # for plot 1,2,3,4,5,1_1,2_2,etc.
-    self.sed_col= '#916012'
-    self.wat_col1 = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
-    self.bbl_col1 = '#ccd6de' # for plot 1,2,3,4,5,1_1,2_2,etc.
-    self.sed_col1 = '#a3abb1'
 
-    
-    self.labelaxis_x =  1.10 #positions of labels 
-    self.labelaxis1_y = 1.02
-    dx = 0.1#(height / 30000.) #0.1
-    dy = 14 #height/96
-    self.labelaxis2_y = 1.02 + dx
-    self.labelaxis3_y = 1.02 + dx * 2.
-    self.labelaxis4_y = 1.02 + dx * 3.
-    self.labelaxis5_y = 1.02 + dx * 4.
-
-    self.axis1 = 0
-    self.axis2 = 0 + dy 
-    self.axis3 = 0 + dy * 2
-    self.axis4 = 0 + dy * 3
-    self.axis5 = 0 + dy * 4  
-
-    self.font_txt = 15 #(height / 190.)  # text on figure 2 (Water; BBL, Sed) 
-    self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
-    self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
-    self.linewidth = 0.7        
     
     
