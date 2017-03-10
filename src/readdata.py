@@ -1,11 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+# this ↑ comment is important to have 
+# at the very first line 
+# to define using unicode 
 '''
 Created on 14. des. 2016
 
-@author: ELP
+@author: E.Protsenko
 '''
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -23,7 +26,8 @@ from PyQt4 import QtGui
 import os, sys 
 #getcontext().prec = 6 
 majorLocator = mtick.MultipleLocator(2.)
-majorFormatter = mtick.ScalarFormatter(useOffset=False)   #format y scales to be scalar 
+majorFormatter = mtick.ScalarFormatter(useOffset=False)   
+#format y scales to be scalar 
 minorLocator = mtick.MultipleLocator(1.)
 
 app1 = QtGui.QApplication(sys.argv)
@@ -31,7 +35,8 @@ screen_rect = app1.desktop().screenGeometry()
 width, height = screen_rect.width(), screen_rect.height()
 
 rc('font', **{'sans-serif' : 'Arial', #for unicode text
-                'family' : 'sans-serif'})        
+                'family' : 'sans-serif'})  
+      
 def readdata_brom(self,fname): 
 
     fh = Dataset(fname)
@@ -126,7 +131,7 @@ def readdata_brom(self,fname):
         ('caco3', 'ch4', 'om_ca'), 
         ('om_ar', 'co3', 'ca'),
         ('sal','Temperature','O2'))  
-    
+    len
     # list of titles to add to figures at All year charts    
     self.titles_all_year = (('All year charts'),
         (r'$\rm NO _2   \mu M/l$',r'$\rm NO _3  \mu M/l $',
@@ -169,8 +174,9 @@ def readdata_brom(self,fname):
     self.months_start = [1,32,61,92,122,153,183,
                           214,245,275,306,336,366]
     
-    self.resolutions = [('Resoluton'),(1000,700),(842,595),(2339,1654),(3508,2480),
-                        (4677,3307),(40,10)]
+    '''self.resolutions = [('Resoluton'),(1000,700),(842,595),
+                        (2339,1654),(3508,2480),
+                        (4677,3307),(40,10)]'''
 
     #def calc_last_year(self):
     self.start_last_year = self.lentime - 365  
@@ -180,7 +186,7 @@ def colors(self):
     self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
     self.wint =  '#8dc0e7'
     self.summ = '#d0576f' 
-    self.a_w = 0.4 #alpha (transparency) for winter
+    self.a_w = 0.4 #alpha_wat alpha (transparency) for winter
     self.a_bbl = 0.3 
     
     self.a_s = 0.4 #alpha (transparency) for summer
@@ -192,16 +198,22 @@ def colors(self):
     self.bbl_col1 = '#ccd6de' # for plot 1,2,3,4,5,1_1,2_2,etc.
     self.sed_col1 = '#a3abb1'
 
+
     
-    self.labelaxis_x =  1.10 #positions of labels 
-    self.labelaxis1_y = 1.02
-    dx = 0.1#(height / 30000.) #0.1
+    # disctances between x axes
+    dx = 0.1 #(height / 30000.) #0.1
     dy = 14 #height/96
+    
+    #x and y positions of axes labels 
+    self.labelaxis_x =  1.10 
+    
+    self.labelaxis1_y = 1.02    
     self.labelaxis2_y = 1.02 + dx
     self.labelaxis3_y = 1.02 + dx * 2.
     self.labelaxis4_y = 1.02 + dx * 3.
     self.labelaxis5_y = 1.02 + dx * 4.
 
+    # positions of xaxes
     self.axis1 = 0
     self.axis2 = 0 + dy 
     self.axis3 = 0 + dy * 2
@@ -292,18 +304,20 @@ def depth_sed2(self):
                    
 def varmax(self,variable,vartype): 
     if vartype == 0: #water
-        n = variable[0:self.ny2min,0:self.lentime].max() 
+        n = variable[0:self.ny1max, 0:self.lentime].max() 
            
     elif vartype == 1 :#sediment
-        n = variable[:,self.ny2min:].max()
+        n = variable[self.ny2min:, 0:self.lentime].max()
+
+    # make "beautiful"  values to show on ticks            
     if n > 10000. and n <= 100000.:  
-        n = int(math.ceil(n/ 1000.0)) * 1000 + 1000
+        n = int(math.ceil(n/ 1000.0)) * 1000 + 1000.
     elif n > 1000. and n <= 10000.:  
-        n = int(math.ceil(n / 100.0)) * 100  + 100                                 
+        n = int(math.ceil(n / 100.0)) * 100  + 10.                                 
     elif n >= 100. and n < 1000.:
-        n = int(math.ceil(n / 10.0)) * 10 + 10
+        n = int(math.ceil(float(n) / 10.0)) * 10 + 10.
     elif n >= 1. and n < 100. :
-        n =  int(np.ceil(n))  + 1
+        n =  int(np.ceil(float(n)))  + 1.  
     elif n >= 0.1 and n < 1. :
         n =  (math.ceil(n*10.))/10. + 0.1  
     elif n >= 0.01 and n < 0.1 :
@@ -311,17 +325,18 @@ def varmax(self,variable,vartype):
     elif n >= 0.001 and n < 0.01 :
         n =  (math.ceil(n*1000.))/1000.
     elif n >= 0.0001 and n < 0.001 :
-        n =  (math.ceil(n*10000))/10000  
+        n =  (math.ceil(n*10000))/10000 +  0.0001   
     elif n >= 0.00001 and n < 0.0001 :
-        n =  (math.ceil(n*100000))/100000  
+        n =  (math.ceil(n*100000))/100000 
                                                                                                
-    self.watmax =  n
-    
+    self.watmax =  n   
+
     return self.watmax
 
+# make "beautiful"  values to show on ticks  
 def int_value(self,n,min,max):
     num = self.num
-    
+         
     if (max - min) >= num*10. and ( 
      max - min) < num*100. :
         m = math.ceil(n/10)*10.
@@ -341,76 +356,39 @@ def int_value(self,n,min,max):
         m = n  
           
     return m    
+
 def varmin(self,variable,vartype):
     if vartype == 0 :
-        n = np.floor(variable[0:self.ny2min,0:self.lentime].min())
+        n = np.floor(variable[0:self.ny1max,0:self.lentime].min())
+
     elif vartype == 1 : 
-        n = np.floor(variable[0:self.lentime,self.ny2min-6:].min())     
-       
-    if n >= 28000.:
-        n = 28000. #np.ceil(n)        
-    if n >= 27000 and n < 28000:
-        n = 27000#np.ceil(n)
-    if n >= 26000 and n < 27000:
-        n = 26000#np.ceil(n)
-    if n >= 25000 and n < 26000:
-        n = 25000#np.ceil(n)
-    elif n >= 22500 and n < 25000 :
-        n = 22500#np.ceil(n)              
-    elif n >= 20000 and n < 22500:
-        n = 20000#np.ceil(n)            
-    elif n >= 10000 and n < 20000:
-        n = 10000#np.ceil(n)    
-    elif n >= 7000 and n < 10000:  
-        n = 7000                     
-    elif n >= 5000 and n < 7000:  
-        n =5000         
-    elif n >= 3000 and n < 5000:  
-        n = 3000    
-    elif n >= 2000 and n < 3000:  
-        n = 2000          
-    elif n >= 1000 and n < 2000:  
-        n = 1000                     
-    elif n > 500 and n < 1000:  
-        n = 500 
-    elif n >= 350 and n <= 500:  
-        n = 350                       
-    elif n >= 200. and n < 350:  
-        n = 200          
-    elif n > 100 and n < 200:  
-        n = 100          
-    elif n >= 50 and n <= 100:
-        n = 50    
-    elif n > 25. and n < 50.:
-        n = 25.                             
-    elif n >= 10. and n <= 25.:
-        n = 10.            
-    elif n > 7. and n < 10.:
-        n = 6.
-    elif n > 6. and n <= 7.:
-        n = 5.                
-    elif n > 5. and n <= 6.:
-        n = 4            
-    elif n > 2.5 and n <= 5:
-        n = 2.5     
-    elif n > 1. and n <= 2.5:
-        n = 0.                     
-    elif n >=  0.5 and n <= 1:
-        n = 0.5                     
-    elif n >= 0.05 and n < 0.5:
-        n = 0.05           
-    elif n >=  0.005 and n <0.05:
-        n = 0.005         
-    elif n >=  0.0005 and n <= 0.005:
-        n = 0.0005
-    elif n >=  0.00005 and  n  <0.0005 :
-        n = 0.00005 
-       
-    #self.watmin =  n         
-    self.watmin = int(np.floor(n))                        
+        n = np.floor(variable[self.ny2min:, 0:self.lentime].min()) 
+
+    # make "beautiful"  values to show on ticks            
+    if n > 10000. and n <= 100000.:  
+        n = int(np.floor(n/ 1000.0)) * 1000 - 1000.
+    elif n > 1000. and n <= 10000.:  
+        n = int(np.floor(n / 100.0)) * 100  - 10.                                 
+    elif n >= 100. and n < 1000.:
+        n = int(np.floor(float(n) / 10.0)) * 10 - 1.
+    elif n >= 1. and n < 100. :
+        n =  int(np.floor(float(n)))  +- 1.  
+    elif n >= 0.1 and n < 1. :
+        n =  (np.floor(n*10.))/10. - 0.1  
+    elif n >= 0.01 and n < 0.1 :
+        n =  (np.floor(n*100.))/100. 
+    elif n >= 0.001 and n < 0.01 :
+        n =  (np.floor(n*1000.))/1000.
+    elif n >= 0.0001 and n < 0.001 :
+        n =  (np.floor(n*10000))/10000 -  0.0001   
+    elif n >= 0.00001 and n < 0.0001 :
+        n =  (np.floor(n*100000))/100000 
+  
+    self.watmin =  n                     
     return self.watmin
-def ticks(min,max): 
-         
+
+# make "beautiful"  values to show on ticks 
+def ticks(min,max):          
     if (max - min) >= 50000. and (
          max - min) < 150000.  :
         ticks = np.arange(min,max+10000.,50000)        
@@ -446,72 +424,71 @@ def ticks(min,max):
     elif (max - min) > 0.2 and ( 
      max - min) <= 1. :
         ticks = np.arange(min,max+1.,0.1)                  
-    else : 
-        #ticks = np.arange(min,max+0.05, 0.005)    
+    else :  
         ticks = np.arange(min,max + (max - min)/2., (max - min)/2.)                   
     return ticks
 
-    def y_lim(self,axis): #function to define y limits 
-        if axis in (self.ax00,self.ax10,self.ax20):   #water          
-            axis.fill_between(self.xticks, self.y1max, self.y1min,
-                              facecolor= self.wat_color, alpha=self.alpha_wat)  
-        elif axis in (self.ax01,self.ax11,self.ax21):  #BBL
-            axis.fill_between(self.xticks, self.y2max, self.y2min_fill_bbl,
-                               facecolor= self.bbl_color, alpha=self.alpha_bbl)
-            #plt.setp(axis.get_xticklabels(), visible=False)                                           
-        elif axis in (self.ax02,self.ax12,self.ax22): #sediment 
-            axis.fill_between(self.xticks, self.ysedmax_fill_bbl,
-                               self.ysedmin, facecolor= self.bbl_color, alpha=self.alpha_bbl)  
-            axis.fill_between(self.xticks, self.ysedmax, self.ysedmin_fill_sed,
-                               facecolor= self.sed_color, alpha=self.alpha_sed)    
+#function to define y limits 
+# 
+'''
+def y_lim(self,axis): 
+    if axis in (self.ax00,self.ax10,self.ax20):   #water          
+        axis.fill_between(self.xticks, self.y1max, self.y1min,
+                          facecolor= self.wat_col, alpha=self.a_w)  
+    elif axis in (self.ax01,self.ax11,self.ax21):  #BBL
+        axis.fill_between(self.xticks, self.y2max, self.y2min_fill_bbl,
+                           facecolor= self.bbl_col, alpha=self.a_bbl)
+        #plt.setp(axis.get_xticklabels(), visible=False)                                           
+    elif axis in (self.ax02,self.ax12,self.ax22): #sediment 
+        axis.fill_between(self.xticks, self.ysedmax_fill_bbl,
+                           self.ysedmin, facecolor= self.bbl_col, alpha=self.a_bbl)  
+        axis.fill_between(self.xticks, self.ysedmax, self.ysedmin_fill_sed,
+                           facecolor= self.sed_col, alpha=self.a_sed)    
+'''
 
-#def fill_all_year(self,axis):
- 
-
-
+#function to define y limits  
 def y_lim1(self,axis): 
-
-    self.xticks =(np.arange(0,100000))#function to define y limits 
+    self.xticks =(np.arange(0,100000))
     if axis in (self.ax00,self.ax10,self.ax20,
-                self.ax30,self.ax40,self.ax50):   #water
+                self.ax30,self.ax40,self.ax50): #water
         axis.set_ylim([self.y2min, 0])
         axis.yaxis.grid(True,'minor')
         axis.xaxis.grid(True,'major')                
         axis.yaxis.grid(True,'major') 
-#            axis.fill_between(self.xticks1, self.y1max, self.y1min, facecolor= self.wat_color1, alpha=self.alpha_wat)
+
     elif axis in (self.ax01,self.ax11,self.ax21,
-        self.ax31,self.ax41,self.ax51):  #BBL
+                  self.ax31,self.ax41,self.ax51): #BBL
         axis.set_ylim([self.y2max, self.y2min])
         axis.fill_between(self.xticks, self.y2max,
-            self.y2min_fill_bbl,
-            facecolor= self.bbl_col, 
+            self.y2min_fill_bbl,facecolor= self.bbl_col, 
             alpha=self.a_bbl)
         axis.yaxis.grid(True,'minor')
         axis.yaxis.grid(True,'major')   
-        axis.xaxis.grid(True,'major')              
-#            axis.fill_between(self.xticks1, self.y2max_fill_water, self.y2min, facecolor= self.wat_color, alpha= self.alpha_wat) 
-#            axis.fill_between(self.xticks1, self.y2max, self.y2min_fill_bbl, facecolor= self.bbl_color, alpha= self.alpha_bbl)
+        axis.xaxis.grid(True,'major')  
+          
+        # Set a property to on an artist object.
+        # remove xticklabels          
         plt.setp(axis.get_xticklabels(), visible=False) 
+        
     elif axis in (self.ax02,self.ax12,
             self.ax22,self.ax32,self.ax42,self.ax52): #sediment 
-        axis.set_ylim([self.ysedmax, self.ysedmin])   #[y3max, y3min]   
-        axis.fill_between(self.xticks,
-            self.ysedmax_fill_bbl, self.ysedmin,
-            facecolor= self.bbl_col,
-            alpha=self.a_bbl)  
-        axis.fill_between(self.xticks,
-            self.ysedmax, self.ysedmin_fill_sed,
-            facecolor= self.sed_col,
-            alpha=self.a_s)    
+        axis.set_ylim([self.ysedmax, self.ysedmin]) 
+        axis.fill_between(self.xticks, self.ysedmax_fill_bbl,
+                          self.ysedmin,facecolor= self.bbl_col,
+                          alpha=self.a_bbl)  
+        axis.fill_between(self.xticks, self.ysedmax,
+                          self.ysedmin_fill_sed,
+                          facecolor= self.sed_col,
+                          alpha=self.a_s)    
         axis.yaxis.set_major_locator(majorLocator)
+        
         #define yticks
         axis.yaxis.set_major_formatter(majorFormatter)
         axis.yaxis.set_minor_locator(minorLocator)
         axis.yaxis.grid(True,'minor')
         axis.yaxis.grid(True,'major')
         axis.xaxis.grid(True,'major')      
-        
-        
+                
 def setmaxmin(self,axis,var,type):
     min = varmin(self,var,type) #0 - water 
     max = varmax(self,var,type)

@@ -1,116 +1,152 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+# this ↑ comment is important to have 
+# at the very first line 
+# to define using unicode 
+'''
+Created on 14. des. 2016
 
+@author: E.Protsenko
+'''
 import os,sys
-#from import Image, ImageDraw, ImageFont, ImageFilter
+import numpy as np
+
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QSpinBox,QLabel,QComboBox
-#from numpy import nan
+
+from matplotlib import rc
+from matplotlib import style
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar)
 import matplotlib.pyplot as plt
-import readdata
-#import calc_resolution
-import numpy as np
-import matplotlib.gridspec as gridspec
-from matplotlib import style
 import matplotlib.ticker as mtick
-#import matplotlib as mpl
-import math
-from matplotlib import rc
+import matplotlib.gridspec as gridspec
 
-
-#print (sys.version_info)
+import readdata
 
 class Window(QtGui.QDialog):
-     
+    #QDialog - the base class of dialog windows.Inherits QWidget.
+    #QMainWindow - 
     def __init__(self, parent=None, ):
         super(Window, self).__init__(parent)
+
+        # function to display the names of the window flags        
+        # Qt.Window Indicates that the widget is a window, usually with a window
+        # system frame and a title bar
+        # ! it is not possible to unset this flag if the widget 
+        # does not have a parent.
+        
         self.setWindowFlags(QtCore.Qt.Window)   
         self.setWindowTitle("BROM Pictures")
         self.setWindowIcon(QtGui.QIcon('bromlogo.png'))
         
-        app1 = QtGui.QApplication(sys.argv)
-        screen_rect = app1.desktop().screenGeometry()
-        width, height = screen_rect.width(), screen_rect.height()
+        #app1 = QtGui.QApplication(sys.argv)
+        #screen_rect = app1.desktop().screenGeometry()
+        #width, height = screen_rect.width(), screen_rect.height()
         
-        self.figure = plt.figure(figsize=(11.69, 8.27), dpi=100,
+
+        
+              
+        self.xsize = 8.27 
+        self.figure = plt.figure(figsize=(11.69 ,self.xsize), dpi=100,
                                   facecolor='white') 
+        #for unicode text     
+        rc('font', **{'sans-serif' : 'Arial', 
+                           'family' : 'sans-serif'})  
+                
+        # Set to make the inner widget resize with scroll area
+        scrollArea = QtGui.QScrollArea()
+        
+        scrollwidget = QtGui.QWidget()  #central widget   
              
-        rc('font', **{'sans-serif' : 'Arial', #for unicode text
-                           'family' : 'sans-serif'})          
-        
-        self.canvas = FigureCanvas(self.figure)
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        
-        fname = str(QtGui.QFileDialog.getOpenFileName(self, #unicode
+        #scrollArea.setWidget(scrollwidget)
+
+        #scrollArea.setFixedHeight(400)
+        '''scrolllayout = QtGui.QHBoxLayout()   '''     
+
+        #scrollwidget.setLayout(scrolllayout)
+                
+        # open file system to choose needed nc file 
+        fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))   
+
+        # call submodule to read the nc file 
         readdata.readdata_brom(self,fname) 
-        readdata.colors(self)  
-      
+        readdata.colors(self)        
         readdata.calculate_ywat(self)
         readdata.calculate_ybbl(self) 
-        readdata.depth_sed(self) #calc depths in cm 
-        readdata.depth_sed2(self) #calc depths in cm for kz         
+        readdata.depth_sed(self)   #calc depths in cm 
+        # kz is determined at midpoints, should be 
+        # calculated separately *self.depth2
+        readdata.depth_sed2(self)  #calc depths in cm for kz         
         readdata.y2max_fill_water(self)                
         readdata.calculate_ysed(self)
         readdata.y_coords(self)  
               
-
-        self.fick_box = QtGui.QComboBox()
-        self.fick_box.addItem("Fluxes")
-        self.fick_box.addItem("print")        
-        self.fick_box.currentIndexChanged.connect(
-            self.fluxes)                       
+           
+        # Create widget 1                    
         self.time_prof_box = QtGui.QComboBox()
+        # add items to Combobox
         for i in self.var_names_profile:
             self.time_prof_box.addItem(str(i))
+        # Define connection between clicking the button and 
+        # calling the function to plot figures        
         self.time_prof_box.currentIndexChanged.connect(
             self.time_profile)        
-        
+
+        # Create widget 2         
         self.all_year_box = QtGui.QComboBox()
+        # add items to Combobox        
         for i in self.var_names_charts_year:
             self.all_year_box.addItem(str(i))
+        # Define connection between clicking the button and 
+        # calling the function to plot figures                   
         self.all_year_box.currentIndexChanged.connect(
             self.all_year_charts) 
-         
+
+        # Create widget 3         
         self.one_day_box = QtGui.QComboBox()
         oModel=self.one_day_box.model()
+        # add items to Combobox        
         head_item = QtGui.QStandardItem('Day to plot')
         oModel.appendRow(head_item)
         self.numday = 1
-        
+        # calculate dates from juliandays and 
+        # add them to Combobox
         for n in range(1, self.months_start[1]):
             item = QtGui.QStandardItem(str(n)+ '/1'+ 
-                     ' (' + str(self.numday) + ')')
-                                       
+                     ' (' + str(self.numday) + ')')                                       
             oModel.appendRow(item)
             item.setBackground(QtGui.QColor(self.wint))
-            self.numday = self.numday + 1 #self.months_start[1]        
-        for m in range(1,len(self.months_start)-1) : #np.arange(1,13):                    
+            self.numday = self.numday + 1      
+        for m in range(1,len(self.months_start)-1) :                 
             start_date = self.months_start[m]
             next_start_dat = self.months_start[m+1]
             for n in range(1, int(next_start_dat - start_date)+1) :
                 item = QtGui.QStandardItem(str(n)+ '/' + str(m+1) + 
                      ' (' + str(self.numday) + ')')
                 font = item.font()
-                #font.setPointSize(10)
                 item.setFont(font)                
-                oModel.appendRow(item)
-                
-                self.numday = self.numday + 1 #i+1
-        
-
+                oModel.appendRow(item)                
+                self.numday = self.numday + 1                 
+        # Define connection between clicking the button and 
+        # calling the function to plot figures                     
         self.one_day_box.currentIndexChanged.connect(
-            self.one_day_plot)  
-
-        self.resize_box = QtGui.QComboBox()  
-        for i in self.resolutions:
-            self.resize_box.addItem(str(i))       
-             
-
+            self.one_day_plot) 
+        
+        # Create widget 4 
+        self.fick_box = QtGui.QComboBox()
+        # add items to Combobox        
+        self.fick_box.addItem("Fluxes")
+        self.fick_box.addItem("print")      
+        # Define connection between clicking the button and 
+        # calling the function to plot figures                 
+        self.fick_box.currentIndexChanged.connect(
+            self.fluxes)  
+                     
+        # Here I change the size and style of buttons
         self.one_day_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae; border-width: 10px;'
         '  padding: 6px; font: bold 25px; }')        
@@ -124,23 +160,32 @@ class Window(QtGui.QDialog):
         'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
          'font: bold 25px;}')          
 
-        #set the layout
-        #layout = QtGui.QGridLayout()
-        layout = QtGui.QHBoxLayout()
-        layout.addStretch()
-        #layout.addWidget(self.toolbar)         
-        #layout.addStretch()
+
+         
+        ##self.qwidget = QtGui.QWidget()
+                
+        self.canvas = FigureCanvas(self.figure)
+    
+        self.toolbar = NavigationToolbar(self.canvas, self) #, self.qfigWidget
+        #self.canvas.setMinimumSize(self.canvas.size())
+        #The QGridLayout class lays out widgets in a grid  
         
         self.grid = QtGui.QGridLayout(self)
-        self.grid.addLayout(layout, 0, 0)
+        
+        #Places the layout at position
+        ##self.grid.addLayout(layout, 0, 0)
+        
         self.grid.addWidget(self.canvas, 2, 0,1,5) 
+        #self.grid.addWidget(scrollwidget, 2, 0,1,5)                    
         self.grid.addWidget(self.toolbar,1,0,1,1)    
         self.grid.addWidget(self.time_prof_box,1,1,1,1)  
         self.grid.addWidget(self.all_year_box,1,2,1,1)       
         self.grid.addWidget(self.one_day_box,1,3,1,1) 
-        #self.grid.addWidget(self.resize_box,1,4,1,1)
         self.grid.addWidget(self.fick_box,1,4,1,1)
-
+        ##self.qscrollLayout.addWidget(self.qfigWidget) 
+        #scrollwidget.setLayout(self.grid)        
+        
+        
     def fig2_txt(self):        
         plt.text(1.1, 0.5,'Water ', fontweight='bold', # draw legend to Water
         bbox={'facecolor': self.wat_col, 'alpha':0.5, 'pad':3},
@@ -172,7 +217,6 @@ class Window(QtGui.QDialog):
         transform= self.ax00.transAxes)        
         
     def fluxes(self):  
-        #print (self.fick_o2) 
         plt.clf()
       
         style.use('ggplot')
@@ -210,10 +254,7 @@ class Window(QtGui.QDialog):
              
         #ax01.set_ylabel('Depth (m)',fontsize= self.font_txt)   
         #ax02.set_ylabel('Depth (cm)',fontsize= self.font_txt)
-        
-
-        #print (len(self.fick_o2[0:365]))    
-        #print   (len(self.time))            
+          
         #ax00.plot(self.fick_o2[0:365][50][0],self.time,self.wint,alpha = 
         #            self.a_w, linewidth = 1 , zorder = 10)   
 
@@ -240,7 +281,6 @@ class Window(QtGui.QDialog):
             fick_po4.append(self.fick_po4[n][self.nysedmin][0])            
                                
             # fick_o2.append(self.fick_o2[n][self.nysedmin][0]) 
-        #print (np.shape(fick_0),np.shape(fick_o2))
         #fick_0_np = np.array(fick_0)
         fick_o2_np = np.array(fick_o2) 
         fick_no2_np = np.array(fick_no2) 
@@ -362,6 +402,7 @@ class Window(QtGui.QDialog):
     def time_profile(self):
 
         plt.clf()
+
         for n in range(1,len(self.var_names_profile)):
             if (self.time_prof_box.currentIndex() == n) :
                 z = self.vars[n] #self.po4
@@ -370,6 +411,13 @@ class Window(QtGui.QDialog):
                                  
         gs = gridspec.GridSpec(2, 1) 
         x = self.time #np.arange(6)
+        num_years = int(max(x)/365.)
+        #print num_years
+        
+        #self.xsize = 8.27 
+        #self.figure = plt.figure(figsize=(5 ,self.xsize))       
+                
+        
         y = self.depth #np.arange(5)
         y_sed = self.depth_sed
         
@@ -378,23 +426,16 @@ class Window(QtGui.QDialog):
         
         watmin = readdata.varmin(self,zz,0) #0 - water 
         watmax = readdata.varmax(self,zz,0)
+        
         sed_min = readdata.varmin(self,zz,1)
-
         sed_max = readdata.varmax(self,zz,1)  
 
-        if self.num_var == 34: #pH
+        #set constant min and max for pH
+        if self.num_var == 34: 
             watmax = 9
-            watmin = 6.5
+            watmin = 6.8
             sed_max = 10
             sed_min = 6 
-        elif self.num_var == 1: #o2
-            watmin = 100   
-                    
-        elif self.num_var == 35:
-            sed_min = 0                      
-        else:
-            pass
-
 
         X,Y = np.meshgrid(x,y)
         X_sed,Y_sed = np.meshgrid(x,y_sed)
@@ -404,74 +445,66 @@ class Window(QtGui.QDialog):
         #f.set_size_inches(11.69,8.27)
 
         ax.set_title(title)
-        ax.set_ylim(self.y1max,0)       
+        ax.set_ylim(self.y1max-1,0)       
         ax2.set_ylim(self.ysedmax,self.y3min) #ysedmin
-        ax.set_xlim(0,len(x))
-        self.num = 50.    
+        xlen = len(x)
+        ax.set_xlim(0,xlen)
 
 
         ax.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis 
         ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
         ax2.set_xlabel('Number of day',fontsize= self.font_txt) 
-
             
-        cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
+      
         
+        self.num = 50.            
         wat_levs = np.linspace(watmin,watmax,num= self.num)
         sed_levs = np.linspace(sed_min,sed_max,
                              num = self.num)
                 
         int_wat_levs = []
         int_sed_levs= []
-        
-        
+                
         for n in wat_levs:
             n = readdata.int_value(self,n,watmin,watmax)
-            int_wat_levs.append(n)
-            
+            int_wat_levs.append(n)            
         for n in sed_levs:
             n = readdata.int_value(self,n,sed_min,
                                    sed_max)
             int_sed_levs.append(n)            
                       
-        cmap1 = plt.cm.rainbow #define color maps
-       
+        #define color maps 
+        cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
+        cmap1 = plt.cm.rainbow  
+
+        ## contourf() draw contour lines and filled contours
+        # levels = A list of floating point numbers indicating 
+        # the level curves to draw, in increasing order    
+        # If None, the first value of Z will correspond to the lower
+        # left corner, location (0,0).  
+        # If ‘image’, the rc value for image.origin will be used.    
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
-                              cmap=cmap,
-                              origin='lower')
+                              cmap=cmap)
 
         CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = int_sed_levs,
-                              cmap=cmap1,
-                              origin='lower')
+                              cmap=cmap1) #, origin='lower'
        
-        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])
-        
-        
-        
-        
-        #x,y,thick,length
+        # Add an axes at position rect [left, bottom, width, height]
+        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])                
         cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-        wat_ticks = readdata.ticks(watmin,watmax)
+        
+        wat_ticks = readdata.ticks(watmin,watmax)        
+        sed_ticks = readdata.ticks(sed_min,sed_max)
+        
         cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)
         cb_sed = plt.colorbar(CS1,cax = cax1 )
         #cb.set_label('Water')
         
-        sed_ticks = readdata.ticks(sed_min,sed_max)
+
         #cb.set_ticks(wat_ticks)
         cb_sed.set_ticks(sed_ticks)  
         ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )     
-        #cb_sed.set_label('BBL, Sediment')
-        #cb.ax.set_xticklabels(['Low', 'Medium', 'High']) 
-        #loc = clevs + .1
-        #cb.set_ticks(loc)
-        #cb.set_ticklabels(clevs)
-        #cbar = CS.colorbar(cax, )
-        #cbar.ax.set_yticklabels(['< -1', '0', '> 1'])
-        # vertically oriented colorbar
-        #self.figure.suptitle('Berre lagoon', fontsize=25,
-        # fontweight='bold')
-        #f.savefig('test.png', dpi=300) 
-        #plt.show()   
+  
 
         self.canvas.draw() 
         
@@ -503,7 +536,6 @@ class Window(QtGui.QDialog):
             if (self.all_year_box.currentIndex() == n) :
                 z0 = np.array(self.vars_year[n][0][0][self.start_last_year:])
                 #[self.start_last_year:]
-                #print z0.shape
                 z1 = np.array(self.vars_year[n][1][0][self.start_last_year:]) #self.po4
                 z2 = np.array(self.vars_year[n][2][0][self.start_last_year:])
                 ax00.set_title(str(self.titles_all_year[n][0]), 
@@ -550,7 +582,8 @@ class Window(QtGui.QDialog):
         watmin1 = readdata.varmin(self,z1,0) #0 - water 
         watmin2 = readdata.varmin(self,z2,0) #0 - water          
 
-        watmax0 =  z0[0:self.ny2max-4,:].max() # readdata.varmax(self,z0,0)
+        watmax0 = readdata.varmax(self,z0,0) #
+        # z0[0:self.ny2max-4,:].max() # readdata.varmax(self,z0,0)
         watmax1 = readdata.varmax(self,z1,0)
         watmax2 = readdata.varmax(self,z2,0)  
          
@@ -559,24 +592,14 @@ class Window(QtGui.QDialog):
         sed_min1 = readdata.varmin(self,z1,1) #0 - water 
         sed_min2 = readdata.varmin(self,z2,1) #0 - water    
 
-        sed_max0 = z0[:,self.ny2min:].max() 
-        sed_max1 = z1[:,self.ny2min:].max()         
-        sed_max2 = z2[:,self.ny2min:].max()         
+        sed_max0 = readdata.varmax(self,z0,1) #z0[:,self.ny2min:].max() 
+        sed_max1 = readdata.varmax(self,z1,1) #z1[:,self.ny2min:].max()         
+        sed_max2 = readdata.varmax(self,z2,1) #z2[:,self.ny2min:].max()         
         
-        #n = variable[:,self.ny2min:].min() 
-        #sed_max1 = z1[self.nbblmin-10:self.ysedmax,:].max()
-        #sed_max2 = z2[self.nbblmin-10:self.ysedmax,:].max()#readdata.varmax(self,z0,1)
-       
-        #sed_max1 = readdata.varmax(self,z1,1)
-        #sed_max2 = readdata.varmax(self,z2,1)                     
-        #sed_min0 = readdata.varmin(self,z0,1)# 1 - sed
-        #sed_max0 = readdata.varmax(self,z0,1)          
-        
-        
-        if self.num_var == 5: 
+        if self.num_var == 5: #pH 
             watmax1 = 9
             watmin1 = 6.5
-        elif self.num_var == 2:#po4
+        elif self.num_var == 2: #po4
             watmax0 = 3  
             watmax1 = 7000.          
             watmin1 = 4000.            
@@ -746,7 +769,6 @@ class Window(QtGui.QDialog):
     def one_day_plot(self):
         plt.clf() #clear figure before updating 
 
-        #print (self.one_day_box.currentIndex()) #self.numday
         # function to define 1 figure
         
         self.numday = (self.one_day_box.currentIndex()) #take the input value of numday spinbox
@@ -1355,6 +1377,8 @@ if __name__ == '__main__':
     #setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     #main = QtGui.QDialog
     main.setStyleSheet("background-color:#d8c9c2;")
+    # int posx, int posy, int w, int h
+    #main.setGeometry(50, 50, 900,500)
     main.show()
     #PySide.QtCore.Qt.WindowFlags
     sys.exit(app.exec_()) 
