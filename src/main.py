@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# this ↑ comment is important to have 
+# this â†‘ comment is important to have 
 # at the very first line 
 # to define using unicode 
 '''
@@ -239,8 +239,8 @@ class Window(QtGui.QDialog):
         ax00.set_ylabel('Fluxes') #Label y axis
         ax21.set_xlabel('Julian day')
         ax22.set_xlabel('Julian day')   
-        #ax21.set_xlabel(u'номер дня в году')
-        #ax22.set_xlabel(u'номер дня в году') 
+        #ax21.set_xlabel(u'Ð½Ð¾Ð¼ÐµÑ€ Ð´Ð½Ñ� Ð² Ð³Ð¾Ð´Ñƒ')
+        #ax22.set_xlabel(u'Ð½Ð¾Ð¼ÐµÑ€ Ð´Ð½Ñ� Ð² Ð³Ð¾Ð´Ñƒ') 
                       
         ax00.set_title('O2')
         ax01.set_title('NO2')        
@@ -321,7 +321,7 @@ class Window(QtGui.QDialog):
         ax00.fill_between(self.time,  fick_o2_np , 0 ,
                           where= fick_o2_np < 0.,color = towater, label=u"up")        
         #ax00.fill_between(self.time,  fick_o2_np , 0 ,
-        #                  where= fick_o2_np > 0.,color = tosed, label= u"в осадок" ) 
+        #                  where= fick_o2_np > 0.,color = tosed, label= u"Ð² Ð¾Ñ�Ð°Ð´Ð¾Ðº" ) 
         #ax00.fill_between(self.time,  fick_o2_np , 0 ,
         #                  where= fick_o2_np < 0.,color = towater, label="up")         
         
@@ -410,7 +410,7 @@ class Window(QtGui.QDialog):
                 self.num_var = n  
                                  
         gs = gridspec.GridSpec(2, 1) 
-        x = self.time #np.arange(6)
+        x = np.array(self.time) #np.arange(6)
         num_years = int(max(x)/365.)
         #print num_years
         
@@ -418,11 +418,17 @@ class Window(QtGui.QDialog):
         #self.figure = plt.figure(figsize=(5 ,self.xsize))       
                 
         
-        y = self.depth #np.arange(5)
-        y_sed = self.depth_sed
+        y = np.array(self.depth) #np.arange(5)
+        y_sed = np.array(self.depth_sed)
         
-        z1 = np.array(z).flatten()
-        zz = z1.reshape((len(x),len(y))).T
+        zz2 = np.array(z[0]) # delete unneeded array.flatten()
+        zz = []
+        for m in range(0,22):
+            for n in range(0,1460):
+                zz.append(zz2[n][m][2]) # take only third column for 2d brom
+        zz = np.array(zz).reshape(22,1460)        
+        #print (zz.shape)
+        #zz = z1.reshape((len(x),len(y))).T
         
         watmin = readdata.varmin(self,zz,0) #0 - water 
         watmax = readdata.varmax(self,zz,0)
@@ -482,7 +488,8 @@ class Window(QtGui.QDialog):
         # the level curves to draw, in increasing order    
         # If None, the first value of Z will correspond to the lower
         # left corner, location (0,0).  
-        # If ‘image’, the rc value for image.origin will be used.    
+        # If â€˜imageâ€™, the rc value for image.origin will be used.
+            
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
                               cmap=cmap)
 

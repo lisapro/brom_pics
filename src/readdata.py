@@ -54,7 +54,7 @@ def readdata_brom(self,fname):
     self.nh4 =  fh.variables['NH4'][:,:]
     self.pon =  fh.variables['PON'][:,:]
     self.don =  fh.variables['DON'][:,:]
-    self.o2  =  fh.variables['O2'][:,:]
+    self.o2  =  np.array(fh.variables['O2'][:,:])
     self.mn2 =  fh.variables['Mn2'][:,:]
     self.mn3 =  fh.variables['Mn3'][:,:]
     self.mn4 =  fh.variables['Mn4'][:,:]
@@ -237,7 +237,7 @@ def calculate_ywat(self):
   
 def calculate_ybbl(self):
     for n in range(0,(len(self.depth2)-1)):
-        if self.kz[1,n] == 0:
+        if self.kz[1,n,0] == 0:
             self.y2max = self.depth2[n]         
             self.ny2max = n         
             break  
@@ -257,7 +257,7 @@ def y2max_fill_water(self):
          
 def calculate_ysed(self):
     for n in range(0,(len(self.depth_sed))):
-        if self.kz[1,n] == 0:
+        if self.kz[1,n,0] == 0:
             ysed = self.depth_sed[n]  
             self.ysedmin =  ysed - 10
             self.ysedmax =  self.depth_sed[len(self.depth_sed)-1] 
