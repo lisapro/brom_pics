@@ -119,36 +119,36 @@ def readdata_brom(self,fname):
     # list of names to add to Combobox All year charts
     self.var_names_charts_year = (('All year(last) graphs'),
         ('NO2, NO3, NH4'),
-        ('PO4','SO4',' O2'),
-        ('H2S', 'PON', 'DON'),('DIC, Phy, Het'), 
-        ('pCO2','pH','Alk'),
-        ('MNII','MnIII','MnIV'),
-        ('MnS', 'MnCO3','bhan'), 
-        ('FeII','FeIII','FeS'),
-        ('FeCO3','FeS2','Si'),  
-        ('S0' ,'S2O3','Si_part'),
-        ('baae', 'bhae','baan'),
-        ('caco3', 'ch4', 'om_ca'), 
-        ('om_ar', 'co3', 'ca'),
-        ('sal','Temperature','O2'))  
-    len
+        ('PO4, SO4, O2'),
+        ('H2S, PON, DON'),('DIC, Phy, Het'), 
+        ('pCO2,pH,Alk'),
+        ('MNII,MnIII,MnIV'),
+        ('MnS, MnCO3,bhan'), 
+        ('FeII,FeIII,FeS'),
+        ('FeCO3,FeS2,Si'),  
+        ('S0 ,S2O3,Si_part'),
+        ('baae, bhae,baan'),
+        ('caco3, ch4, om_ca'), 
+        ('om_ar, co3, ca'),
+        ('salinity,Temperature,O2'))  
+    #len
     # list of titles to add to figures at All year charts    
     self.titles_all_year = (('All year charts'),
         (r'$\rm NO _2   \mu M/l$',r'$\rm NO _3  \mu M/l $',
-         r'$\rm NH _4   \mu M/l$'),#
-        ('PO4','SO4', r'$\rm O _2 \mu M/l $'),
-        ('H2S', 'PON', 'DON'),
-        ('DIC', 'Phy', 'Het'), 
-        ('pCO2','pH','Alk'),
-        ('MNII','MnIII','MnIV'),
-        ('MnS', 'MnCO3','bhan'), 
-        ('FeII','FeIII','FeS'),
-        ('FeCO3','FeS2','Si'),  
-        ('S0' ,'S2O3','Si_part'),
-        ('baae', 'bhae','baan'),
-        ('caco3', 'ch4', 'om_ca'), 
-        ('om_ar', 'co3', 'ca'),
-        ('sal','Temperature','O2'))     
+         r'$\rm NH _4   \mu M/l$'),
+        (r'$\rm PO _4 $',r'$\rm SO _4 $', r'$\rm O _2 \mu M/l $'),
+        (r'$\rm H _2 S $', r'$\rm PON $', r'$\rmDON $'),
+        (r'$\rm DIC $', r'$\rm Phy $', r'$\rm Het $'), 
+        (r'$\rm pCO _2 $',r'$\rm pH $',r'$\rm Alk $'),
+        (r'$\rm MnII $',r'$\rm MnIII $',r'$\rm MnIV $'),
+        (r'$\rm MnS $', r'$\rm MnCO _3 $',r'$\rm bhan $'), 
+        (r'$\rm FeII $',r'$\rm FeIII $',r'$\rm FeS $'),
+        (r'$\rm FeCO _3 $',r'$\rm FeS _2 $',r'$\rm Si $'),  
+        (r'$\rm S ^0 $' ,r'$\rm S _2 O _3 $',r'$\rm Si part $'),
+        (r'$\rm Baae $', r'$\rm Bhae $',r'$\rm Baan $'),
+        (r'$\rm CaCO _3 $', r'$\rm CH _4 $', r'$\rm \Omega Ca $'), 
+        (r'$\rm \Omega Aragonite $', r'$\rm CO _3 $', r'$\rm Ca $'),
+        (r'$\rm Salinity $',r'$\rm Temperature $',r'$\rm O _2 $'))     
      
     # list of variable names to connect titles and variables 
     self.vars_year = ([],

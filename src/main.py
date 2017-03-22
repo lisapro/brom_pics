@@ -29,7 +29,7 @@ import readdata
 class Window(QtGui.QDialog):
     #QDialog - the base class of dialog windows.Inherits QWidget.
     #QMainWindow - 
-    def __init__(self, parent=None, ):
+    def __init__(self, parent=None):
         super(Window, self).__init__(parent)
 
         # function to display the names of the window flags        
@@ -599,10 +599,10 @@ class Window(QtGui.QDialog):
         if self.num_var == 5: #pH 
             watmax1 = 9
             watmin1 = 6.5
-        elif self.num_var == 2: #po4
+        elif self.num_var == 2: #po4, so4
             watmax0 = 3  
-            watmax1 = 7000.          
-            watmin1 = 4000.            
+            #watmax1 = 7000.          
+            #watmin1 = 4000.            
         else:
             pass
                     
