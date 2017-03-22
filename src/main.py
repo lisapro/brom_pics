@@ -419,14 +419,20 @@ class Window(QtGui.QDialog):
                 
         
         y = np.array(self.depth) #np.arange(5)
+        
         y_sed = np.array(self.depth_sed)
         
         zz2 = np.array(z[0]) # delete unneeded array.flatten()
         zz = []
-        for m in range(0,22):
-            for n in range(0,1460):
-                zz.append(zz2[n][m][2]) # take only third column for 2d brom
-        zz = np.array(zz).reshape(22,1460)        
+        ylen = len(y)
+        xlen = len(x)
+
+          
+        ncolumn = raw_input("Please enter number of column: ")
+        for m in range(0,ylen):
+            for n in range(0,xlen):
+                zz.append(zz2[n][m][ncolumn]) # take only n's column for brom
+        zz = np.array(zz).reshape(ylen,xlen)        
         #print (zz.shape)
         #zz = z1.reshape((len(x),len(y))).T
         
