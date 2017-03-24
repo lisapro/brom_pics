@@ -37,63 +37,63 @@ width, height = screen_rect.width(), screen_rect.height()
 rc('font', **{'sans-serif' : 'Arial', #for unicode text
                 'family' : 'sans-serif'})  
       
-def readdata_brom(self,fname): 
+def readdata_brom(self,fname,varname): 
 
-    fh = Dataset(fname)
-    self.depth = fh.variables['z'][:] 
-    self.depth2 = fh.variables['z2'][:] #middle points
-    self.alk =  fh.variables['Alk'][:,:,:]
-    self.temp =  fh.variables['T'][:,:]
-    self.sal =  fh.variables['S'][:,:]
-    self.kz =  fh.variables['Kz'][:,:]
-    self.dic =  fh.variables['DIC'][:,:]
-    self.phy =  fh.variables['Phy'][:,:]
-    self.het =  fh.variables['Het'][:,:]
-    self.no3 =  fh.variables['NO3'][:,:]
-    self.po4 =  fh.variables['PO4'][:,:]
-    self.nh4 =  fh.variables['NH4'][:,:]
-    self.pon =  fh.variables['PON'][:,:]
-    self.don =  fh.variables['DON'][:,:]
-    self.o2  =  np.array(fh.variables['O2'][:,:])
-    self.mn2 =  fh.variables['Mn2'][:,:]
-    self.mn3 =  fh.variables['Mn3'][:,:]
-    self.mn4 =  fh.variables['Mn4'][:,:]
-    self.h2s =  fh.variables['H2S'][:,:]
-    self.mns =  fh.variables['MnS'][:,:]
-    self.mnco3 =  fh.variables['MnCO3'][:,:]
-    self.fe2 =  fh.variables['Fe2'][:,:]
-    self.fe3 =  fh.variables['Fe3'][:,:]
-    self.fes =  fh.variables['FeS'][:,:]
-    self.feco3 =  fh.variables['FeCO3'][:,:]
-    self.no2 =  fh.variables['NO2'][:,:]
-    self.s0 =  fh.variables['S0'][:,:]
-    self.s2o3 =  fh.variables['S2O3'][:,:]
-    self.so4 =  fh.variables['SO4'][:,:]
-    self.si =  fh.variables['Si'][:,:]
-    self.si_part =  fh.variables['Sipart'][:,:]
-    self.baae =  fh.variables['Baae'][:,:]
-    self.bhae =  fh.variables['Bhae'][:,:]
-    self.baan =  fh.variables['Baan'][:,:]
-    self.bhan =  fh.variables['Bhan'][:,:]
-    self.caco3 =  fh.variables['CaCO3'][:,:]
-    self.fes2 =  fh.variables['FeS2'][:,:]
-    self.ch4 =  fh.variables['CH4'][:,:]
-    self.ph =  fh.variables['pH'][:,:]
-    self.pco2 =  fh.variables['pCO2'][:,:]
-    self.om_ca =  fh.variables['Om_Ca'][:,:]
-    self.om_ar =  fh.variables['Om_Ar'][:,:]
-    self.co3 =  fh.variables['CO3'][:,:]
-    self.ca =  fh.variables['Ca'][:,:]
-    self.time =  fh.variables['time'][:]
-    self.fick_o2 = fh.variables['fick:O2'][:]
-    self.fick_no2 = fh.variables['fick:NO2'][:]    
-    self.fick_no3 = fh.variables['fick:NO3'][:]        
-    self.fick_si = fh.variables['fick:Si'][:]  
-    self.fick_h2s = fh.variables['fick:H2S'][:]              
-    self.fick_nh4 = fh.variables['fick:NH4'][:]        
-    self.fick_dic = fh.variables['fick:DIC'][:]        
-    self.fick_alk = fh.variables['fick:Alk'][:]        
-    self.fick_po4 = fh.variables['fick:PO4'][:]    
+    '''self.fh = Dataset(fname)
+    self.depth = self.fh.variables['z'][:] 
+    self.depth2 = self.fh.variables['z2'][:] #middle points
+    self.alk =  self.fh.variables['Alk'][:,:,:]
+    self.temp =  self.fh.variables['T'][:,:]
+    self.sal =  self.fh.variables['S'][:,:]
+    self.kz =  self.fh.variables['Kz'][:,:]
+    self.dic =  self.fh.variables['DIC'][:,:]
+    self.phy =  self.fh.variables['Phy'][:,:]
+    self.het =  self.fh.variables['Het'][:,:]
+    self.no3 =  self.fh.variables['NO3'][:,:]
+    self.po4 =  self.fh.variables['PO4'][:,:]
+    self.nh4 =  self.fh.variables['NH4'][:,:]
+    self.pon =  self.fh.variables['PON'][:,:]
+    self.don =  self.fh.variables['DON'][:,:]
+    self.o2  =  np.array(self.fh.variables['O2'][:,:])
+    self.mn2 =  self.fh.variables['Mn2'][:,:]
+    self.mn3 =  self.fh.variables['Mn3'][:,:]
+    self.mn4 =  self.fh.variables['Mn4'][:,:]
+    self.h2s =  self.fh.variables['H2S'][:,:]
+    self.mns =  self.fh.variables['MnS'][:,:]
+    self.mnco3 =  self.fh.variables['MnCO3'][:,:]
+    self.fe2 =  self.fh.variables['Fe2'][:,:]
+    self.fe3 =  self.fh.variables['Fe3'][:,:]
+    self.fes =  self.fh.variables['FeS'][:,:]
+    self.feco3 =  self.fh.variables['FeCO3'][:,:]
+    self.no2 =  self.fh.variables['NO2'][:,:]
+    self.s0 =  self.fh.variables['S0'][:,:]
+    self.s2o3 =  self.fh.variables['S2O3'][:,:]
+    self.so4 =  self.fh.variables['SO4'][:,:]
+    self.si =  self.fh.variables['Si'][:,:]
+    self.si_part =  self.fh.variables['Sipart'][:,:]
+    self.baae =  self.fh.variables['Baae'][:,:]
+    self.bhae =  self.fh.variables['Bhae'][:,:]
+    self.baan =  self.fh.variables['Baan'][:,:]
+    self.bhan =  self.fh.variables['Bhan'][:,:]
+    self.caco3 =  self.fh.variables['CaCO3'][:,:]
+    self.fes2 =  self.fh.variables['FeS2'][:,:]
+    self.ch4 =  self.fh.variables['CH4'][:,:]
+    self.ph =  self.fh.variables['pH'][:,:]
+    self.pco2 =  self.fh.variables['pCO2'][:,:]
+    self.om_ca =  self.fh.variables['Om_Ca'][:,:]
+    self.om_ar =  self.fh.variables['Om_Ar'][:,:]
+    self.co3 =  self.fh.variables['CO3'][:,:]
+    self.ca =  self.fh.variables['Ca'][:,:]
+    self.time =  self.fh.variables['time'][:]
+    self.fick_o2 = self.fh.variables['fick:O2'][:]
+    self.fick_no2 = self.fh.variables['fick:NO2'][:]    
+    self.fick_no3 = self.fh.variables['fick:NO3'][:]        
+    self.fick_si = self.fh.variables['fick:Si'][:]  
+    self.fick_h2s = self.fh.variables['fick:H2S'][:]              
+    self.fick_nh4 = self.fh.variables['fick:NH4'][:]        
+    self.fick_dic = self.fh.variables['fick:DIC'][:]        
+    self.fick_alk = self.fh.variables['fick:Alk'][:]        
+    self.fick_po4 = self.fh.variables['fick:PO4'][:]'''    
         
     self.vars = ([],[self.o2],[self.no3 ],[self.no2],
     [self.si], [self.alk],[self.po4],[self.nh4],
@@ -168,7 +168,7 @@ def readdata_brom(self,fname):
                       [[self.sal],[self.temp],[self.o2]],                                                                                 
     )
     
-    fh.close()
+    self.fh.close()
     self.lentime = len(self.time)
     # numbers of first days of each month to add to combobox 'One day'                           
     self.months_start = [1,32,61,92,122,153,183,
@@ -304,11 +304,11 @@ def depth_sed2(self):
                    
 def varmax(self,variable,vartype): 
     if vartype == 0: #water
-        n = variable[0:self.ny1max, 0:self.lentime].max() 
-           
+        n = variable[0:self.ny1max, 0:].max() 
+        # self.lentime   
     elif vartype == 1 :#sediment
-        n = variable[self.ny2min:, 0:self.lentime].max()
-
+        n = variable[self.ny2min:, 0:].max()
+       #self.lentime
     # make "beautiful"  values to show on ticks            
     if n > 10000. and n <= 100000.:  
         n = int(math.ceil(n/ 1000.0)) * 1000 + 1000.
@@ -359,11 +359,11 @@ def int_value(self,n,min,max):
 
 def varmin(self,variable,vartype):
     if vartype == 0 :
-        n = np.floor(variable[0:self.ny1max,0:self.lentime].min())
-
+        n = np.floor(variable[0:self.ny1max,0:].min())
+        #self.lentime
     elif vartype == 1 : 
-        n = np.floor(variable[self.ny2min:, 0:self.lentime].min()) 
-
+        n = np.floor(variable[self.ny2min:, 0:].min()) 
+        #self.lentime
     # make "beautiful"  values to show on ticks            
     if n > 10000. and n <= 100000.:  
         n = int(np.floor(n/ 1000.0)) * 1000 - 1000.

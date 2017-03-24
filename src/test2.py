@@ -16,10 +16,18 @@ fname = 'BROM_Baltic_out_10y.nc'
 fh = Dataset(fname)
 
 i = 0
-for n,l in fh.variables.items():
-    print (n,'--i--',l,'--i--',i)
-    i += 1 
+#def readfile(name, varname):  
+#    name = fh.variables[varname][:]
+#    return name, varname 
+
+
     
+print (varnames_list)    
+            #self.time_prof_box.addItem(str(names))
+
+
+
+
 '''
 for name, variable in fh.variables.items():   
     #name = variable # fh.variables['z'][:] # [{}.format(name)] 
