@@ -46,10 +46,7 @@ class Window(QtGui.QDialog):
         #app1 = QtGui.QApplication(sys.argv)
         #screen_rect = app1.desktop().screenGeometry()
         #width, height = screen_rect.width(), screen_rect.height()
-        
-
-        
-              
+             
         self.xsize = 8.27 
         self.figure = plt.figure(figsize=(11.69 ,self.xsize), dpi=100,
                                   facecolor='white') 
@@ -59,46 +56,30 @@ class Window(QtGui.QDialog):
                 
         # Set to make the inner widget resize with scroll area
         scrollArea = QtGui.QScrollArea()
-        
         scrollwidget = QtGui.QWidget()  #central widget   
-             
-        #scrollArea.setWidget(scrollwidget)
-
-        #scrollArea.setFixedHeight(400)
-        '''scrolllayout = QtGui.QHBoxLayout()   '''     
-
-        #scrollwidget.setLayout(scrolllayout)
                 
         # open file system to choose needed nc file 
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))   
 
-        # call submodule to read the nc file 
-        '''readdata.readdata_brom(self,fname) 
-        readdata.colors(self)        
-        readdata.calculate_ywat(self)
-        readdata.calculate_ybbl(self) 
-        readdata.depth_sed(self)   #calc depths in cm 
-        # kz is determined at midpoints, should be 
-        # calculated separately *self.depth2
-        readdata.depth_sed2(self)  #calc depths in cm for kz         
-        readdata.y2max_fill_water(self)                
-        readdata.calculate_ysed(self)
-        readdata.y_coords(self)  '''
-              
-           
         # Create widget 1                    
         self.time_prof_box = QtGui.QComboBox()
+        self.dist_prof_button = QtGui.QPushButton()
+        self.time_prof_button =  QtGui.QPushButton()         
         # add items to Combobox
-        
-        
+        self.numcol_2d = QtGui.QSpinBox()        
+        self.varname_box = QtGui.QSpinBox()     
+        self.numday_box = QtGui.QSpinBox() 
+        self.textbox = QtGui.QLineEdit()  
+        self.textbox2 = QtGui.QLineEdit()          
         '''for i in self.var_names_profile:
             self.time_prof_box.addItem(str(i))'''
             
         #varnames_list = []    
         self.fh =  Dataset(self.fname)
-        self.time_prof_box.addItem('plot')
-        
+
+                
+        #self.time_prof_box.addItem('plot 1D')        
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
                 pass
@@ -106,6 +87,28 @@ class Window(QtGui.QDialog):
                 pass 
             else :
                 self.time_prof_box.addItem(names)
+        
+        for names,vars in self.fh.variables.items():
+            if names == 'z' or names == 'z2' : 
+                pass
+            elif names == 'time' or names == 'i' : 
+                pass 
+            else :
+                testvar = np.array(self.fh[names][:])      
+                break  
+        lentime = len(self.fh['time'][:])
+        #print (self.lentime)
+            
+        #print ('testvar', testvar.shape[2])
+        self.textbox.setText(
+            'Number of columns = {}'.format(str(testvar.shape[2])))
+        self.textbox2.setText(
+            'Number of days = {}'.format(lentime))                
+        self.numcol_2d.setRange(0, int(testvar.shape[2]-1))   
+        self.numday_box.setRange(0, lentime-1)               
+        #self.varname_box = QtGui.QSpinBox()        
+                
+                
             #varnames_list.append(names)    
         #for names in self.fh.variables.items():
         #    print str(names)
@@ -115,13 +118,17 @@ class Window(QtGui.QDialog):
             
         # Define connection between clicking the button and 
         # calling the function to plot figures        
-        self.time_prof_box.currentIndexChanged.connect(
-            self.time_profile)        
-
+        ######3self.time_prof_box.currentIndexChanged.connect(
+        ######    self.time_profile)    
+        #self.numcol_2d.valueChanged.connect(
+        #    self.time_profile) 
+        self.time_prof_button.released.connect(self.time_profile)   
+        self.dist_prof_button.released.connect(self.dist_profile)           
         # Create widget 2         
         self.all_year_box = QtGui.QComboBox()
         # add items to Combobox        
-        
+        self.time_prof_button.setText('Show Time Profile')
+        self.dist_prof_button.setText('Show Dist Profile')        
         #for i in self.var_names_charts_year:
         #    self.all_year_box.addItem(str(i))
         # Define connection between clicking the button and 
@@ -129,55 +136,27 @@ class Window(QtGui.QDialog):
         #self.all_year_box.currentIndexChanged.connect(
         #    self.all_year_charts) 
 
-        # Create widget 3         
-        '''self.one_day_box = QtGui.QComboBox()
-        oModel=self.one_day_box.model()
-        # add items to Combobox        
-        head_item = QtGui.QStandardItem('Day to plot')
-        oModel.appendRow(head_item)
-        self.numday = 1
-        # calculate dates from juliandays and 
-        # add them to Combobox
-        for n in range(1, self.months_start[1]):
-            item = QtGui.QStandardItem(str(n)+ '/1'+ 
-                     ' (' + str(self.numday) + ')')                                       
-            oModel.appendRow(item)
-            item.setBackground(QtGui.QColor(self.wint))
-            self.numday = self.numday + 1      
-        for m in range(1,len(self.months_start)-1) :                 
-            start_date = self.months_start[m]
-            next_start_dat = self.months_start[m+1]
-            for n in range(1, int(next_start_dat - start_date)+1) :
-                item = QtGui.QStandardItem(str(n)+ '/' + str(m+1) + 
-                     ' (' + str(self.numday) + ')')
-                font = item.font()
-                item.setFont(font)                
-                oModel.appendRow(item)                
-                self.numday = self.numday + 1                 
-        # Define connection between clicking the button and 
-        # calling the function to plot figures                     
-        #self.one_day_box.currentIndexChanged.connect(
-        #    self.one_day_plot) 
-        
-        # Create widget 4 
-        #self.fick_box = QtGui.QComboBox()
-        # add items to Combobox        
-        #self.fick_box.addItem("Fluxes")
-        #self.fick_box.addItem("print")      
-        # Define connection between clicking the button and 
-        # calling the function to plot figures                 
-        #self.fick_box.currentIndexChanged.connect(
-        #    self.fluxes)  '''
+ 
                      
         # Here I change the size and style of buttons
         self.time_prof_box.setStyleSheet(
-        'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
-         'font: bold 25px;}') 
+        'QComboBox {background-color: #c2b4ae;padding: 2px;border-width: 5px;'
+         'font: bold 15px;}') 
         
         
-        '''self.one_day_box.setStyleSheet(
-        'QComboBox {background-color: #c2b4ae; border-width: 10px;'
-        '  padding: 6px; font: bold 25px; }')        
+        self.time_prof_button.setStyleSheet(
+        'QPushButton {background-color: #c2b4ae; border-width: 5px;'
+        '  padding: 2px; font: bold 15px; }') 
+         
+        self.dist_prof_button.setStyleSheet(
+        'QPushButton {background-color: #c2b4ae; border-width: 5px;'
+        '  padding: 2px; font: bold 15px; }')
+        
+        self.varname_box.setStyleSheet(
+        'QSpinBox {background-color: #c2b4ae; border-width: 5px;'
+        '  padding: 2px; font: bold 15px; }')
+                
+        '''     
         self.all_year_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
          'font: bold 25px;}')           
@@ -202,25 +181,32 @@ class Window(QtGui.QDialog):
         #Places the layout at position
         ##self.grid.addLayout(layout, 0, 0)
         
-        self.grid.addWidget(self.canvas, 2, 0,1,5) 
+        self.grid.addWidget(self.canvas, 3, 0,1,6) 
         #self.grid.addWidget(scrollwidget, 2, 0,1,5)                    
-        self.grid.addWidget(self.toolbar,1,0,1,1)    
-        self.grid.addWidget(self.time_prof_box,1,1,1,1)  
-        #self.grid.addWidget(self.all_year_box,1,2,1,1)       
-        #self.grid.addWidget(self.one_day_box,1,3,1,1) 
-        #self.grid.addWidget(self.fick_box,1,4,1,1)
-        ##self.qscrollLayout.addWidget(self.qfigWidget) 
-        #scrollwidget.setLayout(self.grid)        
+        self.grid.addWidget(self.toolbar,1,0,1,1)   
+         
+
+        self.grid.addWidget(self.time_prof_button,1,1,1,1)  
+        self.grid.addWidget(self.dist_prof_button,1,2,1,1) 
         
+        self.grid.addWidget(self.time_prof_box,1,3,1,1) 
+        self.grid.addWidget(self.numcol_2d ,1,4,1,1)              
+        self.grid.addWidget(self.textbox,1,5,1,1)     
+        self.grid.addWidget(self.numday_box,2,4,1,1)  
+        self.grid.addWidget(self.textbox2,2,5,1,1)
         
+
  
     def time_profile(self):
         
         plt.clf()
         index = str(self.time_prof_box.currentText())
         #print (index)
-        number = self.time_prof_box.currentIndex() 
-               
+        #number = self.time_prof_box.currentIndex() 
+        self.depth2 = self.fh.variables['z2'][:] #middle points
+        self.temp =  self.fh.variables['T'][:,:]
+        self.sal =  self.fh.variables['S'][:,:]
+        self.kz =  self.fh.variables['Kz'][:,:]                
         #var = varnames_list[number-1]
         #print (var)
 
@@ -231,19 +217,33 @@ class Window(QtGui.QDialog):
         ylen = len(self.depth) #95  
         
         self.time =  self.fh.variables['time'][:]
- 
-        #y = np.array(self.depth) #np.arange(5)
-        
+        x = np.array(self.time) #np.arange(6)
+        xlen = len(x) #365    
+         
         if (z.shape[1])> ylen:
             self.depth = np.array(self.fh.variables['z2'][:])    
         elif (z.shape[1]) == ylen :
             pass
         else :
             print ("wrong depth array size") 
-         
+            
+        
         y = self.depth 
         ylen = len(self.depth)           
-                      
+ 
+        #y = np.array(self.depth) #np.arange(5)
+        z2d = []
+        numcol = self.numcol_2d.value() # 
+        print (numcol) # QSpinBox.value()  #1 
+        if z.shape[2] > 1:
+            print (z.shape)
+            for n in range(0,xlen):
+                for m in range(0,ylen):
+                
+                    z2d.append(z[n][m][numcol]) # take only n's column for brom
+        #zz = np.array(zz).reshape(ylen,xlen)        
+            z = np.array(z2d)
+                              
         z = z.flatten()   
         z = z.reshape(len(self.time),len(self.depth))       
         zz = z.T      
@@ -375,36 +375,10 @@ class Window(QtGui.QDialog):
         self.font_txt = 15 #(height / 190.)  # text on figure 2 (Water; BBL, Sed) 
         self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
         self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
-        self.linewidth = 0.7           
-        #num_years = int(max(x)/365.)
-        #print num_years
-        
-        #self.xsize = 8.27 
-        #self.figure = plt.figure(figsize=(5 ,self.xsize))       
-                
-        
+        self.linewidth = 0.7                 
       
-        x = np.array(self.time) #np.arange(6)
-        
         y_sed = np.array(self.depth_sed)
-        
-        #zz2 = np.array(z)#.flatten # delete unneeded array.flatten()
-
-        xlen = len(x) #365        
-        # 3zz3 = np.array(zz2).reshape(ylen,xlen) 
-        # zz = np.array(zz3)# for 2d
-        
-        #print (x.shape, y.shape,zz2.shape)
           
-        #ncolumn = raw_input("Please enter number of column: ")
-        #for m in range(0,ylen):
-        #    for n in range(0,xlen):
-        #        zz.append(zz2[n][m][ncolumn]) # take only n's column for brom
-        #zz = np.array(zz2).reshape(ylen,xlen)        
-        #print (zz.shape)
-        
-        #zz = z1.reshape((len(x),len(y))).T
-        
         watmin = readdata.varmin(self,zz,0) #0 - water 
         watmax = readdata.varmax(self,zz,0)
         sed_min = readdata.varmin(self,zz,1)
@@ -429,8 +403,6 @@ class Window(QtGui.QDialog):
             else:     
                 sed_max = sed_max + sed_max/10.   
              
-        #print (watmin,watmax, sed_min, sed_max )
-        #set constant min and max for pH
         '''if self.num_var == 34: 
             watmax = 9
             watmin = 6.8
@@ -510,7 +482,121 @@ class Window(QtGui.QDialog):
         self.canvas.draw() 
         
 
+    def dist_profile(self): 
+        plt.clf()
+        index = str(self.time_prof_box.currentText())
+        numday = self.numday_box.value()  
+        
+        z = np.array(self.fh.variables[index]) 
+        
+        self.depth2 = self.fh.variables['z2'][:] #middle points
+        self.kz =  self.fh.variables['Kz'][:,:]     
+        dist = np.array(self.fh.variables['i'])                
+        self.depth = np.array(self.fh.variables['z'][:])   
+        ylen = len(self.depth) #95  
  
+        # for some variables defined at grid middlepoints
+        if (z.shape[1])> ylen:
+            self.depth = np.array(self.fh.variables['z2'][:])    
+        elif (z.shape[1]) == ylen :
+            pass
+        else :
+            print ("wrong depth array size") 
+         
+        y = self.depth 
+        ylen = len(self.depth) 
+                   
+        #self.time =  self.fh.variables['time'][:]
+
+
+        x = dist
+        xlen = len(x)  
+        print('xlen', xlen)
+        print('ylen', ylen)       
+
+        print ('numday', numday) # QSpinBox.value()  #1 
+        z2d = []
+        if z.shape[2] > 1: 
+            print ('zshape', z.shape)
+            for n in range(0,xlen): # distance 
+                for m in range(0,ylen):  # depth              
+                    z2d.append(z[numday][m][n]) # take only n's column for brom
+                    #print (z2d)
+                    
+        else:
+            print ('it is 1D BROM')            
+        #zz = np.array(zz).reshape(ylen,xlen)        
+        z = np.array(z2d)
+        print ('z2d')
+        #z = z.flatten()   
+        print ('shape z', z.shape)
+        z = z.reshape(xlen,ylen)       
+        zz = z.T 
+        #print (zz)
+        
+        #def calculate_ywat(self):
+        for n in range(0,(len(self.depth2)-1)):
+            print ('depth2',len(self.depth2),n)
+            if self.depth2[n+1] - self.depth2[n] >= 0.5:
+                pass
+            elif self.depth2[n+1] - self.depth2[n] < 0.50:    
+                y1max = (self.depth2[n])
+                y1max = y1max                                                      
+                self.ny1max = n
+                break             
+            
+
+        gs = gridspec.GridSpec(2, 1) 
+        
+        X,Y = np.meshgrid(x,y)
+        #X_sed,Y_sed = np.meshgrid(x,y_sed)
+        
+        ax = self.figure.add_subplot(gs[0])
+        ax2 = self.figure.add_subplot(gs[1])
+        ax.set_title(index)
+        ax.set_ylim(y1max-1,0)  
+        print (y1max-1 )
+
+        #watmin = math.floor(zz[0:self.ny1max,0:].min())# np.floor()
+        #watmax = math.ceil(zz[0:self.ny1max, 0:].max()) #np.round() 
+        
+        watmin = readdata.varmin(self,np.array(self.fh.variables[index]) ,0) #0 - water 
+        watmax = readdata.varmax(self,np.array(self.fh.variables[index]) ,0)
+        
+        print ('maxmin', watmin,watmax)
+        self.num = 50.            
+        wat_levs = np.linspace(watmin,watmax,num= self.num)
+        #sed_levs = np.linspace(sed_min,sed_max,
+        #                     num = self.num)
+                
+        int_wat_levs = []
+        int_sed_levs= []
+                
+        for n in wat_levs:
+            n = readdata.int_value(self,n,watmin,watmax)
+            int_wat_levs.append(n)            
+        '''for n in sed_levs:
+            n = readdata.int_value(self,n,sed_min,
+                                   sed_max)
+            int_sed_levs.append(n)        '''    
+                      
+        #define color maps 
+        cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
+        #cmap1 = plt.cm.rainbow  
+                
+        CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
+                              cmap=cmap)
+        print(zz)
+
+        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])                
+        #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+        
+        wat_ticks = readdata.ticks(watmin,watmax) 
+        
+        cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)        
+        print (numday,dist)      
+        self.canvas.draw() 
+    
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setStyle("plastique")

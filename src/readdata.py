@@ -93,8 +93,10 @@ def readdata_brom(self,fname,varname):
     self.fick_nh4 = self.fh.variables['fick:NH4'][:]        
     self.fick_dic = self.fh.variables['fick:DIC'][:]        
     self.fick_alk = self.fh.variables['fick:Alk'][:]        
-    self.fick_po4 = self.fh.variables['fick:PO4'][:]'''    
-        
+    self.fick_po4 = self.fh.variables['fick:PO4'][:]''' 
+       
+       
+         
     self.vars = ([],[self.o2],[self.no3 ],[self.no2],
     [self.si], [self.alk],[self.po4],[self.nh4],
     [self.h2s ],[self.pon], [self.don],[self.dic],[self.phy],
@@ -359,12 +361,14 @@ def int_value(self,n,min,max):
 
 def varmin(self,variable,vartype):
     if vartype == 0 :
+        calculate_ywat(self)
         n = np.floor(variable[0:self.ny1max,0:].min())
         #self.lentime
     elif vartype == 1 : 
         n = np.floor(variable[self.ny2min:, 0:].min()) 
         #self.lentime
-    # make "beautiful"  values to show on ticks            
+    # make "beautiful"  values to show on ticks
+    print (n)            
     if n > 10000. and n <= 100000.:  
         n = int(np.floor(n/ 1000.0)) * 1000 - 1000.
     elif n > 1000. and n <= 10000.:  
