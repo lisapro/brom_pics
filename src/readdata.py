@@ -235,7 +235,9 @@ def calculate_ywat(self):
             y1max = (self.depth2[n])
             self.y1max = y1max                                                      
             self.ny1max = n
+            print ('ny1max', self.ny1max)
             break
+        
   
 def calculate_ybbl(self):
     for n in range(0,(len(self.depth2)-1)):
@@ -306,10 +308,10 @@ def depth_sed2(self):
                    
 def varmax(self,variable,vartype): 
     if vartype == 0: #water
-        n = variable[0:self.ny1max, 0:].max() 
+        n = variable[0:self.ny1max-1, 0:].max() 
         # self.lentime   
     elif vartype == 1 :#sediment
-        n = variable[self.ny2min:, 0:].max()
+        n = variable[self.ny2min-1:, 0:].max()
        #self.lentime
     # make "beautiful"  values to show on ticks            
     if n > 10000. and n <= 100000.:  
@@ -362,10 +364,10 @@ def int_value(self,n,min,max):
 def varmin(self,variable,vartype):
     if vartype == 0 :
         calculate_ywat(self)
-        n = np.floor(variable[0:self.ny1max,0:].min())
+        n = np.floor(variable[0:self.ny1max-1,0:].min())
         #self.lentime
     elif vartype == 1 : 
-        n = np.floor(variable[self.ny2min:, 0:].min()) 
+        n = np.floor(variable[self.ny2min-1:, 0:].min()) 
         #self.lentime
     # make "beautiful"  values to show on ticks
     print (n)            

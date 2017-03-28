@@ -55,8 +55,8 @@ class Window(QtGui.QDialog):
                            'family' : 'sans-serif'})  
                 
         # Set to make the inner widget resize with scroll area
-        scrollArea = QtGui.QScrollArea()
-        scrollwidget = QtGui.QWidget()  #central widget   
+        ##scrollArea = QtGui.QScrollArea()
+        ##scrollwidget = QtGui.QWidget()  #central widget   
                 
         # open file system to choose needed nc file 
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
@@ -79,7 +79,8 @@ class Window(QtGui.QDialog):
         self.fh =  Dataset(self.fname)
 
                 
-        #self.time_prof_box.addItem('plot 1D')        
+        #self.time_prof_box.addItem('plot 1D')  
+        # add only 2d arrays to variables list       
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
                 pass
@@ -88,23 +89,25 @@ class Window(QtGui.QDialog):
             else :
                 self.time_prof_box.addItem(names)
         
+        #read i variable to know number of columns 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
                 pass
-            elif names == 'time' or names == 'i' : 
+            elif names == 'time': # or names == 'i' : 
                 pass 
             else :
-                testvar = np.array(self.fh[names][:])      
+                testvar = np.array(self.fh['i'][:])      
                 break  
+        
         lentime = len(self.fh['time'][:])
         #print (self.lentime)
             
         #print ('testvar', testvar.shape[2])
         self.textbox.setText(
-            'Number of columns = {}'.format(str(testvar.shape[2])))
+            'Number of columns = {}'.format(str(testvar.shape[0])))
         self.textbox2.setText(
             'Number of days = {}'.format(lentime))                
-        self.numcol_2d.setRange(0, int(testvar.shape[2]-1))   
+        self.numcol_2d.setRange(0, int(testvar.shape[0]-1))   
         self.numday_box.setRange(0, lentime-1)               
         #self.varname_box = QtGui.QSpinBox()        
                 
@@ -247,44 +250,64 @@ class Window(QtGui.QDialog):
         z = z.flatten()   
         z = z.reshape(len(self.time),len(self.depth))       
         zz = z.T      
-        
-        #print (zz)
-        #print (z)    
-        self.depth2 = self.fh.variables['z2'][:] #middle points
-        self.temp =  self.fh.variables['T'][:,:]
-        self.sal =  self.fh.variables['S'][:,:]
-        self.kz =  self.fh.variables['Kz'][:,:]        
+      
 
         #self.fh.close()
 
 
         #def calculate_ybbl(self):
         for n in range(0,(len(self.depth2)-1)):
-            if self.kz[1,n,0] == 0:
+            if self.kz[0,n,0] == 0:
                 self.y2max = self.depth2[n]         
-                self.ny2max = n         
+                self.ny2max = n 
+            elif self.kz[0,n,0] != 0 and n == (len(self.depth2)-1)-1 :  
+                self.ny2max = n  
+                self.y2max = self.depth2[n]    
+                print (self.ny2max)
                 break 
-       
+        print ('y2max', self.y2max)
         #def depth_sed(self):
+        
         to_float = []
         for item in self.depth:
             to_float.append(float(item)) #make a list of floats from tuple 
         depth_sed = [] # list for storing final depth data for sediment 
         v=0  
+        
         for i in to_float:
             v = (i- self.y2max)*100  #convert depth from m to cm
             depth_sed.append(v)
             self.depth_sed = depth_sed
-                    
+         
+        lendepth2 = len(self.depth2)    
         #def calculate_ywat(self):
-        for n in range(0,(len(self.depth2)-1)):
+        for n in range(0,lendepth2-1):
             if self.depth2[n+1] - self.depth2[n] >= 0.5:
-                pass
+                print(n, self.depth2[n+1] - self.depth2[n],(len(self.depth2)-1))
+                if n == lendepth2-2: # len(self.depth2):
+                    y1max = (self.depth2[n])
+                    self.y1max = y1max                                                      
+                    self.ny1max = n
+                    print ("self.ny1max",self.ny1max)        
+                    break             
+                #pass
             elif self.depth2[n+1] - self.depth2[n] < 0.50:    
                 y1max = (self.depth2[n])
                 self.y1max = y1max                                                      
                 self.ny1max = n
+                print('in')
                 break             
+            
+            '''elif  (self.depth2[n+1] - self.depth2[n]) >= 0.5 :
+                print ('in n 33')
+                y1max = (self.depth2[n])
+                self.y1max = y1max                                                      
+                self.ny1max = n
+                print ("self.ny1max",self.ny1max)     
+                break  ''' 
+
+
+
                     
         #def y2max_fill_water(self):
         for n in range(0,(len(self.depth2)-1)):
@@ -296,6 +319,10 @@ class Window(QtGui.QDialog):
                 self.y2max_fill_water = self.depth2[n] 
                 self.nbblmin = n            
                 break 
+            elif n == (len(self.depth2)-2) and self.depth2[n+1] - self.depth2[n] >= 0.5 :
+                self.y2max_fill_water = self.depth2[n] 
+                self.nbblmin = n              
+            
              
         #def calculate_ysed(self):
         for n in range(0,(len(self.depth_sed))):
@@ -484,17 +511,20 @@ class Window(QtGui.QDialog):
 
     def dist_profile(self): 
         plt.clf()
+        
         index = str(self.time_prof_box.currentText())
         numday = self.numday_box.value()  
-        
         z = np.array(self.fh.variables[index]) 
-        
+
+       
         self.depth2 = self.fh.variables['z2'][:] #middle points
-        self.kz =  self.fh.variables['Kz'][:,:]     
         dist = np.array(self.fh.variables['i'])                
-        self.depth = np.array(self.fh.variables['z'][:])   
-        ylen = len(self.depth) #95  
- 
+        self.depth = np.array(self.fh.variables['z'][:])    
+
+        y = self.depth 
+        ylen = len(self.depth)        
+        xlen = len(dist)  
+         
         # for some variables defined at grid middlepoints
         if (z.shape[1])> ylen:
             self.depth = np.array(self.fh.variables['z2'][:])    
@@ -503,78 +533,71 @@ class Window(QtGui.QDialog):
         else :
             print ("wrong depth array size") 
          
-        y = self.depth 
-        ylen = len(self.depth) 
-                   
-        #self.time =  self.fh.variables['time'][:]
-
-
-        x = dist
-        xlen = len(x)  
-        print('xlen', xlen)
-        print('ylen', ylen)       
-
-        print ('numday', numday) # QSpinBox.value()  #1 
+        
         z2d = []
         if z.shape[2] > 1: 
             print ('zshape', z.shape)
             for n in range(0,xlen): # distance 
                 for m in range(0,ylen):  # depth              
                     z2d.append(z[numday][m][n]) # take only n's column for brom
-                    #print (z2d)
-                    
+                #print ('1iteration', z2d)    
+                #break                
         else:
-            print ('it is 1D BROM')            
+            print ('it is 1D BROM')  
+                      
         #zz = np.array(zz).reshape(ylen,xlen)        
-        z = np.array(z2d)
-        print ('z2d')
-        #z = z.flatten()   
-        print ('shape z', z.shape)
+        z2 = np.array(z2d)
+        print ('z2d shape',z2.shape)
+        z = z2.flatten()   
+
         z = z.reshape(xlen,ylen)       
         zz = z.T 
-        #print (zz)
-        
-        #def calculate_ywat(self):
+        print (self.depth2)    
         for n in range(0,(len(self.depth2)-1)):
-            print ('depth2',len(self.depth2),n)
+            #print ('depth2',len(self.depth2),n)
             if self.depth2[n+1] - self.depth2[n] >= 0.5:
                 pass
             elif self.depth2[n+1] - self.depth2[n] < 0.50:    
                 y1max = (self.depth2[n])
+                print (y1max)
                 y1max = y1max                                                      
-                self.ny1max = n
-                break             
-            
+                ny1max = n
+                print ('ny1max', self.ny1max)
+                break     
+                    
 
-        gs = gridspec.GridSpec(2, 1) 
+        readdata.calculate_ywat(self)
         
-        X,Y = np.meshgrid(x,y)
-        #X_sed,Y_sed = np.meshgrid(x,y_sed)
+        gs = gridspec.GridSpec(1, 1) 
+        
+        X,Y = np.meshgrid(dist,y)
+
         
         ax = self.figure.add_subplot(gs[0])
-        ax2 = self.figure.add_subplot(gs[1])
+        #ax2 = self.figure.add_subplot(gs[1])
         ax.set_title(index)
-        ax.set_ylim(y1max-1,0)  
-        print (y1max-1 )
-
-        #watmin = math.floor(zz[0:self.ny1max,0:].min())# np.floor()
-        #watmax = math.ceil(zz[0:self.ny1max, 0:].max()) #np.round() 
         
-        watmin = readdata.varmin(self,np.array(self.fh.variables[index]) ,0) #0 - water 
-        watmax = readdata.varmax(self,np.array(self.fh.variables[index]) ,0)
+        data = np.array(self.fh.variables[index])
+       
+        #watmin = readdata.varmin(self,np.array(self.fh.variables[index]) ,0) #0 - water 
+        watmin = data[:].min() #-(data[0:xlen, 0:, :].min()) #/3. #self.ny1max-1
+        watmax = data[:].max() #+(data[0:xlen, 0:, :].min()) #/3. #self.ny1max-1
+        #watmax = readdata.varmax(self,np.array(self.fh.variables[index]) ,0)
         
         print ('maxmin', watmin,watmax)
         self.num = 50.            
-        wat_levs = np.linspace(watmin,watmax,num= self.num)
+        wat_levs = np.linspace(watmin,watmax, num= self.num)
         #sed_levs = np.linspace(sed_min,sed_max,
         #                     num = self.num)
-                
+        print (watmin,watmax)       
+        print (zz)
         int_wat_levs = []
         int_sed_levs= []
                 
         for n in wat_levs:
             n = readdata.int_value(self,n,watmin,watmax)
             int_wat_levs.append(n)            
+            
         '''for n in sed_levs:
             n = readdata.int_value(self,n,sed_min,
                                    sed_max)
@@ -583,18 +606,22 @@ class Window(QtGui.QDialog):
         #define color maps 
         cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
         #cmap1 = plt.cm.rainbow  
-                
+        
+              
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
                               cmap=cmap)
-        print(zz)
+        
+        ax.scatter(X,Y, c = zz)  
+        #ax.set_ylim(300,0)  
 
-        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])                
+        cax = self.figure.add_axes() #[0.92, 0.53, 0.02, 0.35]                
         #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
         
         wat_ticks = readdata.ticks(watmin,watmax) 
         
-        cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)        
-        print (numday,dist)      
+        cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)   
+        cb.set_ticks(wat_ticks)       
+        #print (numday,dist)      
         self.canvas.draw() 
     
 if __name__ == '__main__':
