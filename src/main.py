@@ -77,7 +77,6 @@ class Window(QtGui.QDialog):
             
         #varnames_list = []    
         self.fh =  Dataset(self.fname)
-
                 
         #self.time_prof_box.addItem('plot 1D')  
         # add only 2d arrays to variables list       
@@ -101,7 +100,7 @@ class Window(QtGui.QDialog):
         
         lentime = len(self.fh['time'][:])
         #print (self.lentime)
-            
+        self.fh.close()    
         #print ('testvar', testvar.shape[2])
         self.textbox.setText(
             'Number of columns = {}'.format(str(testvar.shape[0])))
@@ -198,51 +197,41 @@ class Window(QtGui.QDialog):
         self.grid.addWidget(self.numday_box,2,4,1,1)  
         self.grid.addWidget(self.textbox2,2,5,1,1)
         
-
- 
+        readdata.readdata2_brom(self,self.fname)     
+        readdata.calculate_ywat(self)
+        readdata.calculate_ybbl(self)          
+        readdata.depth_sed(self)
+        readdata.colors(self)
+        
     def time_profile(self):
         
         plt.clf()
         index = str(self.time_prof_box.currentText())
-        #print (index)
-        #number = self.time_prof_box.currentIndex() 
-        self.depth2 = self.fh.variables['z2'][:] #middle points
-        self.temp =  self.fh.variables['T'][:,:]
-        self.sal =  self.fh.variables['S'][:,:]
-        self.kz =  self.fh.variables['Kz'][:,:]                
-        #var = varnames_list[number-1]
-        #print (var)
-
-        #z222 = self.fh.variables['DIC'][:][:]  
+        # read chosen variable 
         z = np.array(self.fh.variables[index]) 
-        
-        self.depth = np.array(self.fh.variables['z'][:])   
+         
         ylen = len(self.depth) #95  
-        
-        self.time =  self.fh.variables['time'][:]
+
         x = np.array(self.time) #np.arange(6)
         xlen = len(x) #365    
          
-        if (z.shape[1])> ylen:
-            self.depth = np.array(self.fh.variables['z2'][:])    
+        # check if the variable is defined of middlepoints  
+        if (z.shape[1])> ylen: 
+            y = self.depth2
         elif (z.shape[1]) == ylen :
-            pass
+            y = self.depth #pass
         else :
             print ("wrong depth array size") 
-            
-        
-        y = self.depth 
-        ylen = len(self.depth)           
- 
-        #y = np.array(self.depth) #np.arange(5)
+
+        ylen = len(y)           
+
         z2d = []
         numcol = self.numcol_2d.value() # 
-        print (numcol) # QSpinBox.value()  #1 
+        print ('number of column', numcol) # QSpinBox.value()  #1 
         if z.shape[2] > 1:
             print (z.shape)
             for n in range(0,xlen):
-                for m in range(0,ylen):
-                
+                for m in range(0,ylen):                
                     z2d.append(z[n][m][numcol]) # take only n's column for brom
         #zz = np.array(zz).reshape(ylen,xlen)        
             z = np.array(z2d)
@@ -266,8 +255,9 @@ class Window(QtGui.QDialog):
                 print (self.ny2max)
                 break 
         print ('y2max', self.y2max)
-        #def depth_sed(self):
         
+        #def depth_sed(self):
+        '''
         to_float = []
         for item in self.depth:
             to_float.append(float(item)) #make a list of floats from tuple 
@@ -277,38 +267,11 @@ class Window(QtGui.QDialog):
         for i in to_float:
             v = (i- self.y2max)*100  #convert depth from m to cm
             depth_sed.append(v)
-            self.depth_sed = depth_sed
+            self.depth_sed = depth_sed'''
          
-        lendepth2 = len(self.depth2)    
-        #def calculate_ywat(self):
-        for n in range(0,lendepth2-1):
-            if self.depth2[n+1] - self.depth2[n] >= 0.5:
-                print(n, self.depth2[n+1] - self.depth2[n],(len(self.depth2)-1))
-                if n == lendepth2-2: # len(self.depth2):
-                    y1max = (self.depth2[n])
-                    self.y1max = y1max                                                      
-                    self.ny1max = n
-                    print ("self.ny1max",self.ny1max)        
-                    break             
-                #pass
-            elif self.depth2[n+1] - self.depth2[n] < 0.50:    
-                y1max = (self.depth2[n])
-                self.y1max = y1max                                                      
-                self.ny1max = n
-                print('in')
-                break             
-            
-            '''elif  (self.depth2[n+1] - self.depth2[n]) >= 0.5 :
-                print ('in n 33')
-                y1max = (self.depth2[n])
-                self.y1max = y1max                                                      
-                self.ny1max = n
-                print ("self.ny1max",self.ny1max)     
-                break  ''' 
-
-
-
-                    
+        lendepth2 = len(self.depth2)   
+         
+                   
         #def y2max_fill_water(self):
         for n in range(0,(len(self.depth2)-1)):
     #        if depth[_]-depth[_?]
@@ -454,9 +417,7 @@ class Window(QtGui.QDialog):
         ax.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis 
         ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
         ax2.set_xlabel('Number of day',fontsize= self.font_txt) 
-            
-      
-        
+                          
         self.num = 50.            
         wat_levs = np.linspace(watmin,watmax,num= self.num)
         sed_levs = np.linspace(sed_min,sed_max,
@@ -473,9 +434,7 @@ class Window(QtGui.QDialog):
                                    sed_max)
             int_sed_levs.append(n)            
                       
-        #define color maps 
-        cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
-        cmap1 = plt.cm.rainbow  
+        
 
         ## contourf() draw contour lines and filled contours
         # levels = A list of floating point numbers indicating 
@@ -485,10 +444,10 @@ class Window(QtGui.QDialog):
         # If â€˜imageâ€™, the rc value for image.origin will be used.
             
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
-                              cmap=cmap)
+                              cmap= self.cmap)
 
         CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = int_sed_levs,
-                              cmap=cmap1) #, origin='lower'
+                              cmap= self.cmap1) #, origin='lower'
        
         # Add an axes at position rect [left, bottom, width, height]
         cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])                
@@ -502,7 +461,7 @@ class Window(QtGui.QDialog):
         #cb.set_label('Water')
         
 
-        #cb.set_ticks(wat_ticks)
+        cb.set_ticks(wat_ticks)
         cb_sed.set_ticks(sed_ticks)  
         ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )     
   
@@ -517,13 +476,13 @@ class Window(QtGui.QDialog):
         z = np.array(self.fh.variables[index]) 
 
        
-        self.depth2 = self.fh.variables['z2'][:] #middle points
-        dist = np.array(self.fh.variables['i'])                
-        self.depth = np.array(self.fh.variables['z'][:])    
+        #self.depth2 = self.fh.variables['z2'][:] #middle points
+        #dist = np.array(self.fh.variables['i'])                
+        #self.depth = np.array(self.fh.variables['z'][:])    
 
         y = self.depth 
         ylen = len(self.depth)        
-        xlen = len(dist)  
+        xlen = len(self.dist)  
          
         # for some variables defined at grid middlepoints
         if (z.shape[1])> ylen:
@@ -562,19 +521,19 @@ class Window(QtGui.QDialog):
                 print (y1max)
                 y1max = y1max                                                      
                 ny1max = n
-                print ('ny1max', self.ny1max)
+                print ('distance ny1max', self.ny1max)
                 break     
                     
 
-        readdata.calculate_ywat(self)
         
-        gs = gridspec.GridSpec(1, 1) 
         
-        X,Y = np.meshgrid(dist,y)
+        gs = gridspec.GridSpec(2, 1) 
+        
+        X,Y = np.meshgrid(self.dist,y)
 
         
         ax = self.figure.add_subplot(gs[0])
-        #ax2 = self.figure.add_subplot(gs[1])
+        ax2 = self.figure.add_subplot(gs[1])
         ax.set_title(index)
         
         data = np.array(self.fh.variables[index])
@@ -604,22 +563,27 @@ class Window(QtGui.QDialog):
             int_sed_levs.append(n)        '''    
                       
         #define color maps 
-        cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
+        #cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
         #cmap1 = plt.cm.rainbow  
         
               
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
-                              cmap=cmap)
+                              cmap=self.cmap)
         
+        CS1 = ax2.contourf(X,Y, zz, levels= int_wat_levs,
+                              cmap=self.cmap1)      
+          
         ax.scatter(X,Y, c = zz)  
-        #ax.set_ylim(300,0)  
-
-        cax = self.figure.add_axes() #[0.92, 0.53, 0.02, 0.35]                
-        #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+        ax.set_ylim(self.y1max,0)  
+        ax2.set_ylim(self.y3max, self.y1max) 
+        
+        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])                
+        cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
         
         wat_ticks = readdata.ticks(watmin,watmax) 
         
         cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)   
+        cb1 = plt.colorbar(CS1,cax = cax,ticks = wat_ticks)         
         cb.set_ticks(wat_ticks)       
         #print (numday,dist)      
         self.canvas.draw() 

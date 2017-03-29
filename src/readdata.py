@@ -38,7 +38,9 @@ rc('font', **{'sans-serif' : 'Arial', #for unicode text
                 'family' : 'sans-serif'})  
       
 def readdata_brom(self,fname,varname): 
-
+    
+    
+ 
     '''self.fh = Dataset(fname)
     self.depth = self.fh.variables['z'][:] 
     self.depth2 = self.fh.variables['z2'][:] #middle points
@@ -183,14 +185,24 @@ def readdata_brom(self,fname,varname):
     #def calc_last_year(self):
     self.start_last_year = self.lentime - 365  
     #self.last_year_time = self.time[self.start_last_year:]
+
+
+def readdata2_brom(self,fname):  
+    print ('in readdata_brom')   
+    self.fh = Dataset(fname)
+    self.depth = self.fh.variables['z'][:] 
+    self.depth2 = self.fh.variables['z2'][:] #middle points   
+    self.kz =  self.fh.variables['Kz'][:,:] 
+    self.time =  self.fh.variables['time'][:]
+    self.dist = np.array(self.fh.variables['i']) 
+    self.lendepth2 = len(self.depth2)
     
 def colors(self):
     self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
     self.wint =  '#8dc0e7'
     self.summ = '#d0576f' 
     self.a_w = 0.4 #alpha_wat alpha (transparency) for winter
-    self.a_bbl = 0.3 
-    
+    self.a_bbl = 0.3     
     self.a_s = 0.4 #alpha (transparency) for summer
     self.a_aut = 0.4 #alpha (transparency) for autumn and spring    
     self.wat_col = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
@@ -199,7 +211,9 @@ def colors(self):
     self.wat_col1 = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
     self.bbl_col1 = '#ccd6de' # for plot 1,2,3,4,5,1_1,2_2,etc.
     self.sed_col1 = '#a3abb1'
-
+        #define color maps 
+    self.cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
+    self.cmap1 = plt.cm.rainbow 
 
     
     # disctances between x axes
@@ -230,23 +244,32 @@ def colors(self):
 def calculate_ywat(self):
     for n in range(0,(len(self.depth2)-1)):
         if self.depth2[n+1] - self.depth2[n] >= 0.5:
-            pass
+            if n == self.lendepth2-2: # len(self.depth2):
+                y1max = (self.depth2[n])
+                self.y1max = y1max                                                      
+                self.ny1max = n
+                print ('no sediment y wat', self.y1max)        
+                break  
         elif self.depth2[n+1] - self.depth2[n] < 0.50:    
             y1max = (self.depth2[n])
             self.y1max = y1max                                                      
             self.ny1max = n
-            print ('ny1max', self.ny1max)
+            print ('calc_y_wat_y1max', self.y1max)
             break
         
   
 def calculate_ybbl(self):
     for n in range(0,(len(self.depth2)-1)):
+        
         if self.kz[1,n,0] == 0:
             self.y2max = self.depth2[n]         
-            self.ny2max = n         
+            self.ny2max = n  
+            print ('in kz = 0' ,self.kz[0,n,0])      
             break  
-        
-
+        if self.kz[1,n,0] != 0 and n == (len(self.depth2)-2):       
+            self.y2max = self.depth2[n]         
+            self.ny2max = n  
+            print ('no sediment' , self.kz[0,n,0],n)   
             
 def y2max_fill_water(self):
     for n in range(0,(len(self.depth2)-1)):
@@ -269,7 +292,9 @@ def calculate_ysed(self):
             self.nysedmin = n 
             #here we cach part of BBL to add to 
             #the sediment image                
-            break            
+            break  
+    print (self.y3min)              
+    
 def y_coords(self):       
     #self.y2min = self.y2max - 2*(self.y2max - self.y1max)
     #calculate the position of y2min, for catching part of BBL 
@@ -283,7 +308,7 @@ def y_coords(self):
           
     #calculate the position of y2min, for catching part of BBL 
 
-
+# calc depth in cm from sed/wat interface 
 def depth_sed(self):
     to_float = []
     for item in self.depth:
@@ -294,8 +319,6 @@ def depth_sed(self):
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed.append(v)
         self.depth_sed = depth_sed
-
-def depth_sed2(self):
     to_float = []
     for item in self.depth2:
         to_float.append(float(item)) #make a list of floats from tuple 
@@ -305,14 +328,15 @@ def depth_sed2(self):
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed2.append(v)
         self.depth_sed2 = depth_sed2  
-                   
+        print ('in depth_sed2')         
+         
 def varmax(self,variable,vartype): 
     if vartype == 0: #water
         n = variable[0:self.ny1max-1, 0:].max() 
         # self.lentime   
     elif vartype == 1 :#sediment
         n = variable[self.ny2min-1:, 0:].max()
-       #self.lentime
+        #self.lentime
     # make "beautiful"  values to show on ticks            
     if n > 10000. and n <= 100000.:  
         n = int(math.ceil(n/ 1000.0)) * 1000 + 1000.
@@ -334,27 +358,26 @@ def varmax(self,variable,vartype):
         n =  (math.ceil(n*100000))/100000 
                                                                                                
     self.watmax =  n   
-
     return self.watmax
 
 # make "beautiful"  values to show on ticks  
-def int_value(self,n,min,max):
+def int_value(self,n,minv,maxv):
     num = self.num
          
-    if (max - min) >= num*10. and ( 
-     max - min) < num*100. :
+    if (maxv - minv) >= num*10. and ( 
+     maxv - minv) < num*100. :
         m = math.ceil(n/10)*10.
-    elif ( max -  min) >= num and (
-         max -  min) < 10.*num :
+    elif ( maxv -  minv) >= num and (
+         maxv -  minv) < 10.*num :
         m = math.ceil(n)        
-    elif ( max -  min) > num/10. and (
-         max -  min) < num :
+    elif ( maxv -  minv) > num/10. and (
+         maxv -  minv) < num :
         m = (math.ceil(n*10.))/10.        
-    elif ( max -  min) > num/100. and (
-         max -  min) < num/10. :
+    elif ( maxv -  minv) > num/100. and (
+         maxv -  minv) < num/10. :
         m = (math.ceil(n*100.))/100.          
-    elif ( max -  min) > num/1000. and (
-         max -  min) < num/100. :
+    elif ( maxv -  minv) > num/1000. and (
+         maxv -  minv) < num/100. :
         m = (math.ceil(n*1000.))/1000.                      
     else :
         m = n  
@@ -365,10 +388,8 @@ def varmin(self,variable,vartype):
     if vartype == 0 :
         calculate_ywat(self)
         n = np.floor(variable[0:self.ny1max-1,0:].min())
-        #self.lentime
     elif vartype == 1 : 
         n = np.floor(variable[self.ny2min-1:, 0:].min()) 
-        #self.lentime
     # make "beautiful"  values to show on ticks
     print (n)            
     if n > 10000. and n <= 100000.:  
@@ -394,44 +415,44 @@ def varmin(self,variable,vartype):
     return self.watmin
 
 # make "beautiful"  values to show on ticks 
-def ticks(min,max):          
-    if (max - min) >= 50000. and (
-         max - min) < 150000.  :
-        ticks = np.arange(min,max+10000.,50000)        
-    elif (max - min) >= 10000. and (
-         max - min) < 50000.  :
-        ticks = np.arange(min,max+5000.,5000)        
-    elif (max - min) > 3000. and (
-       max - min) < 10000.  : 
-        ticks = np.arange(min,max+1000.,1000)        
-    elif (max - min) > 1500. and ( 
-     max - min) <= 3000. :
-        ticks = np.arange(min,max+500.,500)                        
-    elif (max - min) >= 300. and ( 
-     max - min) <= 1500. :
-        ticks = np.arange((math.trunc(min/10)*10),max+100.,100)   
-        if min < 100 :
-            ticks = np.arange(0,max+100.,100)              
-    elif (max - min) >= 100. and ( 
-     max - min) < 300. :
-        ticks = np.arange(min-10,max+50.,50) 
-    elif (max - min) > 50. and ( 
-     max - min) < 100. :
-        ticks = np.arange(min,max+10.,10)        
-    elif (max - min) > 20. and ( 
-     max - min) <= 50. :
-        ticks = np.arange(min,max+5.,5)
-    elif (max - min) > 3. and ( 
-     max - min) <= 20. :
-        ticks = np.arange(min,max+1.,1)
-    elif (max - min) >= 1. and ( 
-     max - min) <= 3. :
-        ticks = np.arange(min,max+1.,0.5)         
-    elif (max - min) > 0.2 and ( 
-     max - min) <= 1. :
-        ticks = np.arange(min,max+1.,0.1)                  
+def ticks(minv,maxv):          
+    if (maxv - minv) >= 50000. and (
+         maxv - minv) < 150000.  :
+        ticks = np.arange(minv,maxv+10000.,50000)        
+    elif (maxv - minv) >= 10000. and (
+         maxv - minv) < 50000.  :
+        ticks = np.arange(minv,maxv+5000.,5000)        
+    elif (maxv - minv) > 3000. and (
+       maxv - minv) < 10000.  : 
+        ticks = np.arange(minv,maxv+1000.,1000)        
+    elif (maxv - minv) > 1500. and ( 
+     maxv - minv) <= 3000. :
+        ticks = np.arange(minv,maxv+500.,500)                        
+    elif (maxv - minv) >= 300. and ( 
+     maxv - minv) <= 1500. :
+        ticks = np.arange((math.trunc(minv/10)*10),maxv+100.,100)   
+        if minv < 100 :
+            ticks = np.arange(0,maxv+100.,100)              
+    elif (maxv - minv) >= 100. and ( 
+     maxv - minv) < 300. :
+        ticks = np.arange(minv-10,maxv+50.,50) 
+    elif (maxv - minv) > 50. and ( 
+     maxv - minv) < 100. :
+        ticks = np.arange(minv,maxv+10.,10)        
+    elif (maxv - minv) > 20. and ( 
+     maxv - minv) <= 50. :
+        ticks = np.arange(minv,maxv+5.,5)
+    elif (maxv - minv) > 3. and ( 
+     maxv - minv) <= 20. :
+        ticks = np.arange(minv,maxv+1.,1)
+    elif (maxv - minv) >= 1. and ( 
+     maxv - minv) <= 3. :
+        ticks = np.arange(minv,maxv+1.,0.5)         
+    elif (maxv - minv) > 0.2 and ( 
+     maxv - minv) <= 1. :
+        ticks = np.arange(minv,maxv+1.,0.1)                  
     else :  
-        ticks = np.arange(min,max + (max - min)/2., (max - min)/2.)                   
+        ticks = np.arange(minv,maxv + (maxv - minv)/2., (maxv - minv)/2.)                   
     return ticks
 
 #function to define y limits 
@@ -496,12 +517,12 @@ def y_lim1(self,axis):
         axis.xaxis.grid(True,'major')      
                 
 def setmaxmin(self,axis,var,type):
-    min = varmin(self,var,type) #0 - water 
-    max = varmax(self,var,type)
-    axis.set_xlim([min,max])  
+    minv = varmin(self,var,type) #0 - water 
+    maxv = varmax(self,var,type)
+    axis.set_xlim([minv,maxv])  
     #tick = ticks(watmin,watmax)
-    axis.set_xticks(np.arange(min,max+((max - min)/2.),
-            ((max - min)/2.)))      
+    axis.set_xticks(np.arange(minv,maxv+((maxv - minv)/2.),
+            ((maxv - minv)/2.)))      
         
         
         
