@@ -42,7 +42,7 @@ class Window(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)   
         self.setWindowTitle("BROM Pictures")
         self.setWindowIcon(QtGui.QIcon('bromlogo.png'))
-        
+
         #app1 = QtGui.QApplication(sys.argv)
         #screen_rect = app1.desktop().screenGeometry()
         #width, height = screen_rect.width(), screen_rect.height()
@@ -62,22 +62,28 @@ class Window(QtGui.QDialog):
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))   
 
-        # Create widget 1                    
-        self.time_prof_box = QtGui.QComboBox()
-        self.dist_prof_button = QtGui.QPushButton()
-        self.time_prof_button =  QtGui.QPushButton()         
-        # add items to Combobox
+        self.fh =  Dataset(self.fname)
+        readdata.readdata_brom(self)   
+        
+        # Create widgets
+                            
+        self.time_prof_box = QtGui.QComboBox()        
+        self.all_year_1d_box = QtGui.QComboBox()    
+                           
+        self.dist_prof_button = QtGui.QPushButton()       
+        self.time_prof_last_year =  QtGui.QPushButton()    
+        self.time_prof_all =  QtGui.QPushButton()           
+              
         self.numcol_2d = QtGui.QSpinBox()        
         self.varname_box = QtGui.QSpinBox()     
         self.numday_box = QtGui.QSpinBox() 
         self.textbox = QtGui.QLineEdit()  
         self.textbox2 = QtGui.QLineEdit()          
-        '''for i in self.var_names_profile:
-            self.time_prof_box.addItem(str(i))'''
-            
-        #varnames_list = []    
-        self.fh =  Dataset(self.fname)
-                
+  
+        # add items to Combobox        
+        for i in self.var_names_charts_year:
+            self.all_year_1d_box.addItem(str(i))
+                 
         #self.time_prof_box.addItem('plot 1D')  
         # add only 2d arrays to variables list       
         for names,vars in self.fh.variables.items():
@@ -99,9 +105,9 @@ class Window(QtGui.QDialog):
                 break  
         
         lentime = len(self.fh['time'][:])
-        #print (self.lentime)
+        ##print (self.lentime)
         self.fh.close()    
-        #print ('testvar', testvar.shape[2])
+        ##print ('testvar', testvar.shape[2])
         self.textbox.setText(
             'Number of columns = {}'.format(str(testvar.shape[0])))
         self.textbox2.setText(
@@ -113,106 +119,56 @@ class Window(QtGui.QDialog):
                 
             #varnames_list.append(names)    
         #for names in self.fh.variables.items():
-        #    print str(names)
+        #    #print str(names)
         #    break
         #    self.time_prof_box.addItem(str(names))   
             
-            
         # Define connection between clicking the button and 
-        # calling the function to plot figures        
-        ######3self.time_prof_box.currentIndexChanged.connect(
-        ######    self.time_profile)    
+        # calling the function to plot figures                           
+        self.all_year_1d_box.currentIndexChanged.connect(
+            self.all_year_charts)                   
         #self.numcol_2d.valueChanged.connect(
         #    self.time_profile) 
-        self.time_prof_button.released.connect(self.time_profile)   
+        self.time_prof_last_year.released.connect(self.call_print_lyr)
+        self.time_prof_all.released.connect(self.call_print_allyr)        
+
+        #:(self.time_profile)   
         self.dist_prof_button.released.connect(self.dist_profile)           
         # Create widget 2         
         self.all_year_box = QtGui.QComboBox()
-        # add items to Combobox        
-        self.time_prof_button.setText('Show Time Profile')
-        self.dist_prof_button.setText('Show Dist Profile')        
-        #for i in self.var_names_charts_year:
-        #    self.all_year_box.addItem(str(i))
-        # Define connection between clicking the button and 
-        # calling the function to plot figures                   
-        #self.all_year_box.currentIndexChanged.connect(
-        #    self.all_year_charts) 
-
- 
-                     
-        # Here I change the size and style of buttons
-        self.time_prof_box.setStyleSheet(
-        'QComboBox {background-color: #c2b4ae;padding: 2px;border-width: 5px;'
-         'font: bold 15px;}') 
-        
-        
-        self.time_prof_button.setStyleSheet(
-        'QPushButton {background-color: #c2b4ae; border-width: 5px;'
-        '  padding: 2px; font: bold 15px; }') 
-         
-        self.dist_prof_button.setStyleSheet(
-        'QPushButton {background-color: #c2b4ae; border-width: 5px;'
-        '  padding: 2px; font: bold 15px; }')
-        
-        self.varname_box.setStyleSheet(
-        'QSpinBox {background-color: #c2b4ae; border-width: 5px;'
-        '  padding: 2px; font: bold 15px; }')
-                
-        '''     
-        self.all_year_box.setStyleSheet(
-        'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
-         'font: bold 25px;}')           
-           
-        self.fick_box.setStyleSheet(
-        'QComboBox {background-color: #c2b4ae;padding: 6px;border-width: 10px;'
-         'font: bold 25px;}')          
-         ''' 
-
-
-         
-        ##self.qwidget = QtGui.QWidget()
-                
-        self.canvas = FigureCanvas(self.figure)
-    
+        # add items to Combobox 
+               
+        self.time_prof_all.setText('Time Prof all')
+        self.time_prof_last_year.setText('Time Prof last year')               
+        self.dist_prof_button.setText('Show Dist Profile')       
+                         
+        self.canvas = FigureCanvas(self.figure)    
         self.toolbar = NavigationToolbar(self.canvas, self) #, self.qfigWidget
         #self.canvas.setMinimumSize(self.canvas.size())
-        #The QGridLayout class lays out widgets in a grid  
-        
+        #The QGridLayout class lays out widgets in a grid          
         self.grid = QtGui.QGridLayout(self)
+        readdata.widget_layout(self)
         
-        #Places the layout at position
-        ##self.grid.addLayout(layout, 0, 0)
-        
-        self.grid.addWidget(self.canvas, 3, 0,1,6) 
-        #self.grid.addWidget(scrollwidget, 2, 0,1,5)                    
-        self.grid.addWidget(self.toolbar,1,0,1,1)   
-         
-
-        self.grid.addWidget(self.time_prof_button,1,1,1,1)  
-        self.grid.addWidget(self.dist_prof_button,1,2,1,1) 
-        
-        self.grid.addWidget(self.time_prof_box,1,3,1,1) 
-        self.grid.addWidget(self.numcol_2d ,1,4,1,1)              
-        self.grid.addWidget(self.textbox,1,5,1,1)     
-        self.grid.addWidget(self.numday_box,2,4,1,1)  
-        self.grid.addWidget(self.textbox2,2,5,1,1)
-        
-        readdata.readdata2_brom(self,self.fname)     
+        readdata.readdata2_brom(self,self.fname)            
         readdata.calculate_ywat(self)
-        readdata.calculate_ybbl(self)          
+        readdata.calculate_ybbl(self)   
+        readdata.y2max_fill_water(self)        
         readdata.depth_sed(self)
+        readdata.calculate_ysed(self)
         readdata.colors(self)
-        
-    def time_profile(self):
+        readdata.set_widget_styles(self) 
+        readdata.y_coords(self)
+          
+    def time_profile(self,start,stop):
         
         plt.clf()
         index = str(self.time_prof_box.currentText())
         # read chosen variable 
         z = np.array(self.fh.variables[index]) 
-         
+        z = z[start:stop] 
         ylen = len(self.depth) #95  
 
-        x = np.array(self.time) #np.arange(6)
+        x = np.array(self.time[start:stop]) #np.arange(6)
         xlen = len(x) #365    
          
         # check if the variable is defined of middlepoints  
@@ -227,23 +183,24 @@ class Window(QtGui.QDialog):
 
         z2d = []
         numcol = self.numcol_2d.value() # 
-        print ('number of column', numcol) # QSpinBox.value()  #1 
+        ##print ('number of column', numcol) # QSpinBox.value()  #1 
         if z.shape[2] > 1:
-            print (z.shape)
-            for n in range(0,xlen):
+            ##print (z.shape)
+            for n in range(start,stop): #xlen
                 for m in range(0,ylen):                
                     z2d.append(z[n][m][numcol]) # take only n's column for brom
         #zz = np.array(zz).reshape(ylen,xlen)        
             z = np.array(z2d)
-                              
+        ##print ('z.shape',z.shape,xlen,ylen)                      
         z = z.flatten()   
-        z = z.reshape(len(self.time),len(self.depth))       
+        ##print ('z',z)
+        z = z.reshape(xlen,ylen)       
         zz = z.T      
       
 
         #self.fh.close()
 
-
+        '''
         #def calculate_ybbl(self):
         for n in range(0,(len(self.depth2)-1)):
             if self.kz[0,n,0] == 0:
@@ -252,26 +209,10 @@ class Window(QtGui.QDialog):
             elif self.kz[0,n,0] != 0 and n == (len(self.depth2)-1)-1 :  
                 self.ny2max = n  
                 self.y2max = self.depth2[n]    
-                print (self.ny2max)
+                ##print (self.ny2max)
                 break 
-        print ('y2max', self.y2max)
-        
-        #def depth_sed(self):
-        '''
-        to_float = []
-        for item in self.depth:
-            to_float.append(float(item)) #make a list of floats from tuple 
-        depth_sed = [] # list for storing final depth data for sediment 
-        v=0  
-        
-        for i in to_float:
-            v = (i- self.y2max)*100  #convert depth from m to cm
-            depth_sed.append(v)
-            self.depth_sed = depth_sed'''
-         
-        lendepth2 = len(self.depth2)   
-         
-                   
+
+                           
         #def y2max_fill_water(self):
         for n in range(0,(len(self.depth2)-1)):
     #        if depth[_]-depth[_?]
@@ -284,20 +225,10 @@ class Window(QtGui.QDialog):
                 break 
             elif n == (len(self.depth2)-2) and self.depth2[n+1] - self.depth2[n] >= 0.5 :
                 self.y2max_fill_water = self.depth2[n] 
-                self.nbblmin = n              
+                self.nbblmin = n         '''     
             
              
-        #def calculate_ysed(self):
-        for n in range(0,(len(self.depth_sed))):
-            if self.kz[1,n,0] == 0:
-                ysed = self.depth_sed[n]  
-                self.ysedmin =  ysed - 10
-                self.ysedmax =  self.depth_sed[len(self.depth_sed)-1] 
-                self.y3min = self.depth_sed[self.nbblmin+2]
-                self.nysedmin = n 
-                #here we cach part of BBL to add to 
-                #the sediment image                
-                break            
+        '''   
         #def y_coords(self):       
         #self.y2min = self.y2max - 2*(self.y2max - self.y1max)
         #calculate the position of y2min, for catching part of BBL 
@@ -308,7 +239,7 @@ class Window(QtGui.QDialog):
         self.ysedmax_fill_bbl = 0
         self.ysedmin_fill_sed = 0
         self.y1min = 0
-        self.y2min = self.y2max - 2*(self.y2max - self.y1max)   
+        self.y2min = self.y2max - 2*(self.y2max - self.y1max)  
                   
         #calculate the position of y2min, for catching part of BBL 
         #def depth_sed2(self):
@@ -320,7 +251,7 @@ class Window(QtGui.QDialog):
         for i in to_float:
             v = (i- self.y2max)*100  #convert depth from m to cm
             depth_sed2.append(v)
-            self.depth_sed2 = depth_sed2  
+            self.depth_sed2 = depth_sed2  ''' 
                            
  
                                  
@@ -370,9 +301,9 @@ class Window(QtGui.QDialog):
         y_sed = np.array(self.depth_sed)
           
         watmin = readdata.varmin(self,zz,0) #0 - water 
-        watmax = readdata.varmax(self,zz,0)
+        watmax = readdata.varmax(self,zz,0,start,stop)
         sed_min = readdata.varmin(self,zz,1)
-        sed_max = readdata.varmax(self,zz,1) 
+        sed_max = readdata.varmax(self,zz,1,start,stop) 
 
         '''watmin = math.floor(zz[0:self.ny1max,0:].min())# np.floor()
         watmax = math.ceil(zz[0:self.ny1max, 0:].max()) #np.round() 
@@ -411,8 +342,8 @@ class Window(QtGui.QDialog):
         ax.set_ylim(self.y1max-1,0)       
         ax2.set_ylim(self.ysedmax,self.y3min) #ysedmin
         #xlen = len(x)
-        ax.set_xlim(0,xlen)
-
+        ax.set_xlim(start,stop)
+        ax2.set_xlim(start,stop)
 
         ax.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis 
         ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
@@ -442,7 +373,7 @@ class Window(QtGui.QDialog):
         # If None, the first value of Z will correspond to the lower
         # left corner, location (0,0).  
         # If â€˜imageâ€™, the rc value for image.origin will be used.
-            
+          
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
                               cmap= self.cmap)
 
@@ -475,60 +406,57 @@ class Window(QtGui.QDialog):
         numday = self.numday_box.value()  
         z = np.array(self.fh.variables[index]) 
 
-       
-        #self.depth2 = self.fh.variables['z2'][:] #middle points
-        #dist = np.array(self.fh.variables['i'])                
-        #self.depth = np.array(self.fh.variables['z'][:])    
-
-        y = self.depth 
+        #y = self.depth 
         ylen = len(self.depth)        
         xlen = len(self.dist)  
          
         # for some variables defined at grid middlepoints
         if (z.shape[1])> ylen:
-            self.depth = np.array(self.fh.variables['z2'][:])    
+            y = self.depth2 # = np.array(self.fh.variables['z2'][:])    
         elif (z.shape[1]) == ylen :
-            pass
+            y = self.depth 
         else :
             print ("wrong depth array size") 
          
         
         z2d = []
         if z.shape[2] > 1: 
-            print ('zshape', z.shape)
+            ##print ('zshape', z.shape)
             for n in range(0,xlen): # distance 
                 for m in range(0,ylen):  # depth              
                     z2d.append(z[numday][m][n]) # take only n's column for brom
-                #print ('1iteration', z2d)    
+                ##print ('1iteration', z2d)    
                 #break                
         else:
-            print ('it is 1D BROM')  
+            messagebox = QtGui.QMessageBox.about(self, "Retry",'it is 1D BROM')
+            #self.setWindowIcon(QtGui.QIcon('bromlogo.png')) 
+            #messagebox.setIcon(QtGui.QIcon("monitor.png"))
+            #print ('it is 1D BROM')  
                       
         #zz = np.array(zz).reshape(ylen,xlen)        
         z2 = np.array(z2d)
-        print ('z2d shape',z2.shape)
+        ##print ('z2d shape',z2.shape)
         z = z2.flatten()   
 
         z = z.reshape(xlen,ylen)       
         zz = z.T 
-        print (self.depth2)    
+        ##print (self.depth2)    
         for n in range(0,(len(self.depth2)-1)):
-            #print ('depth2',len(self.depth2),n)
+            ##print ('depth2',len(self.depth2),n)
             if self.depth2[n+1] - self.depth2[n] >= 0.5:
                 pass
             elif self.depth2[n+1] - self.depth2[n] < 0.50:    
                 y1max = (self.depth2[n])
-                print (y1max)
+                ##print (y1max)
                 y1max = y1max                                                      
                 ny1max = n
-                print ('distance ny1max', self.ny1max)
+                ##print ('distance ny1max', self.ny1max)
                 break     
                     
 
         
         
-        gs = gridspec.GridSpec(2, 1) 
-        
+        gs = gridspec.GridSpec(2, 1)         
         X,Y = np.meshgrid(self.dist,y)
 
         
@@ -543,29 +471,20 @@ class Window(QtGui.QDialog):
         watmax = data[:].max() #+(data[0:xlen, 0:, :].min()) #/3. #self.ny1max-1
         #watmax = readdata.varmax(self,np.array(self.fh.variables[index]) ,0)
         
-        print ('maxmin', watmin,watmax)
+        ##print ('maxmin', watmin,watmax)
         self.num = 50.            
         wat_levs = np.linspace(watmin,watmax, num= self.num)
         #sed_levs = np.linspace(sed_min,sed_max,
         #                     num = self.num)
-        print (watmin,watmax)       
-        print (zz)
+        ##print (watmin,watmax)       
+        ##print (zz)
         int_wat_levs = []
         int_sed_levs= []
                 
         for n in wat_levs:
             n = readdata.int_value(self,n,watmin,watmax)
             int_wat_levs.append(n)            
-            
-        '''for n in sed_levs:
-            n = readdata.int_value(self,n,sed_min,
-                                   sed_max)
-            int_sed_levs.append(n)        '''    
-                      
-        #define color maps 
-        #cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
-        #cmap1 = plt.cm.rainbow  
-        
+
               
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
                               cmap=self.cmap)
@@ -575,8 +494,8 @@ class Window(QtGui.QDialog):
           
         ax.scatter(X,Y, c = zz)  
         ax.set_ylim(self.y1max,0)  
-        ax2.set_ylim(self.y3max, self.y1max) 
-        
+        ax2.set_ylim(self.ysedmax,self.y3min) 
+                        
         cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])                
         cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
         
@@ -585,9 +504,277 @@ class Window(QtGui.QDialog):
         cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)   
         cb1 = plt.colorbar(CS1,cax = cax,ticks = wat_ticks)         
         cb.set_ticks(wat_ticks)       
-        #print (numday,dist)      
+     
         self.canvas.draw() 
+        
+    def call_print_lyr(self): 
+        stop = len(self.time) #175
+        start = stop - 365
+        self.time_profile(start,stop) 
+            
+    def call_print_allyr(self): 
+        stop = len(self.time)
+        start = 0
+        self.time_profile(start,stop)             
     
+    
+    def all_year_charts(self):            
+        plt.clf()
+        gs = gridspec.GridSpec(3,3) 
+        gs.update(left=0.06, right=0.93,top = 0.94,bottom = 0.04,
+                   wspace=0.2,hspace=0.1)   
+        self.figure.patch.set_facecolor('white') 
+        #self.figure.patch.set_facecolor(self.background) 
+        #Set the background color  
+        ax00 = self.figure.add_subplot(gs[0]) # water         
+        ax10 = self.figure.add_subplot(gs[1]) # water
+        ax20 = self.figure.add_subplot(gs[2]) # water 
+ 
+        ax01 = self.figure.add_subplot(gs[3])          
+        ax11 = self.figure.add_subplot(gs[4])
+        ax21 = self.figure.add_subplot(gs[5])
+
+        ax02 = self.figure.add_subplot(gs[6])    
+        ax12 = self.figure.add_subplot(gs[7])
+        ax22 = self.figure.add_subplot(gs[8])
+   
+        ax00.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis
+        ax01.set_ylabel('Depth (m)',fontsize= self.font_txt)   
+        ax02.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
+                                     
+        for n in range(1,len(self.var_names_charts_year)):
+            if (self.all_year_box.currentIndex() == n) :
+                z0 = np.array(self.vars_year[n][0][0][self.start_last_year:])
+                z1 = np.array(self.vars_year[n][1][0][self.start_last_year:])
+                z2 = np.array(self.vars_year[n][2][0][self.start_last_year:])
+                ax00.set_title(str(self.titles_all_year[n][0]), 
+                fontsize=self.xlabel_fontsize, fontweight='bold') 
+                ax10.set_title(str(self.titles_all_year[n][1]), 
+                fontsize=self.xlabel_fontsize, fontweight='bold') 
+                ax20.set_title(str(self.titles_all_year[n][2]), 
+                fontsize=self.xlabel_fontsize, fontweight='bold')                                 
+                self.num_var = n #title0 = self.var_titles_charts_year[n][0] 
+                #title1 = self.var_titles_charts_year[n][1] 
+                #title2 = self.var_titles_charts_year[n][2]
+              
+        #ax00.set_title(title0) 
+        #ax10.set_title(title1)
+        #ax20.set_title(title2)
+
+        #self.ax10.set_xlabel(r'$\rm Fe $',fontsize=14)   
+        #self.ax20.set_xlabel(r'$\rm H _2 S $',fontsize=14) 
+
+
+
+
+        for axis in (ax00,ax10,ax20,ax01,ax11,ax21,ax02,ax12,ax22):
+            #water          
+            axis.yaxis.grid(True,'minor')
+            axis.xaxis.grid(True,'major')                
+            axis.yaxis.grid(True,'major') 
+                    
+        ax00.set_ylim(self.y1max,0)   
+        ax10.set_ylim(self.y1max,0)  
+        ax20.set_ylim(self.y1max,0) 
+        
+        ax01.set_ylim(self.y2max, self.y2min)   
+        ax11.set_ylim(self.y2max, self.y2min)  
+        ax21.set_ylim(self.y2max, self.y2min) 
+
+        ax02.set_ylim(self.ysedmax, self.ysedmin)   
+        ax12.set_ylim(self.ysedmax, self.ysedmin)  
+        ax22.set_ylim(self.ysedmax, self.ysedmin) 
+        #
+        #n0 = self.varmax(self,z0,1) #[0:self.y2max_fill_water,:].max() 
+
+        watmin0 = readdata.varmin(self,z0,0) #0 - water 
+        watmin1 = readdata.varmin(self,z1,0) #0 - water 
+        watmin2 = readdata.varmin(self,z2,0) #0 - water          
+
+        watmax0 = readdata.varmax(self,z0,0) #
+        # z0[0:self.ny2max-4,:].max() # readdata.varmax(self,z0,0)
+        watmax1 = readdata.varmax(self,z1,0)
+        watmax2 = readdata.varmax(self,z2,0)  
+         
+         
+        sed_min0 = readdata.varmin(self,z0,1) #0 - water 
+        sed_min1 = readdata.varmin(self,z1,1) #0 - water 
+        sed_min2 = readdata.varmin(self,z2,1) #0 - water    
+
+        sed_max0 = readdata.varmax(self,z0,1) #z0[:,self.ny2min:].max() 
+        sed_max1 = readdata.varmax(self,z1,1) #z1[:,self.ny2min:].max()         
+        sed_max2 = readdata.varmax(self,z2,1) #z2[:,self.ny2min:].max()         
+        
+        if self.num_var == 5: #pH 
+            watmax1 = 9
+            watmin1 = 6.5
+        elif self.num_var == 2: #po4, so4
+            watmax0 = 3  
+            #watmax1 = 7000.          
+            #watmin1 = 4000.            
+        else:
+            pass
+                    
+        
+        self.m0ticks = readdata.ticks(watmin0,watmax0)
+        self.m1ticks = readdata.ticks(watmin1,watmax1)
+        self.m2ticks = readdata.ticks(watmin2,watmax2)  
+        
+        self.sed_m0ticks = readdata.ticks(sed_min0,sed_max0)
+        self.sed_m1ticks = readdata.ticks(sed_min1,sed_max1)
+        self.sed_m2ticks = readdata.ticks(sed_min2,sed_max2)                 
+        #for axis in (ax00,ax10,ax20):             
+        
+        
+        
+
+        ax00.set_xlim(watmin0,watmax0)   
+        ax01.set_xlim(watmin0,watmax0)         
+        ax02.set_xlim(sed_min0,sed_max0)
+        
+        ax10.set_xlim(watmin1,watmax1)   
+        ax11.set_xlim(watmin1,watmax1)         
+        ax12.set_xlim(sed_min1,sed_max1)         
+        
+         
+        ax20.set_xlim(watmin2,watmax2)   
+        ax21.set_xlim(watmin2,watmax2)         
+        ax22.set_xlim(sed_min2,sed_max2) 
+        
+                
+        ax10.set_xlim(watmin1,watmax1)   
+        ax11.set_xlim(watmin1,watmax1)         
+        #ax12.set_xlim(sed_min1,sed_max1) 
+                     
+        ax20.set_xlim(watmin2,watmax2)   
+        ax21.set_xlim(watmin2,watmax2)         
+        #ax22.set_xlim(sed_min2,sed_max2)                  
+        #water
+
+                     
+        ax00.fill_between(
+                        self.m0ticks, self.y1max, 0,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w
+        ax01.fill_between(
+                        self.m0ticks, self.y2min_fill_bbl ,self.y2min,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w    
+        ax01.fill_between(self.m0ticks, self.y2max, self.y2min_fill_bbl,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl) 
+            
+        ax02.fill_between(self.sed_m0ticks,self.ysedmin_fill_sed,-10,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl)          
+        ax02.fill_between(self.sed_m0ticks, self.ysedmax, self.ysedmin_fill_sed,
+                               facecolor= self.sed_col1, alpha=self.a_s)          
+        
+            #axis.fill_between(self.xticks, self.y2max, self.y2min_fill_bbl,
+            #                   facecolor= self.bbl_color, alpha=self.alpha_bbl)        
+            
+        ax10.fill_between(
+                        self.m1ticks, self.y1max, 0,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w
+        
+        ax11.fill_between(
+                        self.m1ticks, self.y2min_fill_bbl ,self.y2min,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w    
+        ax11.fill_between(self.m1ticks, self.y2max, self.y2min_fill_bbl,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl)      
+        ax12.fill_between(self.sed_m1ticks,self.ysedmin_fill_sed,-10,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl) 
+        ax12.fill_between(self.sed_m1ticks, self.ysedmax, self.ysedmin_fill_sed,
+                              facecolor= self.sed_col1, alpha=self.a_s)
+
+
+        
+        ax20.fill_between(
+                        self.m2ticks, self.y1max, 0,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w
+        
+        ax21.fill_between(
+                        self.m2ticks, self.y2min_fill_bbl ,self.y2min,
+                        facecolor= self.wat_col1, alpha=0.1 ) #self.a_w    
+        ax21.fill_between(self.m2ticks, self.y2max, self.y2min_fill_bbl,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl)     
+        ax22.fill_between(self.sed_m2ticks,self.ysedmin_fill_sed,-10,
+                               facecolor= self.bbl_col1, alpha=self.a_bbl)                         
+        ax22.fill_between(self.sed_m2ticks, self.ysedmax, self.ysedmin_fill_sed,
+                               facecolor= self.sed_col1, alpha=self.a_s) 
+                            
+
+        
+                
+        for n in range(0,365):
+            if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter" 
+                linewidth = self.linewidth
+                                  
+                ax00.plot(z0[n],self.depth,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth , zorder = 10) 
+                ax10.plot(z1[n],self.depth,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth , zorder = 10)
+                ax20.plot(z2[n],self.depth,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth, zorder = 10 )  
+                
+                ax01.plot(z0[n],self.depth,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth, zorder = 10 ) 
+                ax11.plot(z1[n],self.depth,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth , zorder = 10)
+                ax21.plot(z2[n],self.depth,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth, zorder = 10 ) 
+    
+                ax02.plot(z0[n],self.depth_sed,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth, zorder = 10 ) 
+                ax12.plot(z1[n],self.depth_sed,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth, zorder = 10 )
+                ax22.plot(z2[n],self.depth_sed,self.wint,alpha = 
+                          self.a_w, linewidth = linewidth, zorder = 10 ) 
+            elif n >= 150 and n < 249: #"summer"
+                ax00.plot(z0[n],self.depth,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
+                ax10.plot(z1[n],self.depth,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 )
+                ax20.plot(z2[n],self.depth,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 )  
+                
+                ax01.plot(z0[n],self.depth,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
+                ax11.plot(z1[n],self.depth,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 )
+                ax21.plot(z2[n],self.depth,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
+    
+                ax02.plot(z0[n],self.depth_sed,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
+                ax12.plot(z1[n],self.depth_sed,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 )
+                ax22.plot(z2[n],self.depth_sed,self.summ,alpha = 
+                          self.a_s, linewidth = linewidth, zorder = 10 ) 
+            else : #"autumn and spring"
+                ax00.plot(z0[n],self.depth,self.spr_aut,alpha = 
+                          self.a_aut, linewidth = linewidth, zorder = 10 ) 
+                ax10.plot(z1[n],self.depth,self.spr_aut,alpha = 
+                          self.a_aut, linewidth = linewidth, zorder = 10 )
+                ax20.plot(z2[n],self.depth,self.spr_aut,alpha = 
+                          self.a_aut, linewidth = linewidth, zorder = 10 )  
+                
+                ax01.plot(z0[n],self.depth,self.spr_aut,alpha = 
+                          self.a_aut, linewidth = linewidth, zorder = 10 ) 
+                ax11.plot(z1[n],self.depth,self.spr_aut,alpha = 
+                          self.a_aut, linewidth = linewidth, zorder = 10 )
+                ax21.plot(z2[n],self.depth,self.spr_aut,alpha = 
+                          self.a_aut, linewidth = linewidth, zorder = 10 ) 
+    
+                ax02.plot(z0[n],self.depth_sed,self.spr_aut,
+                          alpha = self.a_aut, zorder = 10) 
+                ax12.plot(z1[n],self.depth_sed,self.spr_aut,
+                          alpha = self.a_aut, zorder = 10)
+                ax22.plot(z2[n],self.depth_sed,self.spr_aut,
+                          alpha = self.a_aut, zorder = 10)      
+
+
+           
+            
+                          
+        self.canvas.draw()     
+        
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setStyle("plastique")

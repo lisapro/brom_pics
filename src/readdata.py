@@ -37,7 +37,7 @@ width, height = screen_rect.width(), screen_rect.height()
 rc('font', **{'sans-serif' : 'Arial', #for unicode text
                 'family' : 'sans-serif'})  
       
-def readdata_brom(self,fname,varname): 
+def readdata_brom(self): #,varname,fname
     
     
  
@@ -99,7 +99,7 @@ def readdata_brom(self,fname,varname):
        
        
          
-    self.vars = ([],[self.o2],[self.no3 ],[self.no2],
+    '''self.vars = ([],[self.o2],[self.no3 ],[self.no2],
     [self.si], [self.alk],[self.po4],[self.nh4],
     [self.h2s ],[self.pon], [self.don],[self.dic],[self.phy],
     [self.het], [self.mn2], [self.mn3], [self.mn4],[self.mns],
@@ -108,7 +108,7 @@ def readdata_brom(self,fname,varname):
     [self.so4], [self.si_part], [self.baae], [self.bhae],
     [self.baan], [self.bhan], [self.caco3], [self.ch4],
     [self.ph], [self.pco2], [self.om_ca], [self.om_ar],
-    [self.co3], [self.ca],[self.sal], [self.temp])
+    [self.co3], [self.ca],[self.sal], [self.temp])'''
     
     #Variable names to add to combobox with time profiles
     self.var_names_profile = ('Time profile','O2' ,'NO3' ,'no2', 'Si', 'Alk',
@@ -154,7 +154,7 @@ def readdata_brom(self,fname,varname):
         (r'$\rm \Omega Aragonite $', r'$\rm CO _3 $', r'$\rm Ca $'),
         (r'$\rm Salinity $',r'$\rm Temperature $',r'$\rm O _2 $'))     
      
-    # list of variable names to connect titles and variables 
+    ''' # list of variable names to connect titles and variables 
     self.vars_year = ([],
                       [[self.no2],[self.no3],[self.nh4]],
                       [[self.po4],[self.so4],[self.o2]],
@@ -169,11 +169,11 @@ def readdata_brom(self,fname,varname):
                       [[self.baae],[self.bhae],[self.baan]],                                                                                        
                       [[self.caco3],[self.ch4],[self.om_ca]],     
                       [[self.om_ar],[self.co3],[self.ca]],       
-                      [[self.sal],[self.temp],[self.o2]],                                                                                 
-    )
+                      [[self.sal],[self.temp],[self.o2]],                                                                              
+    ) 
     
-    self.fh.close()
-    self.lentime = len(self.time)
+    self.fh.close()'''  
+    #self.lentime = len(self.time)
     # numbers of first days of each month to add to combobox 'One day'                           
     self.months_start = [1,32,61,92,122,153,183,
                           214,245,275,306,336,366]
@@ -183,12 +183,12 @@ def readdata_brom(self,fname,varname):
                         (4677,3307),(40,10)]'''
 
     #def calc_last_year(self):
-    self.start_last_year = self.lentime - 365  
+    #self.start_last_year = self.lentime - 365  
     #self.last_year_time = self.time[self.start_last_year:]
 
 
 def readdata2_brom(self,fname):  
-    print ('in readdata_brom')   
+    #print ('in readdata_brom')   
     self.fh = Dataset(fname)
     self.depth = self.fh.variables['z'][:] 
     self.depth2 = self.fh.variables['z2'][:] #middle points   
@@ -198,7 +198,7 @@ def readdata2_brom(self,fname):
     self.lendepth2 = len(self.depth2)
     
 def colors(self):
-    self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
+    self.spr_aut ='#998970'
     self.wint =  '#8dc0e7'
     self.summ = '#d0576f' 
     self.a_w = 0.4 #alpha_wat alpha (transparency) for winter
@@ -211,18 +211,24 @@ def colors(self):
     self.wat_col1 = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
     self.bbl_col1 = '#ccd6de' # for plot 1,2,3,4,5,1_1,2_2,etc.
     self.sed_col1 = '#a3abb1'
-        #define color maps 
+        
+    #define color maps 
     self.cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
     self.cmap1 = plt.cm.rainbow 
 
     
+
+    self.font_txt = 15 #(height / 190.)  # text on figure 2 (Water; BBL, Sed) 
+    self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
+    self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
+    self.linewidth = 0.7            
+def axis_pos(self): 
     # disctances between x axes
     dx = 0.1 #(height / 30000.) #0.1
     dy = 14 #height/96
     
     #x and y positions of axes labels 
-    self.labelaxis_x =  1.10 
-    
+    self.labelaxis_x =  1.10     
     self.labelaxis1_y = 1.02    
     self.labelaxis2_y = 1.02 + dx
     self.labelaxis3_y = 1.02 + dx * 2.
@@ -235,12 +241,7 @@ def colors(self):
     self.axis3 = 0 + dy * 2
     self.axis4 = 0 + dy * 3
     self.axis5 = 0 + dy * 4  
-
-    self.font_txt = 15 #(height / 190.)  # text on figure 2 (Water; BBL, Sed) 
-    self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
-    self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
-    self.linewidth = 0.7            
-    
+  
 def calculate_ywat(self):
     for n in range(0,(len(self.depth2)-1)):
         if self.depth2[n+1] - self.depth2[n] >= 0.5:
@@ -248,13 +249,13 @@ def calculate_ywat(self):
                 y1max = (self.depth2[n])
                 self.y1max = y1max                                                      
                 self.ny1max = n
-                print ('no sediment y wat', self.y1max)        
+                #print ('no sediment y wat', self.y1max)        
                 break  
         elif self.depth2[n+1] - self.depth2[n] < 0.50:    
             y1max = (self.depth2[n])
             self.y1max = y1max                                                      
             self.ny1max = n
-            print ('calc_y_wat_y1max', self.y1max)
+            #print ('calc_y_wat_y1max', self.y1max)
             break
         
   
@@ -264,20 +265,18 @@ def calculate_ybbl(self):
         if self.kz[1,n,0] == 0:
             self.y2max = self.depth2[n]         
             self.ny2max = n  
-            print ('in kz = 0' ,self.kz[0,n,0])      
+            #print ('in kz = 0' ,self.kz[0,n,0])      
             break  
         if self.kz[1,n,0] != 0 and n == (len(self.depth2)-2):       
             self.y2max = self.depth2[n]         
             self.ny2max = n  
-            print ('no sediment' , self.kz[0,n,0],n)   
+            #print ('no sediment' , self.kz[0,n,0],n)   
             
 def y2max_fill_water(self):
     for n in range(0,(len(self.depth2)-1)):
-#        if depth[_]-depth[_?]
         if self.depth2[n+1] - self.depth2[n] >= 0.5:
             pass
         elif self.depth2[n+1] - self.depth2[n] < 0.50:
-#            watmax =  depth[n],depth[n]-depth[n+1],n
             self.y2max_fill_water = self.depth2[n] 
             self.nbblmin = n            
             break 
@@ -289,11 +288,12 @@ def calculate_ysed(self):
             self.ysedmin =  ysed - 10
             self.ysedmax =  self.depth_sed[len(self.depth_sed)-1] 
             self.y3min = self.depth_sed[self.nbblmin+2]
-            self.nysedmin = n 
+            self.nysedmin = n
+            #print ('y3min', self.y3min) 
             #here we cach part of BBL to add to 
             #the sediment image                
             break  
-    print (self.y3min)              
+                 
     
 def y_coords(self):       
     #self.y2min = self.y2max - 2*(self.y2max - self.y1max)
@@ -328,11 +328,14 @@ def depth_sed(self):
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed2.append(v)
         self.depth_sed2 = depth_sed2  
-        print ('in depth_sed2')         
+        #print ('in depth_sed2')         
          
-def varmax(self,variable,vartype): 
+def varmax(self,variable,vartype,start,stop): 
     if vartype == 0: #water
-        n = variable[0:self.ny1max-1, 0:].max() 
+        l = variable[0:self.ny1max-1]
+        #print ('check', l)
+        #print ("var", variable.shape)
+        n = variable[0:self.ny1max-1].max() 
         # self.lentime   
     elif vartype == 1 :#sediment
         n = variable[self.ny2min-1:, 0:].max()
@@ -391,7 +394,7 @@ def varmin(self,variable,vartype):
     elif vartype == 1 : 
         n = np.floor(variable[self.ny2min-1:, 0:].min()) 
     # make "beautiful"  values to show on ticks
-    print (n)            
+    #print ('varmin', n)            
     if n > 10000. and n <= 100000.:  
         n = int(np.floor(n/ 1000.0)) * 1000 - 1000.
     elif n > 1000. and n <= 10000.:  
@@ -524,8 +527,42 @@ def setmaxmin(self,axis,var,type):
     axis.set_xticks(np.arange(minv,maxv+((maxv - minv)/2.),
             ((maxv - minv)/2.)))      
         
-        
-        
-
+def set_widget_styles(self):
     
+    # Push buttons style
+    for axis in (self.time_prof_all,self.time_prof_last_year,self.dist_prof_button):   
+        axis.setStyleSheet(
+        'QPushButton {background-color: #c2b4ae; border-width: 5px;'
+        '  padding: 2px; font: bold 15px; }')     
+        
+    # Combo boxes style
+    for axis in (self.time_prof_box,self.all_year_1d_box): 
+        axis.setStyleSheet(
+        'QComboBox {background-color: #c2b4ae; border-width: 5px;'
+        '  padding: 2px; font: bold 15px; }')   
+        
+    # Spinbox style
+    self.varname_box.setStyleSheet(
+    'QSpinBox {background-color: #c2b4ae; border-width: 15px;'
+    '  padding: 5px; font: bold 15px; }')        
+        
+    #define layout
+
+def widget_layout(self):    
+        #first line              
+        self.grid.addWidget(self.toolbar,0,0,1,1)        
+        self.grid.addWidget(self.time_prof_all,0,1,1,1)  
+        self.grid.addWidget(self.dist_prof_button,0,2,1,1)     
+        self.grid.addWidget(self.time_prof_box,0,3,1,1)        
+        self.grid.addWidget(self.numcol_2d ,0,4,1,1)              
+        self.grid.addWidget(self.textbox,0,5,1,1)  
+        
+        #second line               
+        self.grid.addWidget(self.time_prof_last_year,1,1,1,1) 
+        self.grid.addWidget(self.all_year_1d_box,1,2,1,1)                   
+        self.grid.addWidget(self.numday_box,1,4,1,1)  
+        self.grid.addWidget(self.textbox2,1,5,1,1)
+    
+        #third line              
+        self.grid.addWidget(self.canvas, 2, 0,1,6)     
     
