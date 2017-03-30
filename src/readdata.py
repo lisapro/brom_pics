@@ -191,12 +191,20 @@ def readdata2_brom(self,fname):
     #print ('in readdata_brom')   
     self.fh = Dataset(fname)
     self.depth = self.fh.variables['z'][:] 
+    
+    
+    
     self.depth2 = self.fh.variables['z2'][:] #middle points   
     self.kz =  self.fh.variables['Kz'][:,:] 
     self.time =  self.fh.variables['time'][:]
     self.dist = np.array(self.fh.variables['i']) 
     self.lendepth2 = len(self.depth2)
-    
+    # bbl width depends on depth
+    if self.lendepth2 < 50 :
+        self.bbl = 0.25 #0.5 
+    else :
+        self.bbl = 0.5 
+            
 def colors(self):
     self.spr_aut ='#998970'
     self.wint =  '#8dc0e7'
@@ -215,8 +223,6 @@ def colors(self):
     #define color maps 
     self.cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
     self.cmap1 = plt.cm.rainbow 
-
-    
 
     self.font_txt = 15 #(height / 190.)  # text on figure 2 (Water; BBL, Sed) 
     self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
@@ -244,16 +250,15 @@ def axis_pos(self):
   
 def calculate_ywat(self):
     for n in range(0,(len(self.depth2)-1)):
-        if self.depth2[n+1] - self.depth2[n] >= 0.5:
+        if self.depth2[n+1] - self.depth2[n] >= self.bbl:
             if n == self.lendepth2-2: # len(self.depth2):
                 y1max = (self.depth2[n])
                 self.y1max = y1max                                                      
                 self.ny1max = n
-                #print ('no sediment y wat', self.y1max)        
+                print ('no sediment y wat', self.y1max)        
                 break  
-        elif self.depth2[n+1] - self.depth2[n] < 0.50:    
-            y1max = (self.depth2[n])
-            self.y1max = y1max                                                      
+        elif self.depth2[n+1] - self.depth2[n] < self.bbl:   
+            self.y1max = (self.depth2[n])                                               
             self.ny1max = n
             #print ('calc_y_wat_y1max', self.y1max)
             break
@@ -265,7 +270,7 @@ def calculate_ybbl(self):
         if self.kz[1,n,0] == 0:
             self.y2max = self.depth2[n]         
             self.ny2max = n  
-            #print ('in kz = 0' ,self.kz[0,n,0])      
+            #print ('y2max' ,self.y2max)      
             break  
         if self.kz[1,n,0] != 0 and n == (len(self.depth2)-2):       
             self.y2max = self.depth2[n]         
@@ -273,10 +278,11 @@ def calculate_ybbl(self):
             #print ('no sediment' , self.kz[0,n,0],n)   
             
 def y2max_fill_water(self):
+    
     for n in range(0,(len(self.depth2)-1)):
-        if self.depth2[n+1] - self.depth2[n] >= 0.5:
+        if self.depth2[n+1] - self.depth2[n] >= self.bbl:
             pass
-        elif self.depth2[n+1] - self.depth2[n] < 0.50:
+        elif self.depth2[n+1] - self.depth2[n] < self.bbl:
             self.y2max_fill_water = self.depth2[n] 
             self.nbblmin = n            
             break 
@@ -284,9 +290,9 @@ def y2max_fill_water(self):
 def calculate_ysed(self):
     for n in range(0,(len(self.depth_sed))):
         if self.kz[1,n,0] == 0:
-            ysed = self.depth_sed[n]  
+            ysed = self.depth_sed[n]              
             self.ysedmin =  ysed - 10
-            self.ysedmax =  self.depth_sed[len(self.depth_sed)-1] 
+            self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
             self.y3min = self.depth_sed[self.nbblmin+2]
             self.nysedmin = n
             #print ('y3min', self.y3min) 
@@ -296,7 +302,7 @@ def calculate_ysed(self):
                  
     
 def y_coords(self):       
-    #self.y2min = self.y2max - 2*(self.y2max - self.y1max)
+
     #calculate the position of y2min, for catching part of BBL 
     self.ny2min = self.ny2max - 2*(self.ny2max - self.ny1max) 
     self.y2min_fill_bbl = self.y2max_fill_water = self.y1max #y2max_fill_water()

@@ -339,8 +339,8 @@ class Window(QtGui.QDialog):
         #f.set_size_inches(11.69,8.27)
 
         ax.set_title(index)
-        ax.set_ylim(self.y1max-1,0)       
-        ax2.set_ylim(self.ysedmax,self.y3min) #ysedmin
+        ax.set_ylim(self.y1max,0)       
+        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
         #xlen = len(x)
         ax.set_xlim(start,stop)
         ax2.set_xlim(start,stop)
@@ -431,7 +431,7 @@ class Window(QtGui.QDialog):
             messagebox = QtGui.QMessageBox.about(self, "Retry",'it is 1D BROM')
             #self.setWindowIcon(QtGui.QIcon('bromlogo.png')) 
             #messagebox.setIcon(QtGui.QIcon("monitor.png"))
-            #print ('it is 1D BROM')  
+            #print ('it is 1D BROM')  y
                       
         #zz = np.array(zz).reshape(ylen,xlen)        
         z2 = np.array(z2d)
@@ -518,7 +518,9 @@ class Window(QtGui.QDialog):
         self.time_profile(start,stop)             
     
     
-    def all_year_charts(self):            
+    def all_year_charts(self): 
+        messagebox = QtGui.QMessageBox.about(self, "Next time",
+                                             'it does not work yet =(')           
         plt.clf()
         gs = gridspec.GridSpec(3,3) 
         gs.update(left=0.06, right=0.93,top = 0.94,bottom = 0.04,
