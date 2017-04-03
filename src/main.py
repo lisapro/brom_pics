@@ -341,10 +341,20 @@ class Window(QtGui.QDialog):
 
         cb.set_ticks(wat_ticks)
         cb_sed.set_ticks(sed_ticks)  
-        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )     
-  
-        self.canvas.draw() 
+        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )  
+        #def test():   
+        #    print ("test")
+        self.canvas.draw()
         
+        timer = QtCore.QTimer(self)
+        timer.timeout.connect(self.call_print_allyr)
+        timer.start(200) 
+        
+        #timer.timeout.connect(test) #(self.call_print_allyr)
+        #timer.start(1)
+        #QtCore.QTimer.connect(timer, QtCore.SIGNAL("timeout()"), self, QtCore.SLOT("func()"))
+        
+        #QtCore.QTimer.singleShot(1000, self.updateCost())        
 
     def dist_profile(self): 
         plt.clf()
@@ -462,9 +472,10 @@ class Window(QtGui.QDialog):
     def call_print_allyr(self): 
         stop = len(self.time)
         start = 0
+        print ("test")
         self.time_profile(start,stop)             
     
-    
+        
     def all_year_charts(self): 
         #messagebox = QtGui.QMessageBox.about(self, "Next time",
         #                                     'it does not work yet =(')           
