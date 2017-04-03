@@ -347,8 +347,8 @@ class Window(QtGui.QDialog):
         self.canvas.draw()
         
         timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.call_print_allyr)
-        timer.start(200) 
+        timer.timeout.connect(self.update_all_year)
+        timer.start(20000) 
         
         #timer.timeout.connect(test) #(self.call_print_allyr)
         #timer.start(1)
@@ -472,9 +472,15 @@ class Window(QtGui.QDialog):
     def call_print_allyr(self): 
         stop = len(self.time)
         start = 0
-        print ("test")
-        self.time_profile(start,stop)             
-    
+        self.time_profile(start,stop)   
+                  
+    def update_all_year(self):
+        self.fh =  Dataset(self.fname)
+        readdata.readdata_brom(self)       
+        stop = len(self.time)
+        start = 0
+        print ('stop',stop)
+        self.time_profile(start,stop)  
         
     def all_year_charts(self): 
         #messagebox = QtGui.QMessageBox.about(self, "Next time",
