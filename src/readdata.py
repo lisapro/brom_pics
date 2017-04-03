@@ -99,8 +99,8 @@ def readdata_brom(self): #,varname,fname
        
        
          
-    '''self.vars = ([],[self.o2],[self.no3 ],[self.no2],
-    [self.si], [self.alk],[self.po4],[self.nh4],
+    self.vars = ([],['NO2','NO3','NH4'],
+    '''[self.si], [self.alk],[self.po4],[self.nh4],
     [self.h2s ],[self.pon], [self.don],[self.dic],[self.phy],
     [self.het], [self.mn2], [self.mn3], [self.mn4],[self.mns],
     [self.mnco3], [self.fe2], [self.fe3 ], [self.fes],
@@ -108,7 +108,7 @@ def readdata_brom(self): #,varname,fname
     [self.so4], [self.si_part], [self.baae], [self.bhae],
     [self.baan], [self.bhan], [self.caco3], [self.ch4],
     [self.ph], [self.pco2], [self.om_ca], [self.om_ar],
-    [self.co3], [self.ca],[self.sal], [self.temp])'''
+    [self.co3], [self.ca],[self.sal], [self.temp]''')
     
     #Variable names to add to combobox with time profiles
     self.var_names_profile = ('Time profile','O2' ,'NO3' ,'no2', 'Si', 'Alk',
@@ -154,8 +154,8 @@ def readdata_brom(self): #,varname,fname
         (r'$\rm \Omega Aragonite $', r'$\rm CO _3 $', r'$\rm Ca $'),
         (r'$\rm Salinity $',r'$\rm Temperature $',r'$\rm O _2 $'))     
      
-    ''' # list of variable names to connect titles and variables 
-    self.vars_year = ([],
+    # list of variable names to connect titles and variables 
+    '''self.vars_year = ([],
                       [[self.no2],[self.no3],[self.nh4]],
                       [[self.po4],[self.so4],[self.o2]],
                       [[self.h2s],[self.pon],[self.don]],
@@ -169,10 +169,10 @@ def readdata_brom(self): #,varname,fname
                       [[self.baae],[self.bhae],[self.baan]],                                                                                        
                       [[self.caco3],[self.ch4],[self.om_ca]],     
                       [[self.om_ar],[self.co3],[self.ca]],       
-                      [[self.sal],[self.temp],[self.o2]],                                                                              
+                      [[self.sal],[self.temp],[self.o2]],                                                                             
     ) 
     
-    self.fh.close()'''  
+    self.fh.close() '''
     #self.lentime = len(self.time)
     # numbers of first days of each month to add to combobox 'One day'                           
     self.months_start = [1,32,61,92,122,153,183,
@@ -190,10 +190,7 @@ def readdata_brom(self): #,varname,fname
 def readdata2_brom(self,fname):  
     #print ('in readdata_brom')   
     self.fh = Dataset(fname)
-    self.depth = self.fh.variables['z'][:] 
-    
-    
-    
+    self.depth = self.fh.variables['z'][:]     
     self.depth2 = self.fh.variables['z2'][:] #middle points   
     self.kz =  self.fh.variables['Kz'][:,:] 
     self.time =  self.fh.variables['time'][:]
@@ -204,7 +201,20 @@ def readdata2_brom(self,fname):
         self.bbl = 0.25 #0.5 
     else :
         self.bbl = 0.5 
-            
+ 
+def read_all_year_var(self,fname,varname1,varname2,varname3): 
+    self.fh = Dataset(fname)  
+    #print (fname)
+    self.var1 = self.fh.variables[varname1][:]
+    self.var2 = self.fh.variables[varname2][:]
+    self.var3 = self.fh.variables[varname3][:]  
+    return  self.var1,self.var2, self.var3      
+
+    #print ('var', self.var)
+    self.fh.close()
+    
+    
+     
 def colors(self):
     self.spr_aut ='#998970'
     self.wint =  '#8dc0e7'
@@ -294,13 +304,24 @@ def calculate_ysed(self):
             self.ysedmin =  ysed - 10
             self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
             self.y3min = self.depth_sed[self.nbblmin+2]
-            self.nysedmin = n
+            #self.nysedmin = n
             #print ('y3min', self.y3min) 
             #here we cach part of BBL to add to 
             #the sediment image                
             break  
-                 
-    
+
+def calc_nysedmin(self):
+    m = 0                 
+    for n in (self.depth_sed):
+        if n >= self.ysedmin :
+            self.nysedmin = m 
+            break
+        else: 
+            m = m+1
+    return self.nysedmin    
+    #print ('nysemin2,1', self.nysedmin2, self.nysedmin,
+    #       self.depth_sed[self.nysedmin2-1],self.depth_sed[self.nysedmin])   
+         
 def y_coords(self):       
 
     #calculate the position of y2min, for catching part of BBL 
@@ -338,13 +359,13 @@ def depth_sed(self):
          
 def varmax(self,variable,vartype,start,stop): 
     if vartype == 0: #water
-        l = variable[0:self.ny1max-1]
+        #l = variable[0:self.ny1max-1, start:stop]
         #print ('check', l)
         #print ("var", variable.shape)
-        n = variable[0:self.ny1max-1].max() 
+        n = variable[0:self.ny1max+1].max() 
         # self.lentime   
     elif vartype == 1 :#sediment
-        n = variable[self.ny2min-1:, 0:].max()
+        n = variable[self.nysedmin:].max()
         #self.lentime
     # make "beautiful"  values to show on ticks            
     if n > 10000. and n <= 100000.:  
@@ -393,14 +414,21 @@ def int_value(self,n,minv,maxv):
           
     return m    
 
-def varmin(self,variable,vartype):
+def varmin(self,variable,vartype,start,stop):
+    
+    m = np.array(variable[0:self.ny1max-1])
+    
     if vartype == 0 :
         calculate_ywat(self)
-        n = np.floor(variable[0:self.ny1max-1,0:].min())
+        n = np.floor(variable[0:self.ny1max-1].min())
+ 
     elif vartype == 1 : 
-        n = np.floor(variable[self.ny2min-1:, 0:].min()) 
+        m = (variable[self.nysedmin])    
+        #print ('m',m)   
+        n = np.floor(variable[self.nysedmin-2:].min()) 
+        #print ('min',n, self.nysedmin-2, self.ysedmin-2)
     # make "beautiful"  values to show on ticks
-    #print ('varmin', n)            
+    ##print ('varmin', n)            
     if n > 10000. and n <= 100000.:  
         n = int(np.floor(n/ 1000.0)) * 1000 - 1000.
     elif n > 1000. and n <= 10000.:  
@@ -408,7 +436,7 @@ def varmin(self,variable,vartype):
     elif n >= 100. and n < 1000.:
         n = int(np.floor(float(n) / 10.0)) * 10 - 1.
     elif n >= 1. and n < 100. :
-        n =  int(np.floor(float(n)))  +- 1.  
+        n =  int(np.floor(float(n)))  - 1.  
     elif n >= 0.1 and n < 1. :
         n =  (np.floor(n*10.))/10. - 0.1  
     elif n >= 0.01 and n < 0.1 :
@@ -420,7 +448,8 @@ def varmin(self,variable,vartype):
     elif n >= 0.00001 and n < 0.0001 :
         n =  (np.floor(n*100000))/100000 
   
-    self.watmin =  n                     
+    self.watmin =  n  
+                 
     return self.watmin
 
 # make "beautiful"  values to show on ticks 
@@ -463,7 +492,7 @@ def ticks(minv,maxv):
     else :  
         ticks = np.arange(minv,maxv + (maxv - minv)/2., (maxv - minv)/2.)                   
     return ticks
-
+    #print (ticks)
 #function to define y limits 
 # 
 '''

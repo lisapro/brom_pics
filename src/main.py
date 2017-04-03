@@ -158,7 +158,8 @@ class Window(QtGui.QDialog):
         readdata.colors(self)
         readdata.set_widget_styles(self) 
         readdata.y_coords(self)
-          
+        readdata.calc_nysedmin(self)  
+        
     def time_profile(self,start,stop):
         
         plt.clf()
@@ -166,15 +167,15 @@ class Window(QtGui.QDialog):
         # read chosen variable 
         z = np.array(self.fh.variables[index]) 
         z = z[start:stop] 
-        ylen = len(self.depth) #95  
+        ylen1 = len(self.depth) #95  
 
         x = np.array(self.time[start:stop]) #np.arange(6)
         xlen = len(x) #365    
          
         # check if the variable is defined of middlepoints  
-        if (z.shape[1])> ylen: 
+        if (z.shape[1])> ylen1: 
             y = self.depth2
-        elif (z.shape[1]) == ylen :
+        elif (z.shape[1]) == ylen1:
             y = self.depth #pass
         else :
             print ("wrong depth array size") 
@@ -198,61 +199,7 @@ class Window(QtGui.QDialog):
         zz = z.T      
       
 
-        #self.fh.close()
-
-        '''
-        #def calculate_ybbl(self):
-        for n in range(0,(len(self.depth2)-1)):
-            if self.kz[0,n,0] == 0:
-                self.y2max = self.depth2[n]         
-                self.ny2max = n 
-            elif self.kz[0,n,0] != 0 and n == (len(self.depth2)-1)-1 :  
-                self.ny2max = n  
-                self.y2max = self.depth2[n]    
-                ##print (self.ny2max)
-                break 
-
-                           
-        #def y2max_fill_water(self):
-        for n in range(0,(len(self.depth2)-1)):
-    #        if depth[_]-depth[_?]
-            if self.depth2[n+1] - self.depth2[n] >= 0.5:
-                pass
-            elif self.depth2[n+1] - self.depth2[n] < 0.50:
-    #            watmax =  depth[n],depth[n]-depth[n+1],n
-                self.y2max_fill_water = self.depth2[n] 
-                self.nbblmin = n            
-                break 
-            elif n == (len(self.depth2)-2) and self.depth2[n+1] - self.depth2[n] >= 0.5 :
-                self.y2max_fill_water = self.depth2[n] 
-                self.nbblmin = n         '''     
-            
-             
-        '''   
-        #def y_coords(self):       
-        #self.y2min = self.y2max - 2*(self.y2max - self.y1max)
-        #calculate the position of y2min, for catching part of BBL 
-        self.ny2min = self.ny2max - 2*(self.ny2max - self.ny1max) 
-        self.y2min_fill_bbl = self.y2max_fill_water = self.y1max 
-        #y2max_fill_water()
-        #109.5 #BBL-water interface
-        self.ysedmax_fill_bbl = 0
-        self.ysedmin_fill_sed = 0
-        self.y1min = 0
-        self.y2min = self.y2max - 2*(self.y2max - self.y1max)  
-                  
-        #calculate the position of y2min, for catching part of BBL 
-        #def depth_sed2(self):
-        to_float = []
-        for item in self.depth2:
-            to_float.append(float(item)) #make a list of floats from tuple 
-        depth_sed2 = [] # list for storing final depth data for sediment 
-        v=0  
-        for i in to_float:
-            v = (i- self.y2max)*100  #convert depth from m to cm
-            depth_sed2.append(v)
-            self.depth_sed2 = depth_sed2  ''' 
-                           
+        #self.fh.close()                        
  
                                  
         gs = gridspec.GridSpec(2, 1) 
@@ -300,11 +247,11 @@ class Window(QtGui.QDialog):
       
         y_sed = np.array(self.depth_sed)
           
-        watmin = readdata.varmin(self,zz,0) #0 - water 
+        watmin = readdata.varmin(self,zz,0,start,stop) #0 - water 
         watmax = readdata.varmax(self,zz,0,start,stop)
-        sed_min = readdata.varmin(self,zz,1)
+        sed_min = readdata.varmin(self,zz,1,start,stop)
         sed_max = readdata.varmax(self,zz,1,start,stop) 
-
+       #print (watmin,watmax,sed_min,sed_max)
         '''watmin = math.floor(zz[0:self.ny1max,0:].min())# np.floor()
         watmax = math.ceil(zz[0:self.ny1max, 0:].max()) #np.round() 
         
@@ -313,7 +260,7 @@ class Window(QtGui.QDialog):
         
         if watmin == watmax :
             if watmax == 0: 
-                watmax = 0.1
+                watmajprintx = 0.1
                 watmix = - 0.1
             else:      
                 watmax = watmax + watmax/10. 
@@ -360,10 +307,10 @@ class Window(QtGui.QDialog):
         for n in wat_levs:
             n = readdata.int_value(self,n,watmin,watmax)
             int_wat_levs.append(n)            
-        for n in sed_levs:
-            n = readdata.int_value(self,n,sed_min,
-                                   sed_max)
-            int_sed_levs.append(n)            
+        #for n in sed_levs:
+        #    n = readdata.int_value(self,n,sed_min,
+        #                           sed_max)
+        #    int_sed_levs.append(n)            
                       
         
 
@@ -374,10 +321,10 @@ class Window(QtGui.QDialog):
         # left corner, location (0,0).  
         # If â€˜imageâ€™, the rc value for image.origin will be used.
           
-        CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
+        CS = ax.contourf(X,Y, zz, levels= wat_levs, #int_
                               cmap= self.cmap)
 
-        CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = int_sed_levs,
+        CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_
                               cmap= self.cmap1) #, origin='lower'
        
         # Add an axes at position rect [left, bottom, width, height]
@@ -519,8 +466,8 @@ class Window(QtGui.QDialog):
     
     
     def all_year_charts(self): 
-        messagebox = QtGui.QMessageBox.about(self, "Next time",
-                                             'it does not work yet =(')           
+        #messagebox = QtGui.QMessageBox.about(self, "Next time",
+        #                                     'it does not work yet =(')           
         plt.clf()
         gs = gridspec.GridSpec(3,3) 
         gs.update(left=0.06, right=0.93,top = 0.94,bottom = 0.04,
@@ -544,11 +491,30 @@ class Window(QtGui.QDialog):
         ax01.set_ylabel('Depth (m)',fontsize= self.font_txt)   
         ax02.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
                                      
-        for n in range(1,len(self.var_names_charts_year)):
-            if (self.all_year_box.currentIndex() == n) :
-                z0 = np.array(self.vars_year[n][0][0][self.start_last_year:])
-                z1 = np.array(self.vars_year[n][1][0][self.start_last_year:])
-                z2 = np.array(self.vars_year[n][2][0][self.start_last_year:])
+        for n in range(1,len(self.vars)):
+            if (self.all_year_1d_box.currentIndex() == n) :
+                
+                varname1 = self.vars[n][0] 
+                varname2 = self.vars[n][1] 
+                varname3 = self.vars[n][2] 
+                #print (n)
+                z123 = readdata.read_all_year_var(self,
+                            self.fname,varname1,varname2,varname3)
+
+                z0 = np.array(z123[0])
+                z1 = np.array(z123[1])
+                z2 = np.array(z123[2])
+                #print('shape', z0.shape, z1.shape,z2.shape)   
+       
+                   
+                #z0 = np.array(self.var1) #self.start_last_year
+                #z1 = np.array(self.var1) #self.start_last_year
+                #z2 = np.array(self.var1) #self.start_last_year                                
+                #print (varname1,varname2,varname3)
+                #print (z1[0])
+                #z0 = np.array(self.vars_year[n][0][0][self.start_last_year:])
+                #z1 = np.array(self.vars_year[n][1][0][:]) #self.start_last_year
+                #z2 = np.array(self.vars_year[n][2][0][:]) #self.start_last_year
                 ax00.set_title(str(self.titles_all_year[n][0]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold') 
                 ax10.set_title(str(self.titles_all_year[n][1]), 
@@ -588,24 +554,28 @@ class Window(QtGui.QDialog):
         ax22.set_ylim(self.ysedmax, self.ysedmin) 
         #
         #n0 = self.varmax(self,z0,1) #[0:self.y2max_fill_water,:].max() 
+        start = 0
+        stop = 365 
+        #### to change""!!!!
+        
+        
+        watmin0 = readdata.varmin(self,z0,0,start,stop) #0 - water 
+        watmin1 = readdata.varmin(self,z1,0,start,stop) #0 - water 
+        watmin2 = readdata.varmin(self,z2,0,start,stop) #0 - water          
 
-        watmin0 = readdata.varmin(self,z0,0) #0 - water 
-        watmin1 = readdata.varmin(self,z1,0) #0 - water 
-        watmin2 = readdata.varmin(self,z2,0) #0 - water          
-
-        watmax0 = readdata.varmax(self,z0,0) #
+        watmax0 = readdata.varmax(self,z0,0,start,stop) #
         # z0[0:self.ny2max-4,:].max() # readdata.varmax(self,z0,0)
-        watmax1 = readdata.varmax(self,z1,0)
-        watmax2 = readdata.varmax(self,z2,0)  
+        watmax1 = readdata.varmax(self,z1,0,start,stop)
+        watmax2 = readdata.varmax(self,z2,0,start,stop)  
          
          
-        sed_min0 = readdata.varmin(self,z0,1) #0 - water 
-        sed_min1 = readdata.varmin(self,z1,1) #0 - water 
-        sed_min2 = readdata.varmin(self,z2,1) #0 - water    
+        sed_min0 = readdata.varmin(self,z0,1,start,stop) #0 - water 
+        sed_min1 = readdata.varmin(self,z1,1,start,stop) #0 - water 
+        sed_min2 = readdata.varmin(self,z2,1,start,stop) #0 - water    
 
-        sed_max0 = readdata.varmax(self,z0,1) #z0[:,self.ny2min:].max() 
-        sed_max1 = readdata.varmax(self,z1,1) #z1[:,self.ny2min:].max()         
-        sed_max2 = readdata.varmax(self,z2,1) #z2[:,self.ny2min:].max()         
+        sed_max0 = readdata.varmax(self,z0,1,start,stop) #z0[:,self.ny2min:].max() 
+        sed_max1 = readdata.varmax(self,z1,1,start,stop) #z1[:,self.ny2min:].max()         
+        sed_max2 = readdata.varmax(self,z2,1,start,stop) #z2[:,self.ny2min:].max()         
         
         if self.num_var == 5: #pH 
             watmax1 = 9
