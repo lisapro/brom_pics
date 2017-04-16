@@ -62,6 +62,7 @@ class Window(QtGui.QDialog):
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))   
 
+        #filename = self.fname
         self.fh =  Dataset(self.fname)
         readdata.readdata_brom(self)   
         
@@ -83,6 +84,8 @@ class Window(QtGui.QDialog):
         # add items to Combobox        
         for i in self.var_names_charts_year:
             self.all_year_1d_box.addItem(str(i))
+
+
                  
         #self.time_prof_box.addItem('plot 1D')  
         # add only 2d arrays to variables list       
@@ -93,6 +96,8 @@ class Window(QtGui.QDialog):
                 pass 
             else :
                 self.time_prof_box.addItem(names)
+
+
         
         #read i variable to know number of columns 
         for names,vars in self.fh.variables.items():
@@ -158,6 +163,7 @@ class Window(QtGui.QDialog):
         readdata.colors(self)
         readdata.set_widget_styles(self) 
         readdata.y_coords(self)
+        readdata.calculate_ysed(self)
         readdata.calc_nysedmin(self)  
         
     def time_profile(self,start,stop):
@@ -346,9 +352,9 @@ class Window(QtGui.QDialog):
         #    print ("test")
         self.canvas.draw()
         
-        timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.update_all_year)
-        timer.start(20000) 
+        #timer = QtCore.QTimer(self)
+        #timer.timeout.connect(self.update_all_year)
+        #timer.start(20000) 
         
         #timer.timeout.connect(test) #(self.call_print_allyr)
         #timer.start(1)
@@ -362,6 +368,12 @@ class Window(QtGui.QDialog):
         index = str(self.time_prof_box.currentText())
         numday = self.numday_box.value()  
         z = np.array(self.fh.variables[index]) 
+
+        #for names,vars in self.fh.variables.items():
+        #    if names == 'i' and i > 1 :
+        #        print ("check")
+
+
 
         #y = self.depth 
         ylen = len(self.depth)        
@@ -413,12 +425,12 @@ class Window(QtGui.QDialog):
 
         
         
-        gs = gridspec.GridSpec(2, 1)         
+        gs = gridspec.GridSpec(1, 1)         
         X,Y = np.meshgrid(self.dist,y)
 
         
         ax = self.figure.add_subplot(gs[0])
-        ax2 = self.figure.add_subplot(gs[1])
+        #ax2 = self.figure.add_subplot(gs[1])
         ax.set_title(index)
         
         data = np.array(self.fh.variables[index])
@@ -436,7 +448,7 @@ class Window(QtGui.QDialog):
         ##print (watmin,watmax)       
         ##print (zz)
         int_wat_levs = []
-        int_sed_levs= []
+        #int_sed_levs= []
                 
         for n in wat_levs:
             n = readdata.int_value(self,n,watmin,watmax)
@@ -446,20 +458,20 @@ class Window(QtGui.QDialog):
         CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
                               cmap=self.cmap)
         
-        CS1 = ax2.contourf(X,Y, zz, levels= int_wat_levs,
-                              cmap=self.cmap1)      
+        #CS1 = ax2.contourf(X,Y, zz, levels= int_wat_levs,
+        #                      cmap=self.cmap1)      
           
-        ax.scatter(X,Y, c = zz)  
+        #ax.scatter(X,Y, c = zz)  
         ax.set_ylim(self.y1max,0)  
-        ax2.set_ylim(self.ysedmax,self.y3min) 
+        #ax2.set_ylim(self.ysedmax,self.y3min) 
                         
-        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])                
-        cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+        cax = self.figure.add_axes([0.92, 0.3, 0.02, 0.5])                
+        #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
         
         wat_ticks = readdata.ticks(watmin,watmax) 
         
         cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)   
-        cb1 = plt.colorbar(CS1,cax = cax,ticks = wat_ticks)         
+        #cb1 = plt.colorbar(CS1,cax = cax,ticks = wat_ticks)         
         cb.set_ticks(wat_ticks)       
      
         self.canvas.draw() 
@@ -474,13 +486,13 @@ class Window(QtGui.QDialog):
         start = 0
         self.time_profile(start,stop)   
                   
-    def update_all_year(self):
-        self.fh =  Dataset(self.fname)
-        readdata.readdata_brom(self)       
-        stop = len(self.time)
-        start = 0
-        print ('stop',stop)
-        self.time_profile(start,stop)  
+    #def update_all_year(self):
+    #    self.fh =  Dataset(self.fname)
+    #    readdata.readdata_brom(self)       
+    #    stop = len(self.time)
+    #    start = 0
+    #     print ('stop',stop)
+    #     self.time_profile(start,stop)  
         
     def all_year_charts(self): 
         #messagebox = QtGui.QMessageBox.about(self, "Next time",

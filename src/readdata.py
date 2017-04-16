@@ -304,14 +304,22 @@ def calculate_ysed(self):
             self.ysedmin =  ysed - 10
             self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
             self.y3min = self.depth_sed[self.nbblmin+2]
+            print (self.ysedmin)
             #self.nysedmin = n
             #print ('y3min', self.y3min) 
             #here we cach part of BBL to add to 
             #the sediment image                
             break  
+        else : 
+            #ysed = max(self.depth_sed)             
+            #self.ysedmin =  ysed - 10
+            self.ysedmax =  max(self.depth_sed) 
+            #self.depth_sed[len(self.depth_sed)-1]        
+            #self.y3min = self.depth_sed[self.nbblmin+2]            
 
 def calc_nysedmin(self):
-    m = 0                 
+    m = 0      
+    self.ysedmin = - 10           
     for n in (self.depth_sed):
         if n >= self.ysedmin :
             self.nysedmin = m 
