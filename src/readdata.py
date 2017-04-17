@@ -265,6 +265,7 @@ def calculate_ywat(self):
                 y1max = (self.depth2[n])
                 self.y1max = y1max                                                      
                 self.ny1max = n
+                self.sediment = False
                 print ('no sediment y wat', self.y1max)        
                 break  
         elif self.depth2[n+1] - self.depth2[n] < self.bbl:   
@@ -304,7 +305,7 @@ def calculate_ysed(self):
             self.ysedmin =  ysed - 10
             self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
             self.y3min = self.depth_sed[self.nbblmin+2]
-            print (self.ysedmin)
+            print (self.ysedmin,self.ysedmax)
             #self.nysedmin = n
             #print ('y3min', self.y3min) 
             #here we cach part of BBL to add to 

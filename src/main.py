@@ -204,11 +204,42 @@ class Window(QtGui.QDialog):
         z = z.reshape(xlen,ylen)       
         zz = z.T      
       
-
+        watmin = readdata.varmin(self,zz,0,start,stop) #0 - water 
+        watmax = readdata.varmax(self,zz,0,start,stop)
+        sed_min = readdata.varmin(self,zz,1,start,stop)
+        sed_max = readdata.varmax(self,zz,1,start,stop) 
         #self.fh.close()                        
  
-                                 
-        gs = gridspec.GridSpec(2, 1) 
+        if self.sediment == False: 
+            gs = gridspec.GridSpec(1, 1) 
+            cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])  
+        else :                              
+            gs = gridspec.GridSpec(2, 1) 
+            y_sed = np.array(self.depth_sed)
+            X_sed,Y_sed = np.meshgrid(x,y_sed)
+            ax2 = self.figure.add_subplot(gs[1])  
+            ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
+            ax2.set_xlim(start,stop)
+            ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
+            ax2.set_xlabel('Number of day',fontsize= self.font_txt) 
+            sed_levs = np.linspace(sed_min,sed_max,
+                                 num = self.num)  
+            CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_
+                              cmap= self.cmap1) #, origin='lower'         
+            cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+            sed_ticks = readdata.ticks(sed_min,sed_max) 
+
+            ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )        
+            cb_sed = plt.colorbar(CS1,cax = cax1 )
+            cb_sed.set_ticks(sed_ticks)              
+            #cb.set_label('Water')   
+            cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])           
+                
+            
+        X,Y = np.meshgrid(x,y)             
+        ax = self.figure.add_subplot(gs[0])
+         
+
         
         self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
         self.wint =  '#8dc0e7'
@@ -251,12 +282,9 @@ class Window(QtGui.QDialog):
         self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
         self.linewidth = 0.7                 
       
-        y_sed = np.array(self.depth_sed)
+        
           
-        watmin = readdata.varmin(self,zz,0,start,stop) #0 - water 
-        watmax = readdata.varmax(self,zz,0,start,stop)
-        sed_min = readdata.varmin(self,zz,1,start,stop)
-        sed_max = readdata.varmax(self,zz,1,start,stop) 
+
        #print (watmin,watmax,sed_min,sed_max)
         '''watmin = math.floor(zz[0:self.ny1max,0:].min())# np.floor()
         watmax = math.ceil(zz[0:self.ny1max, 0:].max()) #np.round() 
@@ -283,29 +311,24 @@ class Window(QtGui.QDialog):
             sed_max = 10
             sed_min = 6 '''
 
-        X,Y = np.meshgrid(x,y)
-        X_sed,Y_sed = np.meshgrid(x,y_sed)
-        
-        ax = self.figure.add_subplot(gs[0])
-        ax2 = self.figure.add_subplot(gs[1])        
+     
         #self.figure, (ax, ax2) = plt.subplots(2, 1, sharex=True)
         #f.set_size_inches(11.69,8.27)
 
         ax.set_title(index)
-        ax.set_ylim(self.y1max,0)       
-        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
+        ax.set_ylim(self.y1max,0)   
+        #print (self.ysedmin,self.ysedmax,self.y1max)    
+      
         #xlen = len(x)
         ax.set_xlim(start,stop)
-        ax2.set_xlim(start,stop)
+        
 
         ax.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis 
-        ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
-        ax2.set_xlabel('Number of day',fontsize= self.font_txt) 
+
                           
         self.num = 50.            
         wat_levs = np.linspace(watmin,watmax,num= self.num)
-        sed_levs = np.linspace(sed_min,sed_max,
-                             num = self.num)
+
                 
         int_wat_levs = []
         int_sed_levs= []
@@ -318,7 +341,7 @@ class Window(QtGui.QDialog):
         #                           sed_max)
         #    int_sed_levs.append(n)            
                       
-        
+      
 
         ## contourf() draw contour lines and filled contours
         # levels = A list of floating point numbers indicating 
@@ -330,24 +353,21 @@ class Window(QtGui.QDialog):
         CS = ax.contourf(X,Y, zz, levels= wat_levs, #int_
                               cmap= self.cmap)
 
-        CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_
-                              cmap= self.cmap1) #, origin='lower'
+
        
         # Add an axes at position rect [left, bottom, width, height]
-        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])                
-        cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-        
+              
+       
         wat_ticks = readdata.ticks(watmin,watmax)        
-        sed_ticks = readdata.ticks(sed_min,sed_max)
+
         
         cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)
-        cb_sed = plt.colorbar(CS1,cax = cax1 )
-        #cb.set_label('Water')
+        
+
         
 
         cb.set_ticks(wat_ticks)
-        cb_sed.set_ticks(sed_ticks)  
-        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )  
+  
         #def test():   
         #    print ("test")
         self.canvas.draw()
@@ -464,8 +484,8 @@ class Window(QtGui.QDialog):
         #ax.scatter(X,Y, c = zz)  
         ax.set_ylim(self.y1max,0)  
         #ax2.set_ylim(self.ysedmax,self.y3min) 
-                        
-        cax = self.figure.add_axes([0.92, 0.3, 0.02, 0.5])                
+        cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
+        #cax = self.figure.add_axes([0.92, 0.3, 0.02, 0.5])                
         #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
         
         wat_ticks = readdata.ticks(watmin,watmax) 
