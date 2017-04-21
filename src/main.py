@@ -165,6 +165,7 @@ class Window(QtGui.QDialog):
         readdata.y_coords(self)
         readdata.calculate_ysed(self)
         readdata.calc_nysedmin(self)  
+        self.num = 50. 
         
     def time_profile(self,start,stop):
         
@@ -326,7 +327,7 @@ class Window(QtGui.QDialog):
         ax.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis 
 
                           
-        self.num = 50.            
+        #self.num = 50.            
         wat_levs = np.linspace(watmin,watmax,num= self.num)
 
                 
@@ -417,7 +418,7 @@ class Window(QtGui.QDialog):
                 ##print ('1iteration', z2d)    
                 #break                
         else:
-            messagebox = QtGui.QMessageBox.about(self, "Retry",'it is 1D BROM')
+            messagebox = QtGui.QMessageBox.about(self, "Retry,please",'it is 1D BROM')
             #self.setWindowIcon(QtGui.QIcon('bromlogo.png')) 
             #messagebox.setIcon(QtGui.QIcon("monitor.png"))
             #print ('it is 1D BROM')  y
@@ -441,10 +442,7 @@ class Window(QtGui.QDialog):
                 ny1max = n
                 ##print ('distance ny1max', self.ny1max)
                 break     
-                    
-
-        
-        
+                            
         gs = gridspec.GridSpec(1, 1)         
         X,Y = np.meshgrid(self.dist,y)
 
@@ -461,7 +459,7 @@ class Window(QtGui.QDialog):
         #watmax = readdata.varmax(self,np.array(self.fh.variables[index]) ,0)
         
         ##print ('maxmin', watmin,watmax)
-        self.num = 50.            
+        #self.num = 50.            
         wat_levs = np.linspace(watmin,watmax, num= self.num)
         #sed_levs = np.linspace(sed_min,sed_max,
         #                     num = self.num)

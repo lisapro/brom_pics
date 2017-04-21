@@ -271,6 +271,7 @@ def calculate_ywat(self):
         elif self.depth2[n+1] - self.depth2[n] < self.bbl:   
             self.y1max = (self.depth2[n])                                               
             self.ny1max = n
+            self.sediment = True
             #print ('calc_y_wat_y1max', self.y1max)
             break
         
