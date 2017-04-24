@@ -97,10 +97,34 @@ def readdata_brom(self): #,varname,fname
     self.fick_alk = self.fh.variables['fick:Alk'][:]        
     self.fick_po4 = self.fh.variables['fick:PO4'][:]''' 
        
-       
+    self.vars = ([],
+    ['NO2','NO3','NH4'],
+    ['PO4', 'SO4','O2'],
+    ['H2S','PON','DON'],
+    ['DIC','Phy','Het'],
+    ['pCO2','pH','Alk'],
+    ['Mn2','Mn3','Mn4'],
+    ['MnS','MnCO3','Bhan'])
+
+    # list of names to add to Combobox All year charts
+    self.var_names_charts_year = (('All year(last) graphs'),
+        ('NO2, NO3, NH4'),
+        ('PO4, SO4, O2'),
+        ('H2S, PON, DON'),
+        ('DIC, Phy, Het'), 
+        ('pCO2,pH,Alk'),
+        ('MNII,MnIII,MnIV'),
+        ('MnS, MnCO3,bhan'), 
+        ('FeII,FeIII,FeS'),
+        ('FeCO3,FeS2,Si'),  
+        ('S0 ,S2O3,Si_part'),
+        ('baae, bhae,baan'),
+        ('caco3, ch4, om_ca'), 
+        ('om_ar, co3, ca'),
+        ('salinity,Temperature,O2'))        
          
-    self.vars = ([],['NO2','NO3','NH4'],
-    '''[self.si], [self.alk],[self.po4],[self.nh4],
+    '''self.vars = ([],['NO2','NO3','NH4'],
+    [self.si], [self.alk],[self.po4],[self.nh4],
     [self.h2s ],[self.pon], [self.don],[self.dic],[self.phy],
     [self.het], [self.mn2], [self.mn3], [self.mn4],[self.mns],
     [self.mnco3], [self.fe2], [self.fe3 ], [self.fes],
@@ -108,7 +132,7 @@ def readdata_brom(self): #,varname,fname
     [self.so4], [self.si_part], [self.baae], [self.bhae],
     [self.baan], [self.bhan], [self.caco3], [self.ch4],
     [self.ph], [self.pco2], [self.om_ca], [self.om_ar],
-    [self.co3], [self.ca],[self.sal], [self.temp]''')
+    [self.co3], [self.ca],[self.sal], [self.temp])'''
     
     #Variable names to add to combobox with time profiles
     self.var_names_profile = ('Time profile','O2' ,'NO3' ,'no2', 'Si', 'Alk',
@@ -302,23 +326,17 @@ def y2max_fill_water(self):
 def calculate_ysed(self):
     for n in range(0,(len(self.depth_sed))):
         if self.kz[1,n,0] == 0:
-            ysed = self.depth_sed[n]              
+            ysed = self.depth_sed[n] #0 cm depth             
             self.ysedmin =  ysed - 10
             self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
             self.y3min = self.depth_sed[self.nbblmin+2]
-            print (self.ysedmin,self.ysedmax)
-            #self.nysedmin = n
-            #print ('y3min', self.y3min) 
             #here we cach part of BBL to add to 
             #the sediment image                
             break  
         else : 
-            #ysed = max(self.depth_sed)             
-            #self.ysedmin =  ysed - 10
-            self.ysedmax =  max(self.depth_sed) 
-            #self.depth_sed[len(self.depth_sed)-1]        
-            #self.y3min = self.depth_sed[self.nbblmin+2]            
 
+            self.ysedmax =  max(self.depth_sed) 
+           
 def calc_nysedmin(self):
     m = 0      
     self.ysedmin = - 10           
@@ -329,8 +347,7 @@ def calc_nysedmin(self):
         else: 
             m = m+1
     return self.nysedmin    
-    #print ('nysemin2,1', self.nysedmin2, self.nysedmin,
-    #       self.depth_sed[self.nysedmin2-1],self.depth_sed[self.nysedmin])   
+ 
          
 def y_coords(self):       
 
@@ -575,7 +592,9 @@ def setmaxmin(self,axis,var,type):
 def set_widget_styles(self):
     
     # Push buttons style
-    for axis in (self.time_prof_all,self.time_prof_last_year,self.dist_prof_button):   
+    for axis in (self.time_prof_all,self.time_prof_last_year,
+                 self.dist_prof_button,
+                 self.all_year_test_button):   
         axis.setStyleSheet(
         'QPushButton {background-color: #c2b4ae; border-width: 5px;'
         '  padding: 2px; font: bold 15px; }')     
@@ -604,7 +623,8 @@ def widget_layout(self):
         
         #second line               
         self.grid.addWidget(self.time_prof_last_year,1,1,1,1) 
-        self.grid.addWidget(self.all_year_1d_box,1,2,1,1)                   
+        self.grid.addWidget(self.all_year_1d_box,1,2,1,1)  
+        self.grid.addWidget(self.all_year_test_button,1,3,1,1)                         
         self.grid.addWidget(self.numday_box,1,4,1,1)  
         self.grid.addWidget(self.textbox2,1,5,1,1)
     

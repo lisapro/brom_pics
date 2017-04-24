@@ -74,6 +74,7 @@ class Window(QtGui.QDialog):
         self.dist_prof_button = QtGui.QPushButton()       
         self.time_prof_last_year =  QtGui.QPushButton()    
         self.time_prof_all =  QtGui.QPushButton()           
+        self.all_year_test_button =  QtGui.QPushButton() 
               
         self.numcol_2d = QtGui.QSpinBox()        
         self.varname_box = QtGui.QSpinBox()     
@@ -85,8 +86,6 @@ class Window(QtGui.QDialog):
         for i in self.var_names_charts_year:
             self.all_year_1d_box.addItem(str(i))
 
-
-                 
         #self.time_prof_box.addItem('plot 1D')  
         # add only 2d arrays to variables list       
         for names,vars in self.fh.variables.items():
@@ -96,8 +95,6 @@ class Window(QtGui.QDialog):
                 pass 
             else :
                 self.time_prof_box.addItem(names)
-
-
         
         #read i variable to know number of columns 
         for names,vars in self.fh.variables.items():
@@ -135,6 +132,7 @@ class Window(QtGui.QDialog):
         #self.numcol_2d.valueChanged.connect(
         #    self.time_profile) 
         self.time_prof_last_year.released.connect(self.call_print_lyr)
+        self.all_year_test_button.released.connect(self.all_year_test)
         self.time_prof_all.released.connect(self.call_print_allyr)        
 
         #:(self.time_profile)   
@@ -144,6 +142,7 @@ class Window(QtGui.QDialog):
         # add items to Combobox 
                
         self.time_prof_all.setText('Time Prof all')
+        self.all_year_test_button.setText('All year 1 var')
         self.time_prof_last_year.setText('Time Prof last year')               
         self.dist_prof_button.setText('Show Dist Profile')       
                          
@@ -419,25 +418,18 @@ class Window(QtGui.QDialog):
                 #break                
         else:
             messagebox = QtGui.QMessageBox.about(self, "Retry,please",'it is 1D BROM')
-            #self.setWindowIcon(QtGui.QIcon('bromlogo.png')) 
-            #messagebox.setIcon(QtGui.QIcon("monitor.png"))
-            #print ('it is 1D BROM')  y
-                      
-        #zz = np.array(zz).reshape(ylen,xlen)        
-        z2 = np.array(z2d)
-        ##print ('z2d shape',z2.shape)
-        z = z2.flatten()   
 
+               
+        z2 = np.array(z2d)
+        z = z2.flatten()   
         z = z.reshape(xlen,ylen)       
-        zz = z.T 
-        ##print (self.depth2)    
+        zz = z.T   
+        
         for n in range(0,(len(self.depth2)-1)):
-            ##print ('depth2',len(self.depth2),n)
             if self.depth2[n+1] - self.depth2[n] >= 0.5:
                 pass
             elif self.depth2[n+1] - self.depth2[n] < 0.50:    
                 y1max = (self.depth2[n])
-                ##print (y1max)
                 y1max = y1max                                                      
                 ny1max = n
                 ##print ('distance ny1max', self.ny1max)
@@ -450,21 +442,18 @@ class Window(QtGui.QDialog):
         ax = self.figure.add_subplot(gs[0])
         #ax2 = self.figure.add_subplot(gs[1])
         ax.set_title(index)
-        
         data = np.array(self.fh.variables[index])
-       
         #watmin = readdata.varmin(self,np.array(self.fh.variables[index]) ,0) #0 - water 
-        watmin = data[:].min() #-(data[0:xlen, 0:, :].min()) #/3. #self.ny1max-1
-        watmax = data[:].max() #+(data[0:xlen, 0:, :].min()) #/3. #self.ny1max-1
-        #watmax = readdata.varmax(self,np.array(self.fh.variables[index]) ,0)
-        
-        ##print ('maxmin', watmin,watmax)
-        #self.num = 50.            
+        watmin = data[:].min() 
+        #-(data[0:xlen, 0:, :].min()) #/3. #self.ny1max-1
+        watmax = data[:].max() 
+        #+(data[0:xlen, 0:, :].min()) #/3. #self.ny1max-1
+        #watmax = readdata.varmax(self,np.array
+        #(self.fh.variables[index]) ,0)
         wat_levs = np.linspace(watmin,watmax, num= self.num)
         #sed_levs = np.linspace(sed_min,sed_max,
         #                     num = self.num)
-        ##print (watmin,watmax)       
-        ##print (zz)
+
         int_wat_levs = []
         #int_sed_levs= []
                 
@@ -511,7 +500,57 @@ class Window(QtGui.QDialog):
     #    start = 0
     #     print ('stop',stop)
     #     self.time_profile(start,stop)  
+    
+    def all_year_test(self):  
+        plt.clf()
+        self.figure.patch.set_facecolor('white') 
+        gs = gridspec.GridSpec(3,1) 
+        gs.update(left=0.3, right=0.7,top = 0.94,bottom = 0.04,
+                   wspace=0.2,hspace=0.3) 
+        ax00 = self.figure.add_subplot(gs[0]) # water         
+        ax10 = self.figure.add_subplot(gs[1]) # water
+        ax20 = self.figure.add_subplot(gs[2]) # water 
+        for axis in (ax00,ax10,ax20):
+            axis.yaxis.grid(True,'minor')
+            axis.xaxis.grid(True,'major')                
+            axis.yaxis.grid(True,'major')    
+                         
+        index = str(self.time_prof_box.currentText())
+        # read chosen variable 
+        z = np.array(self.fh.variables[index]) 
         
+        ax00.set_title(index) 
+        #Label y axis        
+        ax00.set_ylabel('Depth (m)',
+                        fontsize= self.font_txt) 
+        ax10.set_ylabel('Depth (m)',
+                        fontsize= self.font_txt)   
+        ax20.set_ylabel('Depth (cm)',
+                        fontsize= self.font_txt)
+        
+        ax00.set_ylim(self.y1max,0)  
+        ax10.set_ylim(self.y2max, self.y1max)   
+        ax20.set_ylim(self.ysedmax, self.ysedmin) 
+         
+        for n in range(0,365):
+            if (n>0 and n <60) or (n<)
+            #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               
+            ax00.plot(z[n][0:self.ny2max],
+                      self.depth[0:self.ny2max],
+                      self.wint,alpha = self.a_w, 
+                      linewidth = self.linewidth , zorder = 10) 
+             
+            ax10.plot(z[n][0:self.ny2max],
+                      self.depth[0:self.ny2max],
+                      self.wint,alpha = self.a_w, 
+                      linewidth = self.linewidth , zorder = 10) 
+            
+            ax20.plot(z[n][self.nysedmin-1:],
+                      self.depth_sed[self.nysedmin-1:],
+                      self.wint, alpha = self.a_w,
+                      linewidth = self.linewidth, zorder = 10)      
+                           
+        self.canvas.draw()     
     def all_year_charts(self): 
         #messagebox = QtGui.QMessageBox.about(self, "Next time",
         #                                     'it does not work yet =(')           
@@ -551,36 +590,14 @@ class Window(QtGui.QDialog):
                 z0 = np.array(z123[0])
                 z1 = np.array(z123[1])
                 z2 = np.array(z123[2])
-                #print('shape', z0.shape, z1.shape,z2.shape)   
-       
-                   
-                #z0 = np.array(self.var1) #self.start_last_year
-                #z1 = np.array(self.var1) #self.start_last_year
-                #z2 = np.array(self.var1) #self.start_last_year                                
-                #print (varname1,varname2,varname3)
-                #print (z1[0])
-                #z0 = np.array(self.vars_year[n][0][0][self.start_last_year:])
-                #z1 = np.array(self.vars_year[n][1][0][:]) #self.start_last_year
-                #z2 = np.array(self.vars_year[n][2][0][:]) #self.start_last_year
+                
                 ax00.set_title(str(self.titles_all_year[n][0]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold') 
                 ax10.set_title(str(self.titles_all_year[n][1]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold') 
                 ax20.set_title(str(self.titles_all_year[n][2]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold')                                 
-                self.num_var = n #title0 = self.var_titles_charts_year[n][0] 
-                #title1 = self.var_titles_charts_year[n][1] 
-                #title2 = self.var_titles_charts_year[n][2]
-              
-        #ax00.set_title(title0) 
-        #ax10.set_title(title1)
-        #ax20.set_title(title2)
-
-        #self.ax10.set_xlabel(r'$\rm Fe $',fontsize=14)   
-        #self.ax20.set_xlabel(r'$\rm H _2 S $',fontsize=14) 
-
-
-
+                self.num_var = n  
 
         for axis in (ax00,ax10,ax20,ax01,ax11,ax21,ax02,ax12,ax22):
             #water          
@@ -644,9 +661,6 @@ class Window(QtGui.QDialog):
         self.sed_m2ticks = readdata.ticks(sed_min2,sed_max2)                 
         #for axis in (ax00,ax10,ax20):             
         
-        
-        
-
         ax00.set_xlim(watmin0,watmax0)   
         ax01.set_xlim(watmin0,watmax0)         
         ax02.set_xlim(sed_min0,sed_max0)
@@ -654,12 +668,10 @@ class Window(QtGui.QDialog):
         ax10.set_xlim(watmin1,watmax1)   
         ax11.set_xlim(watmin1,watmax1)         
         ax12.set_xlim(sed_min1,sed_max1)         
-        
          
         ax20.set_xlim(watmin2,watmax2)   
         ax21.set_xlim(watmin2,watmax2)         
         ax22.set_xlim(sed_min2,sed_max2) 
-        
                 
         ax10.set_xlim(watmin1,watmax1)   
         ax11.set_xlim(watmin1,watmax1)         
@@ -700,10 +712,7 @@ class Window(QtGui.QDialog):
         ax12.fill_between(self.sed_m1ticks,self.ysedmin_fill_sed,-10,
                                facecolor= self.bbl_col1, alpha=self.a_bbl) 
         ax12.fill_between(self.sed_m1ticks, self.ysedmax, self.ysedmin_fill_sed,
-                              facecolor= self.sed_col1, alpha=self.a_s)
-
-
-        
+                              facecolor= self.sed_col1, alpha=self.a_s)        
         ax20.fill_between(
                         self.m2ticks, self.y1max, 0,
                         facecolor= self.wat_col1, alpha=0.1 ) #self.a_w
