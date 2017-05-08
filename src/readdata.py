@@ -247,22 +247,28 @@ def colors(self):
     self.a_bbl = 0.3     
     self.a_s = 0.4 #alpha (transparency) for summer
     self.a_aut = 0.4 #alpha (transparency) for autumn and spring    
-    self.wat_col = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
-    self.bbl_col = '#2873b8' # for plot 1,2,3,4,5,1_1,2_2,etc.
+    self.wat_col = '#c9ecfd' 
+ 
+    self.bbl_col = '#2873b8' 
     self.sed_col= '#916012'
-    self.wat_col1 = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
-    self.bbl_col1 = '#ccd6de' # for plot 1,2,3,4,5,1_1,2_2,etc.
+    self.wat_col1 = '#c9ecfd'  
+    self.bbl_col1 = '#ccd6de'
     self.sed_col1 = '#a3abb1'
         
     #define color maps 
+    # red is not a error, it works
+    # some problem in eclipse
     self.cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
     self.cmap1 = plt.cm.rainbow 
 
-    self.font_txt = 15 #(height / 190.)  # text on figure 2 (Water; BBL, Sed) 
-    self.xlabel_fontsize = 10 #(height / 170.) #14 #axis labels      
+    self.font_txt = 15 #(height / 190.)
+    # text on figure 2 (Water; BBL, Sed) 
+    self.xlabel_fontsize = 10
+    #(height / 170.) #14 #axis labels      
     self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
-    self.linewidth = 0.7            
-def axis_pos(self): 
+    self.linewidth = 0.7   
+             
+def axis_pos(self): # for plot with all var in one page 
     # disctances between x axes
     dx = 0.1 #(height / 30000.) #0.1
     dy = 14 #height/96
