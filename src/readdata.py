@@ -9,10 +9,6 @@ Created on 14. des. 2016
 @author: E.Protsenko
 '''
 
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-# This Python file uses the following encoding: utf-8
 
 from netCDF4 import Dataset
 import main
@@ -21,9 +17,9 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 from matplotlib import rc
-
 from PyQt4 import QtGui
 import os, sys 
+
 #getcontext().prec = 6 
 majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   
@@ -214,17 +210,22 @@ def readdata_brom(self): #,varname,fname
 def readdata2_brom(self,fname):  
     #print ('in readdata_brom')   
     self.fh = Dataset(fname)
-    self.depth = self.fh.variables['z'][:]     
-    self.depth2 = self.fh.variables['z2'][:] #middle points   
-    self.kz =  self.fh.variables['Kz'][:,:] 
+    
+    self.depth = self.fh.variables['z'][:]  
+    if 'kz' in self.names_vars or 'Kz' in self.names_vars:    
+        self.depth2 = self.fh.variables['z2'][:] 
+        #middle points   
+        self.kz =  self.fh.variables['Kz'][:,:] 
+        self.lendepth2 = len(self.depth2)
+        # bbl width depends on depth
+        if self.lendepth2 < 50 :
+            self.bbl = 0.25 #0.5 
+        else :
+            self.bbl = 0.5         
     self.time =  self.fh.variables['time'][:]
-    self.dist = np.array(self.fh.variables['i']) 
-    self.lendepth2 = len(self.depth2)
-    # bbl width depends on depth
-    if self.lendepth2 < 50 :
-        self.bbl = 0.25 #0.5 
-    else :
-        self.bbl = 0.5 
+    if 'i' in self.names_vars: 
+        self.dist = np.array(self.fh.variables['i']) 
+
  
 def read_all_year_var(self,fname,varname1,varname2,varname3): 
     self.fh = Dataset(fname)  
@@ -293,6 +294,7 @@ def calculate_ywat(self):
         if self.depth2[n+1] - self.depth2[n] >= self.bbl:
             if n == self.lendepth2-2: # len(self.depth2):
                 y1max = (self.depth2[n])
+                self.ny1min = (self.depth[0])
                 self.y1max = y1max                                                      
                 self.ny1max = n
                 self.sediment = False
@@ -451,8 +453,9 @@ def varmin(self,variable,vartype,start,stop):
     
     m = np.array(variable[0:self.ny1max-1])
     
-    if vartype == 0 :
-        calculate_ywat(self)
+    if vartype == 0:
+        if 'Kz' in self.names_vars:
+            calculate_ywat(self)
         n = np.floor(variable[0:self.ny1max-1].min())
  
     elif vartype == 1 : 

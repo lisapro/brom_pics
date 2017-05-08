@@ -91,15 +91,17 @@ class Window(QtGui.QDialog):
         ## We skip z and time since they are 1d array, 
         ## we need to know the shape of other arrays
         ## If the file includes other 1d var, it 
-        ## could raise an err, such var should be skipped also 
+        ## could raise an err, such var should be skipped also
+        self.names_vars = [] 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
-                pass
+                self.names_vars.append(names)
             elif names == 'time' or names == 'i' : 
-                pass 
+                self.names_vars.append(names) 
             else :
                 self.time_prof_box.addItem(names)
-        
+                self.names_vars.append(names)  
+                        
         #read i variable to know number of columns 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
@@ -107,19 +109,31 @@ class Window(QtGui.QDialog):
             elif names == 'time': # or names == 'i' : 
                 pass 
             else :
-                testvar = np.array(self.fh['i'][:])      
-                break  
-        
+                if 'i' in self.names_vars:
+                    #print ("we try")
+                    testvar = np.array(self.fh['i'][:])      
+                    break  
+                #except AttributeError:
+                #    print ('var  i not found' )                
+        #try:
+        #    self.kz =  self.fh.variables['Kz'][:,:]  
+        #except AttributeError:
+        #    print ('var not found')      
+
+                
         lentime = len(self.fh['time'][:])
         #print (self.lentime)
         self.fh.close()    
         #print ('testvar', testvar.shape[2])
-        self.textbox.setText(
-            'Number of columns = {}'.format(str(testvar.shape[0])))
+
         self.textbox2.setText(
-            'Number of days = {}'.format(lentime))                
-        self.numcol_2d.setRange(0, int(testvar.shape[0]-1))   
-        self.numday_box.setRange(0, lentime-1)               
+            'Number of days = {}'.format(lentime))  
+        if 'i' in self.names_vars:  
+            self.textbox.setText(
+                'Number of columns = {}'.format(str(
+                testvar.shape[0])))                        
+            self.numcol_2d.setRange(0, int(testvar.shape[0]-1))   
+            self.numday_box.setRange(0, lentime-1)               
         #self.varname_box = QtGui.QSpinBox()        
                 
                 
@@ -156,19 +170,29 @@ class Window(QtGui.QDialog):
         
         ## The QGridLayout class lays out widgets in a grid          
         self.grid = QtGui.QGridLayout(self)
-        readdata.widget_layout(self)
         
-        readdata.readdata2_brom(self,self.fname)            
-        readdata.calculate_ywat(self)
-        readdata.calculate_ybbl(self)   
-        readdata.y2max_fill_water(self)        
-        readdata.depth_sed(self)
-        readdata.calculate_ysed(self)
+        readdata.widget_layout(self)        
+        readdata.readdata2_brom(self,self.fname)   
+                 
+        if ('Kz' or 'kz') in self.names_vars :
+            readdata.calculate_ywat(self)
+            readdata.calculate_ybbl(self)   
+            readdata.y2max_fill_water(self)        
+            readdata.depth_sed(self)
+            readdata.calculate_ysed(self)
+            readdata.calculate_ysed(self)
+            readdata.calc_nysedmin(self)  
+            readdata.y_coords(self)
+        #elif 'kz' in self.names_vars:
+            print('we have kz')                
+        else: 
+            self.sediment = False
+            print ("we do not have kz")      
+        
         readdata.colors(self)
         readdata.set_widget_styles(self) 
-        readdata.y_coords(self)
-        readdata.calculate_ysed(self)
-        readdata.calc_nysedmin(self)  
+        
+  
         self.num = 50. 
         
     def time_profile(self,start,stop):
@@ -197,16 +221,16 @@ class Window(QtGui.QDialog):
         z2d = []
         numcol = self.numcol_2d.value() # 
         #print ('number of column', numcol) # QSpinBox.value()  #1 
-        
-        if z.shape[2] > 1:
-            #print (z.shape)
-            for n in range(0,365): #xlen
-                print (n)
-                for m in range(0,ylen):  
-                    print (z[n][m][numcol])              
-                    z2d.append(z[n][m][numcol]) # take only n's column for brom
-        #zz = np.array(zz).reshape(ylen,xlen)        
-            z = np.array(z2d)
+        if 'i' in self.names_vars:
+            if z.shape[2] > 1:
+                #print (z.shape)
+                for n in range(0,xlen): #xlen
+                    #print (n)
+                    for m in range(0,ylen):  
+                        #print (z[n][m][numcol])              
+                        z2d.append(z[n][m][numcol]) # take only n's column for brom
+            #zz = np.array(zz).reshape(ylen,xlen)        
+                z = np.array(z2d)
         ##print ('z.shape',z.shape,xlen,ylen)                      
         z = z.flatten()   
         ##print ('z',z)
@@ -214,16 +238,24 @@ class Window(QtGui.QDialog):
         zz = z.T  
             
         #varmin(self,variable,vartype,start,stop)
-        watmin = readdata.varmin(self,zz,0,start,stop) #0 - water 
-        watmax = readdata.varmax(self,zz,0,start,stop)
-        sed_min = readdata.varmin(self,zz,1,start,stop)
-        sed_max = readdata.varmax(self,zz,1,start,stop) 
+        if ('kz' or 'Kz') in self.names_vars:
+            print ("we have kz???")
+            watmin = readdata.varmin(self,zz,0,start,stop) #0 - water 
+            watmax = readdata.varmax(self,zz,0,start,stop)
+        else:  
+            self.ny1max = len(self.depth-1)
+            self.y1max = max(self.depth)    
+            print ('hh',self.ny1max)
+            watmin = readdata.varmin(self,zz,0,start,stop) #0 - water 
+            watmax = readdata.varmax(self,zz,0,start,stop)
         #self.fh.close()                        
  
         if self.sediment == False: 
             gs = gridspec.GridSpec(1, 1) 
             cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])  
-        else :                              
+        else : 
+            sed_min = readdata.varmin(self,zz,1,start,stop)
+            sed_max = readdata.varmax(self,zz,1,start,stop)                              
             gs = gridspec.GridSpec(2, 1) 
             y_sed = np.array(self.depth_sed)
             X_sed,Y_sed = np.meshgrid(x,y_sed)
@@ -254,50 +286,7 @@ class Window(QtGui.QDialog):
 
         readdata.colors(self)
         
-        '''self.spr_aut ='#998970'#'#cecebd'#'#ffffd1'#'#e5e5d2'  
-        self.wint =  '#8dc0e7'
-        self.summ = '#d0576f' 
-        self.a_w = 0.4 #alpha_wat alpha (transparency) for winter
-        self.a_bbl = 0.3 
-        
-        self.a_s = 0.4 #alpha (transparency) for summer
-        self.a_aut = 0.4 #alpha (transparency) for autumn and spring    
-        self.wat_col = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
-        self.bbl_col = '#2873b8' # for plot 1,2,3,4,5,1_1,2_2,etc.
-        self.sed_col= '#916012'
-        self.wat_col1 = '#c9ecfd' # calc_resolution for filling water,bbl and sediment 
-        self.bbl_col1 = '#ccd6de' # for plot 1,2,3,4,5,1_1,2_2,etc.
-        self.sed_col1 = '#a3abb1' 
-        '''
-    
-    
-        '''
-        # distances between x axes
-        dx = 0.1 #(height / 30000.) #0.1
-        dy = 14 #height/96
-        
-        #x and y positions of axes labels 
-        self.labelaxis_x =  1.10         
-        self.labelaxis1_y = 1.02    
-        self.labelaxis2_y = 1.02 + dx
-        self.labelaxis3_y = 1.02 + dx * 2.
-        self.labelaxis4_y = 1.02 + dx * 3.
-        self.labelaxis5_y = 1.02 + dx * 4.
-    
-        # positions of xaxes
-        self.axis1 = 0
-        self.axis2 = 0 + dy 
-        self.axis3 = 0 + dy * 2
-        self.axis4 = 0 + dy * 3
-        self.axis5 = 0 + dy * 4  
-    
-        self.font_txt = 15 #(height / 190.)
-        # text on figure 2 (Water; BBL, Sed) 
-        self.xlabel_fontsize = 10 #(height / 170.)
-        #14 #axis labels      
-        self.ticklabel_fontsize = 10 #(height / 190.)
-        #14 #axis labels   
-        self.linewidth = 0.7    '''             
+         
         
         if watmin == watmax :
             if watmax == 0: 
@@ -305,12 +294,13 @@ class Window(QtGui.QDialog):
                 watmix = - 0.1
             else:      
                 watmax = watmax + watmax/10. 
-        elif sed_min == sed_max: 
-            if sed_max == 0: 
-                sed_max = 0.1
-                sed_min = - 0.1
-            else:     
-                sed_max = sed_max + sed_max/10.   
+        if self.sediment != False:        
+            if sed_min == sed_max: 
+                if sed_max == 0: 
+                    sed_max = 0.1
+                    sed_min = - 0.1
+                else:     
+                    sed_max = sed_max + sed_max/10.   
              
         '''if self.num_var == 34: 
             watmax = 9
@@ -321,9 +311,10 @@ class Window(QtGui.QDialog):
      
         #self.figure, (ax, ax2) = plt.subplots(2, 1, sharex=True)
         #f.set_size_inches(11.69,8.27)
-
+        self.ny1min = min(self.depth)
+        #print (self.depth)
         ax.set_title(index)
-        ax.set_ylim(self.y1max,0)   
+        ax.set_ylim(self.y1max,self.ny1min)   
         #print (self.ysedmin,self.ysedmax,self.y1max)    
       
         #xlen = len(x)
@@ -514,8 +505,8 @@ class Window(QtGui.QDialog):
                 ax2.set_ylim(self.ysedmax,self.ysedmin) 
                 
                  
-                cax = self.figure.add_axes([0.92, 0.3, 0.02, 0.5])                
                 cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+                cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
                 
                 wat_ticks = readdata.ticks(watmin,watmax) 
                 sed_ticks = readdata.ticks(sed_min,sed_max) 
