@@ -201,13 +201,13 @@ class Window(QtGui.QDialog):
         index = str(self.time_prof_box.currentText())
         ## read chosen variable 
         z = np.array(self.fh.variables[index]) 
-        print (z.shape)
+        #print (z.shape)
         z = z[start:stop] 
         ylen1 = len(self.depth) #95  
 
         x = np.array(self.time[start:stop]) #np.arange(6)
         xlen = len(x) #365    
-        print (xlen) 
+        #print (xlen) 
         # check if the variable is defined of middlepoints  
         if (z.shape[1])> ylen1: 
             y = self.depth2
@@ -217,11 +217,12 @@ class Window(QtGui.QDialog):
             print ("wrong depth array size") 
 
         ylen = len(y)           
-        print (ylen)
+        #print (self.names_vars)
         z2d = []
         numcol = self.numcol_2d.value() # 
         #print ('number of column', numcol) # QSpinBox.value()  #1 
         if 'i' in self.names_vars:
+            print ("in i")
             if z.shape[2] > 1:
                 #print (z.shape)
                 for n in range(0,xlen): #xlen
@@ -238,16 +239,16 @@ class Window(QtGui.QDialog):
         zz = z.T  
             
         #varmin(self,variable,vartype,start,stop)
-        if ('kz' or 'Kz') in self.names_vars:
-            print ("we have kz???")
-            watmin = readdata.varmin(self,zz,0,start,stop) #0 - water 
-            watmax = readdata.varmax(self,zz,0,start,stop)
+        if 'Kz' in self.names_vars:
+            print ("we have kz?")
+            watmin = readdata.varmin(self,zz,01,start,stop) #0 - water 
+            watmax = readdata.varmax(self,zz,01,start,stop)
         else:  
             self.ny1max = len(self.depth-1)
             self.y1max = max(self.depth)    
-            print ('hh',self.ny1max)
-            watmin = readdata.varmin(self,zz,0,start,stop) #0 - water 
-            watmax = readdata.varmax(self,zz,0,start,stop)
+            print ('no kz',self.ny1max)
+            watmin = readdata.varmin(self,zz,00,start,stop) #0 - water 
+            watmax = readdata.varmax(self,zz,01,start,stop)
         #self.fh.close()                        
  
         if self.sediment == False: 
@@ -333,13 +334,6 @@ class Window(QtGui.QDialog):
             n = readdata.int_value(self,n,watmin,watmax)
             int_wat_levs.append(n)  
                       
-        #for n in sed_levs:
-        
-        #    n = readdata.int_value(self,n,sed_min,
-        #                           sed_max)
-        #    int_sed_levs.append(n)            
-                      
-      
 
         ## contourf() draws contour lines and filled contours
         ## levels = A list of floating point numbers indicating 
@@ -351,8 +345,6 @@ class Window(QtGui.QDialog):
         CS = ax.contourf(X,Y, zz, levels= wat_levs, #int_
                               cmap= self.cmap)
 
-
-       
         # Add an axes at position rect [left, bottom, width, height]
               
        
@@ -403,8 +395,7 @@ class Window(QtGui.QDialog):
             y = self.depth 
         else :
             print ("wrong depth array size") 
-         
-        
+                
         z2d = []
         if z.shape[2] > 1: 
             ##print ('zshape', z.shape)
@@ -412,111 +403,85 @@ class Window(QtGui.QDialog):
                 for m in range(0,ylen):  # depth 
                     # take only n's column for brom             
                     z2d.append(z[numday][m][n])                     
-                ##print ('1iteration', z2d)    
-                #break  
             
             z2 = np.array(z2d)
             z = z2.flatten()   
             z = z.reshape(xlen,ylen)       
             zz = z.T   
-            
-            for n in range(0,(len(self.depth2)-1)):
-                if self.depth2[n+1] - self.depth2[n] >= 0.5:
-                    pass
-                elif self.depth2[n+1] - self.depth2[n] < 0.50:    
-                    y1max = (self.depth2[n])
-                    y1max = y1max                                                      
-                    ny1max = n
-                    ##print ('distance ny1max', self.ny1max)
-                    break     
-            if self.sediment == False:                                 
-                gs = gridspec.GridSpec(1, 1)         
-                X,Y = np.meshgrid(self.dist,y)
-                ax = self.figure.add_subplot(gs[0])
-                #ax2 = self.figure.add_subplot(gs[1])
-                ax.set_title(index)
-                data = np.array(self.fh.variables[index])
-                watmin = data[:].min() 
-                watmax = data[:].max() 
-
-                wat_levs = np.linspace(watmin,watmax, num= self.num)
-
-        
-                int_wat_levs = []
-                #int_sed_levs= []
                         
-                for n in wat_levs:
-                    n = readdata.int_value(self,n,watmin,watmax)
-                    int_wat_levs.append(n)            
-        
-                      
-                CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
-                                      cmap=self.cmap)
-                 
-                ax.set_ylim(self.y1max,0)  
-
+            data = np.array(self.fh.variables[index])
+            start = 0
+            stop = len(self.time)            
+            watmin = readdata.varmin(self,data,0,start,stop) 
+            watmax = readdata.varmax(self,data,0,start,stop)             
+            wat_ticks = readdata.ticks(watmin,watmax) 
+            
+            if self.sediment == False:                                 
+                gs = gridspec.GridSpec(1, 1)                        
                 cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
-
-                
-                wat_ticks = readdata.ticks(watmin,watmax) 
-                
-                cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)   
-                #cb1 = plt.colorbar(CS1,cax = cax,ticks = wat_ticks)         
+                cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)        
                 cb.set_ticks(wat_ticks)       
-             
-                self.canvas.draw()                 
+                              
             else :  
                 gs = gridspec.GridSpec(2, 1)         
-                X,Y = np.meshgrid(self.dist,y)
-                y_sed = np.array(self.depth_sed)
-                X_sed,Y_sed = np.meshgrid(self.dist,y_sed)       
                 
-                ax = self.figure.add_subplot(gs[0])
+                y_sed = np.array(self.depth_sed)
+                X_sed,Y_sed = np.meshgrid(self.dist,y_sed)                       
                 ax2 = self.figure.add_subplot(gs[1])
-                ax.set_title(index)
-                data = np.array(self.fh.variables[index])
-
-                watmin = data[:].min() 
-                watmax = data[:].max() 
-                sed_min = (data[self.nysedmin-2:].min())  
+                               
+                sed_min = np.floor((data[self.nysedmin-2:].min()))  
                 sed_max = (data[self.nysedmin-2:].max())           
-
-                wat_levs = np.linspace(watmin,watmax, num= self.num)
+                #print (watmin,watmax,"watmin")
+                #wat_levs = np.linspace(watmin,watmax, num= self.num)
                 sed_levs = np.linspace(sed_min,sed_max,
                                      num = self.num)
         
-                int_wat_levs = []
-                int_sed_levs= []
-                        
-                for n in wat_levs:
-                    n = readdata.int_value(self,n,watmin,watmax)
-                    int_wat_levs.append(n)            
-        
-                      
-                CS = ax.contourf(X,Y, zz, levels= int_wat_levs,
-                                      cmap=self.cmap)
-                
+                #int_wat_levs = []
+                #int_sed_levs= []
+                                        
                 CS1 = ax2.contourf(X_sed,Y_sed, zz, levels= sed_levs,
                                       cmap=self.cmap1)      
                 ax2.axhline(0, color='white', linestyle = '--',
                             linewidth = 1 )                   
- 
-                ax.set_ylim(self.y1max,0)  
+
                 ax2.set_ylim(self.ysedmax,self.ysedmin) 
-                
-                 
+                                 
                 cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
                 cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
-                
-                wat_ticks = readdata.ticks(watmin,watmax) 
-                sed_ticks = readdata.ticks(sed_min,sed_max) 
-                
-                cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)   
-                cb1 = plt.colorbar(CS1,cax = cax1,ticks = sed_ticks)  
-                       
-                cb.set_ticks(wat_ticks)       
-                cb1.set_ticks(wat_ticks)
-                self.canvas.draw()
+                               
+                sed_ticks = readdata.ticks(sed_min,sed_max)                 
+                cb1 = plt.colorbar(CS1,cax = cax1,ticks = sed_ticks)     
+                cb1.set_ticks(sed_ticks)
+            
+
+            
+            X,Y = np.meshgrid(self.dist,y)
+            ax = self.figure.add_subplot(gs[0])  
+            ax.set_title(index) 
+
+            #arr = np.array(data[0:608,0:self.ny1max])  
+            #watmax = data[0:len(self.time),0:self.ny1max].max()  
+            #print (len(self.time),data.shape, arr.shape)        
+            #print (data[0:len(self.time)][0:self.ny1max][:])                           
+            #watmin = data[:].min() 
+            #watmax = data[:].max() 
+            wat_levs = np.linspace(watmin,watmax, num = self.num)        
+            int_wat_levs = []
+            
+        
+            for n in wat_levs:
+                n = readdata.int_value(self,n,watmin,watmax)
+                int_wat_levs.append(n)            
+    
+                  
+            CS = ax.contourf(X,Y, zz, levels= wat_levs,#int_
+                                  cmap=self.cmap)
+            wat_ticks = readdata.ticks(watmin,watmax) 
+            cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)            
+            cb.set_ticks(wat_ticks)                 
+            ax.set_ylim(self.y1max,0)
+              
+            self.canvas.draw()
                                 
                 
                                                  

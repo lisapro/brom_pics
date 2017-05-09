@@ -34,9 +34,7 @@ rc('font', **{'sans-serif' : 'Arial', #for unicode text
                 'family' : 'sans-serif'})  
       
 def readdata_brom(self): #,varname,fname
-    
-    
- 
+     
     '''self.fh = Dataset(fname)
     self.depth = self.fh.variables['z'][:] 
     self.depth2 = self.fh.variables['z2'][:] #middle points
@@ -219,7 +217,7 @@ def readdata2_brom(self,fname):
         self.lendepth2 = len(self.depth2)
         # bbl width depends on depth
         if self.lendepth2 < 50 :
-            self.bbl = 0.25 #0.5 
+            self.bbl = 0.3 #0.5 
         else :
             self.bbl = 0.5         
     self.time =  self.fh.variables['time'][:]
@@ -229,7 +227,6 @@ def readdata2_brom(self,fname):
  
 def read_all_year_var(self,fname,varname1,varname2,varname3): 
     self.fh = Dataset(fname)  
-    #print (fname)
     self.var1 = self.fh.variables[varname1][:]
     self.var2 = self.fh.variables[varname2][:]
     self.var3 = self.fh.variables[varname3][:]  
@@ -257,8 +254,6 @@ def colors(self):
     self.sed_col1 = '#a3abb1'
         
     #define color maps 
-    # red is not a error, it works
-    # some problem in eclipse
     self.cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
     self.cmap1 = plt.cm.rainbow 
 
@@ -293,16 +288,16 @@ def calculate_ywat(self):
     for n in range(0,(len(self.depth2)-1)):
         if self.depth2[n+1] - self.depth2[n] >= self.bbl:
             if n == self.lendepth2-2: # len(self.depth2):
-                y1max = (self.depth2[n])
+                y1max = (self.depth2[n]-1)
                 self.ny1min = (self.depth[0])
-                self.y1max = y1max                                                      
-                self.ny1max = n
+                self.y1max = y1max                                                     
+                self.ny1max = n-1
                 self.sediment = False
                 print ('no sediment y wat', self.y1max)        
                 break  
         elif self.depth2[n+1] - self.depth2[n] < self.bbl:   
-            self.y1max = (self.depth2[n])                                               
-            self.ny1max = n
+            self.y1max = (self.depth2[n]-1)                                               
+            self.ny1max = n-1
             self.sediment = True
             #print ('calc_y_wat_y1max', self.y1max)
             break
@@ -397,12 +392,12 @@ def varmax(self,variable,vartype,start,stop):
         #l = variable[0:self.ny1max-1, start:stop]
         #print ('check', l)
         #print ("var", variable.shape)
-        n = variable[0:self.ny1max+1].max() 
-        # self.lentime   
+        n = variable[start:stop,0:self.ny1max].max() 
+          
     elif vartype == 1 :#sediment
-        n = variable[self.nysedmin:].max()
+        n = variable[start:stop,self.nysedmin:].max()
         #self.lentime
-    # make "beautiful"  values to show on ticks            
+    # make "beautiful"  values to show on ticks         2   
     if n > 10000. and n <= 100000.:  
         n = int(math.ceil(n/ 1000.0)) * 1000 + 1000.
     elif n > 1000. and n <= 10000.:  
@@ -451,24 +446,31 @@ def int_value(self,n,minv,maxv):
 
 def varmin(self,variable,vartype,start,stop):
     
-    m = np.array(variable[0:self.ny1max-1])
+    #m = np.array(variable[0:self.ny1max-1])
     
-    if vartype == 0:
-        if 'Kz' in self.names_vars:
-            calculate_ywat(self)
-        n = np.floor(variable[0:self.ny1max-1].min())
- 
+    if vartype == 0: #dist plot water
+        #if 'Kz' in self.names_vars:
+        #    print ('in')
+        #    #calculate_ywat(self)¶
+        n = np.floor(variable[start:stop,0:self.ny1max].min())
+
+    elif vartype == 00: #time plot water
+        n = np.floor(variable[0:self.ny1max,start:stop].min())  
+              
+    elif vartype == 01 : #time plot sediment
+        n = np.floor(variable[self.nysedmin-2:,start:stop].min()) 
+                
     elif vartype == 1 : 
-        m = (variable[self.nysedmin])    
+        #m = (variable[self.nysedmin])    
         #print ('m',m)   
-        n = np.floor(variable[self.nysedmin-2:].min()) 
+        n = np.floor(variable[start:stop,self.nysedmin-2:].min()) 
         #print ('min',n, self.nysedmin-2, self.ysedmin-2)
     # make "beautiful"  values to show on ticks
     ##print ('varmin', n)            
     if n > 10000. and n <= 100000.:  
         n = int(np.floor(n/ 1000.0)) * 1000 - 1000.
     elif n > 1000. and n <= 10000.:  
-        n = int(np.floor(n / 100.0)) * 100  - 10.                                 
+        n = int(np.floor(n / 100.0)) * 100  #- 20.                                 
     elif n >= 100. and n < 1000.:
         n = int(np.floor(float(n) / 10.0)) * 10 - 1.
     elif n >= 1. and n < 100. :
@@ -628,15 +630,13 @@ def widget_layout(self):
         self.grid.addWidget(self.dist_prof_button,0,2,1,1)     
         self.grid.addWidget(self.time_prof_box,0,3,1,1)        
         self.grid.addWidget(self.numcol_2d ,0,4,1,1)              
-        self.grid.addWidget(self.textbox,0,5,1,1)  
-        
+        self.grid.addWidget(self.textbox,0,5,1,1)          
         #second line               
         self.grid.addWidget(self.time_prof_last_year,1,1,1,1) 
         self.grid.addWidget(self.all_year_1d_box,1,2,1,1)  
         self.grid.addWidget(self.all_year_test_button,1,3,1,1)                         
         self.grid.addWidget(self.numday_box,1,4,1,1)  
-        self.grid.addWidget(self.textbox2,1,5,1,1)
-    
+        self.grid.addWidget(self.textbox2,1,5,1,1)    
         #third line              
         self.grid.addWidget(self.canvas, 2, 0,1,6)     
     
