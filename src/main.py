@@ -13,7 +13,7 @@ import os,sys
 import numpy as np
 from netCDF4 import Dataset
 from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import QSpinBox,QLabel,QComboBox
+from PyQt4.QtGui import QSpinBox,QLabel,QComboBox,QCheckBox
 
 from matplotlib import rc
 from matplotlib import style
@@ -54,10 +54,6 @@ class Window(QtGui.QDialog):
         rc('font', **{'sans-serif' : 'Arial', 
                            'family' : 'sans-serif'})  
                 
-        # Set to make the inner widget resize with scroll area
-        ##scrollArea = QtGui.QScrollArea()
-        ##scrollwidget = QtGui.QWidget()  #central widget   
-                
         # open file system to choose needed nc file 
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))   
@@ -68,10 +64,12 @@ class Window(QtGui.QDialog):
         
         # Create widgets
                             
-        self.time_prof_box = QtGui.QComboBox()        
+        self.time_prof_box = QtGui.QComboBox()  
+        self.qtreewidget = QtGui.QListWidget()      
         self.all_year_1d_box = QtGui.QComboBox()    
                            
-        self.dist_prof_button = QtGui.QPushButton()       
+        self.dist_prof_button = QtGui.QPushButton() 
+        self.dist_prof_checkbox = QtGui.QCheckBox("Fit scale to data")      
         self.time_prof_last_year =  QtGui.QPushButton()    
         self.time_prof_all =  QtGui.QPushButton()           
         self.all_year_test_button =  QtGui.QPushButton() 
@@ -79,6 +77,7 @@ class Window(QtGui.QDialog):
         self.numcol_2d = QtGui.QSpinBox()        
         self.varname_box = QtGui.QSpinBox()     
         self.numday_box = QtGui.QSpinBox() 
+        
         self.textbox = QtGui.QLineEdit()  
         self.textbox2 = QtGui.QLineEdit()          
   
@@ -86,12 +85,13 @@ class Window(QtGui.QDialog):
         for i in self.var_names_charts_year:
             self.all_year_1d_box.addItem(str(i))
 
-        #self.time_prof_box.addItem('plot 1D')  
-        # add only 2d arrays to variables list       
+        ## self.time_prof_box.addItem('plot 1D')  
+        ## add only 2d arrays to variables list       
         ## We skip z and time since they are 1d array, 
         ## we need to know the shape of other arrays
         ## If the file includes other 1d var, it 
         ## could raise an err, such var should be skipped also
+        
         self.names_vars = [] 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
@@ -100,8 +100,10 @@ class Window(QtGui.QDialog):
                 self.names_vars.append(names) 
             else :
                 self.time_prof_box.addItem(names)
+                #names = QTreeWidgetItem(i)
+                self.qtreewidget.addItem(names)
                 self.names_vars.append(names)  
-                        
+                      
         #read i variable to know number of columns 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
@@ -122,10 +124,8 @@ class Window(QtGui.QDialog):
 
                 
         lentime = len(self.fh['time'][:])
-        #print (self.lentime)
         self.fh.close()    
-        #print ('testvar', testvar.shape[2])
-
+        
         self.textbox2.setText(
             'Number of days = {}'.format(lentime))  
         if 'i' in self.names_vars:  
@@ -134,14 +134,7 @@ class Window(QtGui.QDialog):
                 testvar.shape[0])))                        
             self.numcol_2d.setRange(0, int(testvar.shape[0]-1))   
             self.numday_box.setRange(0, lentime-1)               
-        #self.varname_box = QtGui.QSpinBox()        
-                
-                
-            #varnames_list.append(names)    
-        #for names in self.fh.variables.items():
-        #    #print str(names)
-        #    break
-        #    self.time_prof_box.addItem(str(names))   
+
             
         # Define connection between clicking the button and 
         # calling the function to plot figures                           
@@ -159,9 +152,9 @@ class Window(QtGui.QDialog):
         self.all_year_box = QtGui.QComboBox()
         # add items to Combobox 
                
-        self.time_prof_all.setText('Time Prof all')
-        self.all_year_test_button.setText('All year 1 var')
-        self.time_prof_last_year.setText('Time Prof last year')               
+        self.time_prof_all.setText('Time: all year')
+        self.all_year_test_button.setText('1D plot')
+        self.time_prof_last_year.setText('Time: last year')               
         self.dist_prof_button.setText('Show Dist Profile')       
                          
         self.canvas = FigureCanvas(self.figure)    
@@ -174,7 +167,7 @@ class Window(QtGui.QDialog):
         readdata.widget_layout(self)        
         readdata.readdata2_brom(self,self.fname)   
                  
-        if ('Kz' or 'kz') in self.names_vars :
+        if 'Kz'  in self.names_vars :
             readdata.calculate_ywat(self)
             readdata.calculate_ybbl(self)   
             readdata.y2max_fill_water(self)        
@@ -182,9 +175,7 @@ class Window(QtGui.QDialog):
             readdata.calculate_ysed(self)
             readdata.calculate_ysed(self)
             readdata.calc_nysedmin(self)  
-            readdata.y_coords(self)
-        #elif 'kz' in self.names_vars:
-            print('we have kz')                
+            readdata.y_coords(self)        
         else: 
             self.sediment = False
             print ("we do not have kz")      
@@ -198,26 +189,34 @@ class Window(QtGui.QDialog):
     def time_profile(self,start,stop):
         
         plt.clf()
-        index = str(self.time_prof_box.currentText())
+        index = str(self.qtreewidget.currentItem().text())
+        #str(self.time_prof_box.currentText())
+        #print (index)
         ## read chosen variable 
         z = np.array(self.fh.variables[index]) 
-        #print (z.shape)
+
         z = z[start:stop] 
         ylen1 = len(self.depth) #95  
 
         x = np.array(self.time[start:stop]) #np.arange(6)
         xlen = len(x) #365    
-        #print (xlen) 
+
         # check if the variable is defined of middlepoints  
         if (z.shape[1])> ylen1: 
             y = self.depth2
+            if self.sediment != False:
+                #print ('in sed1')                
+                y_sed = np.array(self.depth_sed2) 
         elif (z.shape[1]) == ylen1:
             y = self.depth #pass
+            if self.sediment != False:
+                #print ('in sed1')                
+                y_sed = np.array(self.depth_sed) 
         else :
             print ("wrong depth array size") 
 
         ylen = len(y)           
-        #print (self.names_vars)
+
         z2d = []
         numcol = self.numcol_2d.value() # 
         #print ('number of column', numcol) # QSpinBox.value()  #1 
@@ -228,49 +227,48 @@ class Window(QtGui.QDialog):
                 for n in range(0,xlen): #xlen
                     #print (n)
                     for m in range(0,ylen):  
-                        #print (z[n][m][numcol])              
-                        z2d.append(z[n][m][numcol]) # take only n's column for brom
+                        # take only n's column for brom             
+                        z2d.append(z[n][m][numcol]) 
             #zz = np.array(zz).reshape(ylen,xlen)        
-                z = np.array(z2d)
-        ##print ('z.shape',z.shape,xlen,ylen)                      
+                z = np.array(z2d)                     
         z = z.flatten()   
-        ##print ('z',z)
         z = z.reshape(xlen,ylen)       
         zz = z.T  
             
         #varmin(self,variable,vartype,start,stop)
         if 'Kz' in self.names_vars:
-            print ("we have kz?")
-            watmin = readdata.varmin(self,zz,01,start,stop) #0 - water 
-            watmax = readdata.varmax(self,zz,01,start,stop)
+            watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
+            watmax = readdata.varmax(self,zz,'wattime',start,stop)
         else:  
             self.ny1max = len(self.depth-1)
             self.y1max = max(self.depth)    
-            print ('no kz',self.ny1max)
-            watmin = readdata.varmin(self,zz,00,start,stop) #0 - water 
-            watmax = readdata.varmax(self,zz,01,start,stop)
-        #self.fh.close()                        
+            #print ('no kz',self.ny1max)
+            watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
+            watmax = readdata.varmax(self,zz,'wattime',start,stop)
+                      
  
         if self.sediment == False: 
             gs = gridspec.GridSpec(1, 1) 
             cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])  
         else : 
-            sed_min = readdata.varmin(self,zz,1,start,stop)
-            sed_max = readdata.varmax(self,zz,1,start,stop)                              
+                             
             gs = gridspec.GridSpec(2, 1) 
-            y_sed = np.array(self.depth_sed)
+            #y_sed = np.array(self.depth_sed)
             X_sed,Y_sed = np.meshgrid(x,y_sed)
             ax2 = self.figure.add_subplot(gs[1])  
+            sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
+            sed_max = readdata.varmax(self,zz,'sedtime',start,stop)             
             ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
             ax2.set_xlim(start,stop)
             ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
             ax2.set_xlabel('Number of day',fontsize= self.font_txt) 
+            
             sed_levs = np.linspace(sed_min,sed_max,
                                  num = self.num) 
              
             CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_
                               cmap= self.cmap1) #, origin='lower' 
-                    
+            # Add an axes at position rect [left, bottom, width, height]                    
             cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
             sed_ticks = readdata.ticks(sed_min,sed_max) 
 
@@ -285,45 +283,29 @@ class Window(QtGui.QDialog):
         ax = self.figure.add_subplot(gs[0])
          
 
-        readdata.colors(self)
-        
-         
-        
         if watmin == watmax :
             if watmax == 0: 
-                watmajprintx = 0.1
-                watmix = - 0.1
+                watmax = 0.1
+                watmin = 0
             else:      
-                watmax = watmax + watmax/10. 
+                watmax = watmax + watmax/10.
+                 
         if self.sediment != False:        
             if sed_min == sed_max: 
                 if sed_max == 0: 
                     sed_max = 0.1
-                    sed_min = - 0.1
+                    sed_min = 0
                 else:     
                     sed_max = sed_max + sed_max/10.   
              
-        '''if self.num_var == 34: 
-            watmax = 9
-            watmin = 6.8
-            sed_max = 10
-            sed_min = 6 '''
 
-     
-        #self.figure, (ax, ax2) = plt.subplots(2, 1, sharex=True)
-        #f.set_size_inches(11.69,8.27)
         self.ny1min = min(self.depth)
-        #print (self.depth)
         ax.set_title(index)
         ax.set_ylim(self.y1max,self.ny1min)   
-        #print (self.ysedmin,self.ysedmax,self.y1max)    
-      
-        #xlen = len(x)
-        ax.set_xlim(start,stop)
-        ax.set_ylabel('Depth (m)',fontsize= self.font_txt) #Label y axis 
 
-                          
-        #self.num = 50.            
+        ax.set_xlim(start,stop)
+        ax.set_ylabel('Depth (m)',fontsize= self.font_txt)
+         
         wat_levs = np.linspace(watmin,watmax,num= self.num)
 
                 
@@ -345,9 +327,6 @@ class Window(QtGui.QDialog):
         CS = ax.contourf(X,Y, zz, levels= wat_levs, #int_
                               cmap= self.cmap)
 
-        # Add an axes at position rect [left, bottom, width, height]
-              
-       
         wat_ticks = readdata.ticks(watmin,watmax)        
        
         cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)
@@ -368,37 +347,42 @@ class Window(QtGui.QDialog):
         #QtCore.QTimer.connect(timer, QtCore.SIGNAL("timeout()"), self, QtCore.SLOT("func()"))
         
         #QtCore.QTimer.singleShot(1000, self.updateCost())   
+     
              
     ## function to plot figure where 
     ## xaxis - is horizontal distance between columns
     ## yaxis is depth 
+    
     def dist_profile(self): 
         plt.clf()
-        
-        index = str(self.time_prof_box.currentText())
+        index = str(self.qtreewidget.currentItem().text())
+        #index = str(self.time_prof_box.currentText())
         numday = self.numday_box.value()  
         z = np.array(self.fh.variables[index]) 
 
-        #for names,vars in self.fh.variables.items():
-        #    if names == 'i' and i > 1 :
-        #        print ("check")
-
-        #y = self.depth 
         ylen = len(self.depth)        
         xlen = len(self.dist)  
-         
+
         # for some variables defined at grid middlepoints
         # kz and fluxes 
         if (z.shape[1])> ylen:
-            y = self.depth2 # = np.array(self.fh.variables['z2'][:])    
+            y = self.depth2 # = np.array(self.fh.variables['z2'][:])   
+            if self.sediment != False:
+                #print ('in sed2')
+                y_sed = np.array(self.depth_sed2) 
         elif (z.shape[1]) == ylen :
             y = self.depth 
+            if self.sediment != False:
+                #print ('in sed1')                
+                y_sed = np.array(self.depth_sed)            
         else :
             print ("wrong depth array size") 
-                
+        
+        ylen = len(y) 
+
+            
         z2d = []
         if z.shape[2] > 1: 
-            ##print ('zshape', z.shape)
             for n in range(0,xlen): # distance 
                 for m in range(0,ylen):  # depth 
                     # take only n's column for brom             
@@ -410,10 +394,16 @@ class Window(QtGui.QDialog):
             zz = z.T   
                         
             data = np.array(self.fh.variables[index])
-            start = 0
-            stop = len(self.time)            
-            watmin = readdata.varmin(self,data,0,start,stop) 
-            watmax = readdata.varmax(self,data,0,start,stop)             
+            if self.dist_prof_checkbox.isChecked() == True:
+                #print ('is checked')
+                start = numday
+                stop = numday+1
+            else:     
+                start = 0
+                stop = len(self.time)    
+                    
+            watmin = readdata.varmin(self,data,'watdist',start,stop) 
+            watmax = readdata.varmax(self,data,'watdist',start,stop)             
             wat_ticks = readdata.ticks(watmin,watmax) 
             
             if self.sediment == False:                                 
@@ -425,21 +415,20 @@ class Window(QtGui.QDialog):
             else :  
                 gs = gridspec.GridSpec(2, 1)         
                 
-                y_sed = np.array(self.depth_sed)
                 X_sed,Y_sed = np.meshgrid(self.dist,y_sed)                       
                 ax2 = self.figure.add_subplot(gs[1])
                                
-                sed_min = np.floor((data[self.nysedmin-2:].min()))  
-                sed_max = (data[self.nysedmin-2:].max())           
-                #print (watmin,watmax,"watmin")
-                #wat_levs = np.linspace(watmin,watmax, num= self.num)
+
+                sed_min = readdata.varmin(self,data,'seddist',start,stop)
+                sed_max = readdata.varmax(self,data,'seddist',start,stop)
+          
                 sed_levs = np.linspace(sed_min,sed_max,
                                      num = self.num)
         
                 #int_wat_levs = []
                 #int_sed_levs= []
                                         
-                CS1 = ax2.contourf(X_sed,Y_sed, zz, levels= sed_levs,
+                CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,
                                       cmap=self.cmap1)      
                 ax2.axhline(0, color='white', linestyle = '--',
                             linewidth = 1 )                   
@@ -459,16 +448,9 @@ class Window(QtGui.QDialog):
             ax = self.figure.add_subplot(gs[0])  
             ax.set_title(index) 
 
-            #arr = np.array(data[0:608,0:self.ny1max])  
-            #watmax = data[0:len(self.time),0:self.ny1max].max()  
-            #print (len(self.time),data.shape, arr.shape)        
-            #print (data[0:len(self.time)][0:self.ny1max][:])                           
-            #watmin = data[:].min() 
-            #watmax = data[:].max() 
             wat_levs = np.linspace(watmin,watmax, num = self.num)        
             int_wat_levs = []
-            
-        
+                    
             for n in wat_levs:
                 n = readdata.int_value(self,n,watmin,watmax)
                 int_wat_levs.append(n)            
@@ -508,17 +490,22 @@ class Window(QtGui.QDialog):
         gs = gridspec.GridSpec(3,1) 
         gs.update(left=0.3, right=0.7,top = 0.94,bottom = 0.04,
                    wspace=0.2,hspace=0.3) 
+        
         ax00 = self.figure.add_subplot(gs[0]) # water         
-        ax10 = self.figure.add_subplot(gs[1]) # water
-        ax20 = self.figure.add_subplot(gs[2]) # water 
+        ax10 = self.figure.add_subplot(gs[1]) # bbl
+        ax20 = self.figure.add_subplot(gs[2]) # sediment 
+        
         for axis in (ax00,ax10,ax20):
             axis.yaxis.grid(True,'minor')
             axis.xaxis.grid(True,'major')                
             axis.yaxis.grid(True,'major')    
                          
         index = str(self.time_prof_box.currentText())
+        numcol = self.numcol_2d.value() # 
         # read chosen variable 
-        z = np.array(self.fh.variables[index]) 
+        z = np.array(self.fh.variables[index])
+        z = np.array(z[:,:,numcol]) 
+        #print (z.shape)
         
         ax00.set_title(index) 
         #Label y axis        
@@ -533,7 +520,7 @@ class Window(QtGui.QDialog):
         ax10.set_ylim(self.y2max, self.y1max)   
         ax20.set_ylim(self.ysedmax, self.ysedmin) 
          
-        for n in range(0,365):
+        for n in range(0,365):#365
             if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
             #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               
                 ax00.plot(z[n][0:self.ny2max],
@@ -609,8 +596,10 @@ class Window(QtGui.QDialog):
                 
                 ax00.set_title(str(self.titles_all_year[n][0]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold') 
+                
                 ax10.set_title(str(self.titles_all_year[n][1]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold') 
+                
                 ax20.set_title(str(self.titles_all_year[n][2]), 
                 fontsize=self.xlabel_fontsize, fontweight='bold')                                 
                 self.num_var = n  
@@ -639,23 +628,21 @@ class Window(QtGui.QDialog):
         #### to change""!!!!
         
         
-        watmin0 = readdata.varmin(self,z0,0,start,stop) #0 - water 
-        watmin1 = readdata.varmin(self,z1,0,start,stop) #0 - water 
-        watmin2 = readdata.varmin(self,z2,0,start,stop) #0 - water          
+        watmin0 = readdata.varmin(self,z0,"wattime",start,stop) 
+        watmin1 = readdata.varmin(self,z1,"wattime",start,stop) 
+        watmin2 = readdata.varmin(self,z2,"wattime",start,stop)          
 
-        watmax0 = readdata.varmax(self,z0,0,start,stop) #
-        # z0[0:self.ny2max-4,:].max() # readdata.varmax(self,z0,0)
-        watmax1 = readdata.varmax(self,z1,0,start,stop)
-        watmax2 = readdata.varmax(self,z2,0,start,stop)  
-         
-         
-        sed_min0 = readdata.varmin(self,z0,1,start,stop) #0 - water 
-        sed_min1 = readdata.varmin(self,z1,1,start,stop) #0 - water 
-        sed_min2 = readdata.varmin(self,z2,1,start,stop) #0 - water    
+        watmax0 = readdata.varmax(self,z0,"wattime",start,stop) 
+        watmax1 = readdata.varmax(self,z1,"wattime",start,stop)
+        watmax2 = readdata.varmax(self,z2,"wattime",start,stop)  
+                 
+        sed_min0 = readdata.varmin(self,z0,"sedtime",start,stop) 
+        sed_min1 = readdata.varmin(self,z1,"sedtime",start,stop) 
+        sed_min2 = readdata.varmin(self,z2,"sedtime",start,stop)    
 
-        sed_max0 = readdata.varmax(self,z0,1,start,stop) #z0[:,self.ny2min:].max() 
-        sed_max1 = readdata.varmax(self,z1,1,start,stop) #z1[:,self.ny2min:].max()         
-        sed_max2 = readdata.varmax(self,z2,1,start,stop) #z2[:,self.ny2min:].max()         
+        sed_max0 = readdata.varmax(self,z0,"sedtime",start,stop) 
+        sed_max1 = readdata.varmax(self,z1,"sedtime",start,stop)         
+        sed_max2 = readdata.varmax(self,z2,"sedtime",start,stop)         
         
         if self.num_var == 5: #pH 
             watmax1 = 9
@@ -746,7 +733,7 @@ class Window(QtGui.QDialog):
 
         
                 
-        for n in range(0,365):
+        for n in range(0,3): #365
             if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter" 
                 linewidth = self.linewidth
                                   

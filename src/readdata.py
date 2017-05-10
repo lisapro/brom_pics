@@ -388,15 +388,19 @@ def depth_sed(self):
         #print ('in depth_sed2')         
          
 def varmax(self,variable,vartype,start,stop): 
-    if vartype == 0: #water
-        #l = variable[0:self.ny1max-1, start:stop]
-        #print ('check', l)
-        #print ("var", variable.shape)
+    if vartype == 'watdist': #water
         n = variable[start:stop,0:self.ny1max].max() 
           
-    elif vartype == 1 :#sediment
+    elif vartype == 'seddist' :#sediment dist 
         n = variable[start:stop,self.nysedmin:].max()
-        #self.lentime
+  
+    elif vartype == 'wattime': #time plot water
+        n = variable[0:self.ny1max,start:stop].max()
+        print (n)      
+    elif vartype == 'sedtime' : #time plot sediment
+        n = variable[self.nysedmin-2:,start:stop].max()
+        print (n) 
+        
     # make "beautiful"  values to show on ticks         2   
     if n > 10000. and n <= 100000.:  
         n = int(math.ceil(n/ 1000.0)) * 1000 + 1000.
@@ -446,25 +450,38 @@ def int_value(self,n,minv,maxv):
 
 def varmin(self,variable,vartype,start,stop):
     
-    #m = np.array(variable[0:self.ny1max-1])
-    
-    if vartype == 0: #dist plot water
-        #if 'Kz' in self.names_vars:
-        #    print ('in')
-        #    #calculate_ywat(self)¶
+    if vartype == 'watdist': #dist plot water
         n = np.floor(variable[start:stop,0:self.ny1max].min())
-
-    elif vartype == 00: #time plot water
+        
+    elif vartype == 'seddist' :  #dist plot sediment
+        n = np.floor(variable[start:stop,self.nysedmin:].min())
+        
+    elif vartype == 'wattime' : #time plot water
+        print (start,stop)
         n = np.floor(variable[0:self.ny1max,start:stop].min())  
               
-    elif vartype == 01 : #time plot sediment
+    elif vartype == 'sedtime'  : #time plot sediment
         n = np.floor(variable[self.nysedmin-2:,start:stop].min()) 
                 
-    elif vartype == 1 : 
-        #m = (variable[self.nysedmin])    
-        #print ('m',m)   
-        n = np.floor(variable[start:stop,self.nysedmin-2:].min()) 
-        #print ('min',n, self.nysedmin-2, self.ysedmin-2)
+ 
+
+    '''
+    if vartype == 0: #water
+        n = variable[start:stop,0:self.ny1max].max() 
+          
+    elif vartype == 1 :#sediment
+        n = variable[start:stop,self.nysedmin:].max()
+  
+    elif vartype == 2: #time plot water
+        n = variable[0:self.ny1max,start:stop].max()
+        print (n)      
+    elif vartype == 3 : #time plot sediment
+        n = variable[self.nysedmin-2:,start:stop].max()
+        print (n) '''
+
+
+
+        
     # make "beautiful"  values to show on ticks
     ##print ('varmin', n)            
     if n > 10000. and n <= 100000.:  
@@ -613,30 +630,42 @@ def set_widget_styles(self):
     # Combo boxes style
     for axis in (self.time_prof_box,self.all_year_1d_box): 
         axis.setStyleSheet(
-        'QComboBox {background-color: #c2b4ae; border-width: 5px;'
-        '  padding: 2px; font: bold 15px; }')   
-        
+        'QComboBox {background-color: #c2b4ae; border-width: 7px;'
+        '  padding: 7px; font: bold 14px; }')  
+    #self.time_prof_box.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)   
+    
     # Spinbox style
     self.varname_box.setStyleSheet(
     'QSpinBox {background-color: #c2b4ae; border-width: 15px;'
     '  padding: 5px; font: bold 15px; }')        
-        
-    #define layout
+    
+    self.dist_prof_checkbox.setStyleSheet(
+    'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
+    '  padding: 5px; font: bold 15px; }')          
+    self.qtreewidget.setStyleSheet(
+    'QListWidget{font: 25 px; background-color: #eadfda;  }')
+     #background-color: #f9e7de; 
+            
+    
 
 def widget_layout(self):    
         #first line              
-        self.grid.addWidget(self.toolbar,0,0,1,1)        
-        self.grid.addWidget(self.time_prof_all,0,1,1,1)  
-        self.grid.addWidget(self.dist_prof_button,0,2,1,1)     
-        self.grid.addWidget(self.time_prof_box,0,3,1,1)        
+        self.grid.addWidget(self.toolbar,0,1,1,1)        
+        self.grid.addWidget(self.time_prof_all,0,2,1,1)  
+        self.grid.addWidget(self.dist_prof_button,0,3,1,1)   
+         
+        #self.grid.addWidget(self.time_prof_box,1,0,1,1)  
+              
         self.grid.addWidget(self.numcol_2d ,0,4,1,1)              
         self.grid.addWidget(self.textbox,0,5,1,1)          
-        #second line               
-        self.grid.addWidget(self.time_prof_last_year,1,1,1,1) 
-        self.grid.addWidget(self.all_year_1d_box,1,2,1,1)  
+        #second line    
+        self.grid.addWidget(self.dist_prof_checkbox,0,0,1,1)  
+                  
+        self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
+        #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
         self.grid.addWidget(self.all_year_test_button,1,3,1,1)                         
         self.grid.addWidget(self.numday_box,1,4,1,1)  
         self.grid.addWidget(self.textbox2,1,5,1,1)    
         #third line              
-        self.grid.addWidget(self.canvas, 2, 0,1,6)     
-    
+        self.grid.addWidget(self.canvas, 2, 1,1,5)     
+        self.grid.addWidget(self.qtreewidget,2,0,1,1) 
