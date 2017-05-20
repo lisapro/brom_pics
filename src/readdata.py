@@ -296,10 +296,10 @@ def calculate_ywat(self):
                 print ('no sediment y wat', self.y1max)        
                 break  
         elif self.depth2[n+1] - self.depth2[n] < self.bbl:   
-            self.y1max = (self.depth2[n]-1)                                               
-            self.ny1max = n-1
+            self.y1max = (self.depth[n])                               
+            self.ny1max = n #-1
             self.sediment = True
-            #print ('calc_y_wat_y1max', self.y1max)
+            print ('calc_y_wat_y1max', self.y1max,self.ny1max)
             break
         
   
@@ -390,7 +390,9 @@ def depth_sed(self):
 def varmax(self,variable,vartype,start,stop): 
     if vartype == 'watdist': #water
         n = variable[start:stop,0:self.ny1max].max() 
-          
+        print (self.ny1max)
+        print (variable[start:stop,0:self.ny1max].max())
+        print ('depth',self.depth)
     elif vartype == 'seddist' :#sediment dist 
         n = variable[start:stop,self.nysedmin:].max()
   
@@ -422,6 +424,7 @@ def varmax(self,variable,vartype,start,stop):
         n =  (math.ceil(n*100000))/100000 
                                                                                                
     self.watmax =  n   
+    print (self.watmax)
     return self.watmax
 
 # make "beautiful"  values to show on ticks  

@@ -280,13 +280,14 @@ class Window(QtGui.QDialog):
                                  num = self.num) 
              
             CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_
-                              cmap= self.cmap1) #, origin='lower' 
+                              extend="both", cmap= self.cmap1)
+            
             # Add an axes at position rect [left, bottom, width, height]                    
             cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
             sed_ticks = readdata.ticks(sed_min,sed_max) 
 
             ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )        
-            cb_sed = plt.colorbar(CS1,cax = cax1 )
+            cb_sed = plt.colorbar(CS1,cax = cax1)
             cb_sed.set_ticks(sed_ticks)              
             #cb.set_label('Water')   
             cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])           
@@ -337,7 +338,7 @@ class Window(QtGui.QDialog):
         ## left corner, location (0,0).  
         ## If â€˜imageâ€™, the rc value for image.origin will be used.
           
-        CS = ax.contourf(X,Y, zz, levels= wat_levs, #int_
+        CS = ax.contourf(X,Y, zz, levels= wat_levs, extend="both", #int_
                               cmap= self.cmap)
 
         wat_ticks = readdata.ticks(watmin,watmax)        
@@ -380,19 +381,20 @@ class Window(QtGui.QDialog):
             #os.system("pause")
         #index = str(self.time_prof_box.currentText())
         numday = self.numday_box.value()  
-        z = np.array(self.fh.variables[index]) 
-
+        #z = np.array(self.fh.variables[index]) 
+        data = np.array(self.fh.variables[index])
+        
         ylen = len(self.depth)        
         xlen = len(self.dist)  
 
         # for some variables defined at grid middlepoints
         # kz and fluxes 
-        if (z.shape[1])> ylen:
+        if (data.shape[1])> ylen:
             y = self.depth2 # = np.array(self.fh.variables['z2'][:])   
             if self.sediment != False:
                 #print ('in sed2')
                 y_sed = np.array(self.depth_sed2) 
-        elif (z.shape[1]) == ylen :
+        elif (data.shape[1]) == ylen :
             y = self.depth 
             if self.sediment != False:
                 #print ('in sed1')                
@@ -404,18 +406,18 @@ class Window(QtGui.QDialog):
 
             
         z2d = []
-        if z.shape[2] > 1: 
+        if data.shape[2] > 1: 
             for n in range(0,xlen): # distance 
                 for m in range(0,ylen):  # depth 
                     # take only n's column for brom             
-                    z2d.append(z[numday][m][n])                     
+                    z2d.append(data[numday][m][n])                     
             
-            z2 = np.array(z2d)
-            z = z2.flatten()   
-            z = z.reshape(xlen,ylen)       
-            zz = z.T   
+            z2 = np.array(z2d).flatten() 
+            #z = z2  
+            z2 = z2.reshape(xlen,ylen)       
+            zz = z2.T   
                         
-            data = np.array(self.fh.variables[index])
+
             if self.dist_prof_checkbox.isChecked() == True:
                 #print ('is checked')
                 start = numday
@@ -451,7 +453,7 @@ class Window(QtGui.QDialog):
                 #int_sed_levs= []
                                         
                 CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,
-                                      cmap=self.cmap1)      
+                                      extend="both", cmap=self.cmap1)      
                 ax2.axhline(0, color='white', linestyle = '--',
                             linewidth = 1 )                   
 
@@ -478,8 +480,8 @@ class Window(QtGui.QDialog):
                 int_wat_levs.append(n)            
     
                   
-            CS = ax.contourf(X,Y, zz, levels= wat_levs,#int_
-                                  cmap=self.cmap)
+            CS = ax.contourf(X,Y, zz, levels= wat_levs, 
+                                 extend="both",  cmap=self.cmap)
             wat_ticks = readdata.ticks(watmin,watmax) 
             cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)            
             cb.set_ticks(wat_ticks)   
