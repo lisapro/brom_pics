@@ -66,6 +66,8 @@ class Window(QtGui.QDialog):
                             
         self.time_prof_box = QtGui.QComboBox()  
         self.qtreewidget = QtGui.QListWidget()      
+        self.qtreewidget.setSelectionMode(
+            QtGui.QAbstractItemView.ExtendedSelection)
         self.all_year_1d_box = QtGui.QComboBox()    
                            
         self.dist_prof_button = QtGui.QPushButton() 
