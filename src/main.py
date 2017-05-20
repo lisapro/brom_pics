@@ -65,7 +65,7 @@ class Window(QtGui.QDialog):
         # Create widgets
                             
         self.time_prof_box = QtGui.QComboBox()  
-        self.qtreewidget = QtGui.QListWidget()      
+        self.qlistwidget = QtGui.QListWidget()      
         self.all_year_1d_box = QtGui.QComboBox()    
                            
         self.dist_prof_button = QtGui.QPushButton() 
@@ -100,8 +100,8 @@ class Window(QtGui.QDialog):
                 self.names_vars.append(names) 
             else :
                 self.time_prof_box.addItem(names)
-                #names = QTreeWidgetItem(i)
-                self.qtreewidget.addItem(names)
+                #names = QlistWidgetItem(i)
+                self.qlistwidget.addItem(names)
                 self.names_vars.append(names)  
                       
         #read i variable to know number of columns 
@@ -189,7 +189,17 @@ class Window(QtGui.QDialog):
     def time_profile(self,start,stop):
         
         plt.clf()
-        index = str(self.qtreewidget.currentItem().text())
+        
+        try:
+            index = str(self.qlistwidget.currentItem().text())
+        except AttributeError: 
+            print ("Choose the variable to print ")  
+            #messagebox = QtGui.QMessageBox.about(self, "Choose the variable to print ")        
+            messagebox = QtGui.QMessageBox.about(self, "Retry",
+                                                 'Choose variable,please') 
+            return None           
+        
+        #index = str(self.qlistwidget.currentItem().text())
         #str(self.time_prof_box.currentText())
         #print (index)
         ## read chosen variable 
@@ -355,7 +365,16 @@ class Window(QtGui.QDialog):
     
     def dist_profile(self): 
         plt.clf()
-        index = str(self.qtreewidget.currentItem().text())
+        try:
+            index = str(self.qlistwidget.currentItem().text())
+        except AttributeError: 
+            print ("Choose the variable to print ")  
+            #messagebox = QtGui.QMessageBox.about(self, "Choose the variable to print ")        
+            messagebox = QtGui.QMessageBox.about(self, "Retry",
+                                                 'Choose variable,please') 
+            return None            
+             
+            #os.system("pause")
         #index = str(self.time_prof_box.currentText())
         numday = self.numday_box.value()  
         z = np.array(self.fh.variables[index]) 
@@ -409,8 +428,8 @@ class Window(QtGui.QDialog):
             if self.sediment == False:                                 
                 gs = gridspec.GridSpec(1, 1)                        
                 cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
-                cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)        
-                cb.set_ticks(wat_ticks)       
+                # cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)        
+                       
                               
             else :  
                 gs = gridspec.GridSpec(2, 1)         
@@ -460,7 +479,8 @@ class Window(QtGui.QDialog):
                                   cmap=self.cmap)
             wat_ticks = readdata.ticks(watmin,watmax) 
             cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)            
-            cb.set_ticks(wat_ticks)                 
+            cb.set_ticks(wat_ticks)   
+                          
             ax.set_ylim(self.y1max,0)
               
             self.canvas.draw()
@@ -520,7 +540,7 @@ class Window(QtGui.QDialog):
         ax10.set_ylim(self.y2max, self.y1max)   
         ax20.set_ylim(self.ysedmax, self.ysedmin) 
          
-        for n in range(0,365):#365
+        for n in range(0,len(self.time)):#365
             if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
             #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               
                 ax00.plot(z[n][0:self.ny2max],

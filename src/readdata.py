@@ -395,10 +395,10 @@ def varmax(self,variable,vartype,start,stop):
         n = variable[start:stop,self.nysedmin:].max()
   
     elif vartype == 'wattime': #time plot water
-        n = variable[0:self.ny1max,start:stop].max()
+        n = variable[0:self.ny1max,:].max()
         print (n)      
     elif vartype == 'sedtime' : #time plot sediment
-        n = variable[self.nysedmin-2:,start:stop].max()
+        n = variable[self.nysedmin-2:,:].max()
         print (n) 
         
     # make "beautiful"  values to show on ticks         2   
@@ -457,11 +457,11 @@ def varmin(self,variable,vartype,start,stop):
         n = np.floor(variable[start:stop,self.nysedmin:].min())
         
     elif vartype == 'wattime' : #time plot water
-        print (start,stop)
-        n = np.floor(variable[0:self.ny1max,start:stop].min())  
-              
+        print (start,stop,variable.shape)
+        n = np.floor(variable[0:self.ny1max,:].min())  
+        print ("min",n )      
     elif vartype == 'sedtime'  : #time plot sediment
-        n = np.floor(variable[self.nysedmin-2:,start:stop].min()) 
+        n = np.floor(variable[self.nysedmin-2:,:].min()) 
                 
  
 
@@ -642,7 +642,7 @@ def set_widget_styles(self):
     self.dist_prof_checkbox.setStyleSheet(
     'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
     '  padding: 5px; font: bold 15px; }')          
-    self.qtreewidget.setStyleSheet(
+    self.qlistwidget.setStyleSheet(
     'QListWidget{font: 25 px; background-color: #eadfda;  }')
      #background-color: #f9e7de; 
             
@@ -668,4 +668,4 @@ def widget_layout(self):
         self.grid.addWidget(self.textbox2,1,5,1,1)    
         #third line              
         self.grid.addWidget(self.canvas, 2, 1,1,5)     
-        self.grid.addWidget(self.qtreewidget,2,0,1,1) 
+        self.grid.addWidget(self.qlistwidget,2,0,1,1) 
