@@ -511,6 +511,19 @@ class Window(QtGui.QDialog):
      
     def all_year_test(self):  
         plt.clf()
+        
+        try:
+            index = str(self.qlistwidget.currentItem().text())
+        except AttributeError: 
+            print ("Choose the variable to print ")  
+            #messagebox = QtGui.QMessageBox.about(self, "Choose the variable to print ")        
+            messagebox = QtGui.QMessageBox.about(self, "Retry",
+                                                 'Choose variable,please') 
+            return None  
+        
+        #index = str(self.time_prof_box.currentText())
+        print ('test all year', index) 
+                         
         self.figure.patch.set_facecolor('white') 
         gs = gridspec.GridSpec(3,1) 
         gs.update(left=0.3, right=0.7,top = 0.94,bottom = 0.04,
@@ -525,7 +538,7 @@ class Window(QtGui.QDialog):
             axis.xaxis.grid(True,'major')                
             axis.yaxis.grid(True,'major')    
                          
-        index = str(self.time_prof_box.currentText())
+
         numcol = self.numcol_2d.value() # 
         # read chosen variable 
         z = np.array(self.fh.variables[index])
@@ -545,8 +558,8 @@ class Window(QtGui.QDialog):
         ax10.set_ylim(self.y2max, self.y1max)   
         ax20.set_ylim(self.ysedmax, self.ysedmin) 
          
-        for n in range(0,len(self.time)):#365
-            if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
+        for n in range(0,len(self.time),10):#365
+            """if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
             #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               
                 ax00.plot(z[n][0:self.ny2max],
                       self.depth[0:self.ny2max],
@@ -561,22 +574,22 @@ class Window(QtGui.QDialog):
                 ax20.plot(z[n][self.nysedmin-1:],
                       self.depth_sed[self.nysedmin-1:],
                       self.wint, alpha = self.a_w,
-                      linewidth = self.linewidth, zorder = 10)   
-            else: 
-                ax00.plot(z[n][0:self.ny2max],
-                      self.depth[0:self.ny2max],
-                      self.spr_aut,alpha = self.a_w, 
-                      linewidth = self.linewidth , zorder = 10) 
-             
-                ax10.plot(z[n][0:self.ny2max],
-                      self.depth[0:self.ny2max],
-                      self.spr_aut,alpha = self.a_w, 
-                      linewidth = self.linewidth , zorder = 10) 
-            
-                ax20.plot(z[n][self.nysedmin-1:],
-                      self.depth_sed[self.nysedmin-1:],
-                      self.spr_aut, alpha = self.a_w,
-                      linewidth = self.linewidth, zorder = 10)                          
+                      linewidth = self.linewidth, zorder = 10) """  
+            #else: 
+            ax00.plot(z[n][0:self.ny2max],
+                  self.depth[0:self.ny2max],
+                  self.spr_aut,alpha = self.a_w, 
+                  linewidth = self.linewidth , zorder = 10) 
+         
+            ax10.plot(z[n][0:self.ny2max],
+                  self.depth[0:self.ny2max],
+                  self.spr_aut,alpha = self.a_w, 
+                  linewidth = self.linewidth , zorder = 10) 
+        
+            ax20.plot(z[n][self.nysedmin-1:],
+                  self.depth_sed[self.nysedmin-1:],
+                  self.spr_aut, alpha = self.a_w,
+                  linewidth = self.linewidth, zorder = 10)                          
                            
         self.canvas.draw()     
     def all_year_charts(self): 
