@@ -15,8 +15,8 @@ from netCDF4 import Dataset
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QSpinBox,QLabel,QComboBox,QCheckBox
 
-from matplotlib import rc
-from matplotlib import style
+from matplotlib import rc, style
+
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.backends.backend_qt4agg import (
@@ -46,9 +46,8 @@ class Window(QtGui.QDialog):
         #app1 = QtGui.QApplication(sys.argv)
         #screen_rect = app1.desktop().screenGeometry()
         #width, height = screen_rect.width(), screen_rect.height()
-             
-        self.xsize = 8.27 
-        self.figure = plt.figure(figsize=(11.69 ,self.xsize), dpi=100,
+              
+        self.figure = plt.figure(figsize=(11.69 , 8.27), dpi=100,
                                   facecolor='white') 
         #for unicode text     
         rc('font', **{'sans-serif' : 'Arial', 
@@ -69,24 +68,28 @@ class Window(QtGui.QDialog):
         self.qlistwidget.setSelectionMode(
             QtGui.QAbstractItemView.ExtendedSelection)
 
-        self.all_year_1d_box = QtGui.QComboBox()    
+        #self.all_year_1d_box = QtGui.QComboBox()    
                            
         self.dist_prof_button = QtGui.QPushButton() 
-        self.dist_prof_checkbox = QtGui.QCheckBox("Fit scale to data")      
+        self.dist_prof_checkbox = QtGui.QCheckBox("Fit scale to data")  
+            
         self.time_prof_last_year =  QtGui.QPushButton()    
-        self.time_prof_all =  QtGui.QPushButton()           
+        self.time_prof_all =  QtGui.QPushButton()    
+               
         self.all_year_test_button =  QtGui.QPushButton() 
               
         self.numcol_2d = QtGui.QSpinBox()        
-        self.varname_box = QtGui.QSpinBox()     
+       # self.varname_box = QtGui.QSpinBox()     
         self.numday_box = QtGui.QSpinBox() 
         
         self.textbox = QtGui.QLineEdit()  
         self.textbox2 = QtGui.QLineEdit()          
   
+        self.fick_box = QtGui.QPushButton() 
+
         # add items to Combobox        
-        for i in self.var_names_charts_year:
-            self.all_year_1d_box.addItem(str(i))
+        #for i in self.var_names_charts_year:
+        #    self.all_year_1d_box.addItem(str(i))
 
         ## self.time_prof_box.addItem('plot 1D')  
         ## add only 2d arrays to variables list       
@@ -126,29 +129,30 @@ class Window(QtGui.QDialog):
         #    print ('var not found')      
 
                 
-        lentime = len(self.fh['time'][:])
+        self.lentime = len(self.fh['time'][:])
         self.fh.close()    
         
         self.textbox2.setText(
-            'Number of days = {}'.format(lentime))  
+            'Number of days = {}'.format(self.lentime))  
         if 'i' in self.names_vars:  
             self.textbox.setText(
                 'Number of columns = {}'.format(str(
                 testvar.shape[0])))                        
             self.numcol_2d.setRange(0, int(testvar.shape[0]-1))   
-            self.numday_box.setRange(0, lentime-1)               
+            self.numday_box.setRange(0, self.lentime-1)               
 
             
         # Define connection between clicking the button and 
         # calling the function to plot figures                           
-        self.all_year_1d_box.currentIndexChanged.connect(
-            self.all_year_charts)                   
+        #self.all_year_1d_box.currentIndexChanged.connect(
+        #    self.all_year_charts)                   
         #self.numcol_2d.valueChanged.connect(
         #    self.time_profile) 
         self.time_prof_last_year.released.connect(self.call_print_lyr)
         self.all_year_test_button.released.connect(self.all_year_test)
         self.time_prof_all.released.connect(self.call_print_allyr)        
-
+        self.fick_box.released.connect(self.fluxes)
+        
         #:(self.time_profile)   
         self.dist_prof_button.released.connect(self.dist_profile)           
         # Create widget 2         
@@ -156,6 +160,7 @@ class Window(QtGui.QDialog):
         # add items to Combobox 
                
         self.time_prof_all.setText('Time: all year')
+        self.fick_box.setText('Fluxes SWI')
         self.all_year_test_button.setText('1D plot')
         self.time_prof_last_year.setText('Time: last year')               
         self.dist_prof_button.setText('Show Dist Profile')       
@@ -188,7 +193,44 @@ class Window(QtGui.QDialog):
         
   
         self.num = 50. 
+    def fluxes(self): 
+        plt.clf()
         
+        try:
+            index = str(self.qlistwidget.currentItem().text())
+        except AttributeError:       
+            messagebox = QtGui.QMessageBox.about(
+                self, "Retry",'Choose variable,please') 
+            return None           
+        numcol = self.numcol_2d.value() # 
+        
+        z = np.array(self.fh.variables[index])
+        zz =  z[:,:,numcol] #1column
+        #print (zz.shape)
+        gs = gridspec.GridSpec(1,1)
+        ax00 = self.figure.add_subplot(gs[0])
+        ax00.set_ylabel('Fluxes') #Label y axis
+        ax00.set_xlabel('Julian day')
+        ax00.text(0, 0, 'column{}'.format(numcol), style='italic')
+        #bbox={'facecolor':'red', 'alpha':0.5,'pad':10}
+        fick = []
+        for n in range(0,self.lentime): 
+            # take values for fluxes at sed-vat interf
+            fick.append(zz[n][self.nysedmin])
+        ax00.set_ylim(max(fick),min(fick))  
+        ax00.axhline(0, color='black', linestyle = '--') 
+        tosed = '#d3b886'
+        towater = "#c9ecfd" 
+        linecolor = "#1da181" 
+        ax00.plot(self.time,fick, linewidth = 1 ,
+                  color = linecolor, zorder = 10)  
+        #ax00.fill_between(self.time,  fick, 0 ,
+        #                  where= fick > 0.,color = tosed, label= u"down" ) 
+        
+        
+        self.canvas.draw()
+        
+       
     def time_profile(self,start,stop):
         
         plt.clf()
@@ -207,7 +249,8 @@ class Window(QtGui.QDialog):
         #print (index)
         ## read chosen variable 
         z = np.array(self.fh.variables[index]) 
-
+        data_units = self.fh.variables[index].units
+        
         z = z[start:stop] 
         ylen1 = len(self.depth) #95  
 
@@ -314,7 +357,8 @@ class Window(QtGui.QDialog):
              
 
         self.ny1min = min(self.depth)
-        ax.set_title(index)
+        #ax.set_title(index)
+        ax.set_title(index + ' ' + data_units) 
         ax.set_ylim(self.y1max,self.ny1min)   
 
         ax.set_xlim(start,stop)
@@ -383,7 +427,7 @@ class Window(QtGui.QDialog):
         numday = self.numday_box.value()  
         #z = np.array(self.fh.variables[index]) 
         data = np.array(self.fh.variables[index])
-        
+        data_units = self.fh.variables[index].units
         ylen = len(self.depth)        
         xlen = len(self.dist)  
 
@@ -458,7 +502,9 @@ class Window(QtGui.QDialog):
                             linewidth = 1 )                   
 
                 ax2.set_ylim(self.ysedmax,self.ysedmin) 
-                                 
+                ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
+                ax2.set_xlabel('Distance (km)',fontsize= self.font_txt)     
+                             
                 cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
                 cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
                                
@@ -470,8 +516,8 @@ class Window(QtGui.QDialog):
             
             X,Y = np.meshgrid(self.dist,y)
             ax = self.figure.add_subplot(gs[0])  
-            ax.set_title(index) 
-
+            ax.set_title(index + ' ' + data_units) 
+            ax.set_ylabel('Depth (m)',fontsize= self.font_txt)
             wat_levs = np.linspace(watmin,watmax, num = self.num)        
             int_wat_levs = []
                     
@@ -522,8 +568,8 @@ class Window(QtGui.QDialog):
             return None  
         
         #index = str(self.time_prof_box.currentText())
-        print ('test all year', index) 
-                         
+        #print ('test all year', index) 
+        data_units = self.fh.variables[index].units                
         self.figure.patch.set_facecolor('white') 
         gs = gridspec.GridSpec(3,1) 
         gs.update(left=0.3, right=0.7,top = 0.94,bottom = 0.04,
@@ -545,7 +591,7 @@ class Window(QtGui.QDialog):
         z = np.array(z[:,:,numcol]) 
         #print (z.shape)
         
-        ax00.set_title(index) 
+        ax00.set_title(index +' ' + data_units) 
         #Label y axis        
         ax00.set_ylabel('Depth (m)',
                         fontsize= self.font_txt) 
@@ -592,7 +638,7 @@ class Window(QtGui.QDialog):
                   linewidth = self.linewidth, zorder = 10)                          
                            
         self.canvas.draw()     
-    def all_year_charts(self): 
+    '''def all_year_charts(self): 
         #messagebox = QtGui.QMessageBox.about(self, "Next time",
         #                                     'it does not work yet =(')           
         plt.clf()
@@ -842,7 +888,7 @@ class Window(QtGui.QDialog):
            
             
                           
-        self.canvas.draw()     
+        self.canvas.draw()  '''   
         
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)

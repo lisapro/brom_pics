@@ -631,16 +631,16 @@ def set_widget_styles(self):
         '  padding: 2px; font: bold 15px; }')     
         
     # Combo boxes style
-    for axis in (self.time_prof_box,self.all_year_1d_box): 
-        axis.setStyleSheet(
+    #for axis in (self.time_prof_box): #,self.all_year_1d_box
+    self.time_prof_box.setStyleSheet(
         'QComboBox {background-color: #c2b4ae; border-width: 7px;'
         '  padding: 7px; font: bold 14px; }')  
     #self.time_prof_box.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)   
     
     # Spinbox style
-    self.varname_box.setStyleSheet(
-    'QSpinBox {background-color: #c2b4ae; border-width: 15px;'
-    '  padding: 5px; font: bold 15px; }')        
+    #self.varname_box.setStyleSheet(
+    #'QSpinBox {background-color: #c2b4ae; border-width: 15px;'
+    #'  padding: 5px; font: bold 15px; }')        
     
     self.dist_prof_checkbox.setStyleSheet(
     'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
@@ -652,18 +652,17 @@ def set_widget_styles(self):
     
 
 def widget_layout(self):    
-        #first line              
+        #first line     
+        self.grid.addWidget(self.dist_prof_checkbox,0,0,1,1)          
         self.grid.addWidget(self.toolbar,0,1,1,1)        
         self.grid.addWidget(self.time_prof_all,0,2,1,1)  
-        self.grid.addWidget(self.dist_prof_button,0,3,1,1)   
-         
-        #self.grid.addWidget(self.time_prof_box,1,0,1,1)  
-              
+        self.grid.addWidget(self.dist_prof_button,0,3,1,1)            
+        #self.grid.addWidget(self.time_prof_box,1,0,1,1)               
         self.grid.addWidget(self.numcol_2d ,0,4,1,1)              
-        self.grid.addWidget(self.textbox,0,5,1,1)          
+        self.grid.addWidget(self.textbox,0,5,1,1)   
+               
         #second line    
-        self.grid.addWidget(self.dist_prof_checkbox,0,0,1,1)  
-                  
+        self.grid.addWidget(self.fick_box,1,1,1,1)                    
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
         self.grid.addWidget(self.all_year_test_button,1,3,1,1)                         
