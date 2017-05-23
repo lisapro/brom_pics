@@ -316,7 +316,7 @@ class Window(QtGui.QDialog):
             sed_max = readdata.varmax(self,zz,'sedtime',start,stop)             
             ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
             ax2.set_xlim(start,stop)
-            ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
+            ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
             ax2.set_xlabel('Number of day',fontsize= self.font_txt) 
             
             sed_levs = np.linspace(sed_min,sed_max,
@@ -358,11 +358,11 @@ class Window(QtGui.QDialog):
 
         self.ny1min = min(self.depth)
         #ax.set_title(index)
-        ax.set_title(index + ' ' + data_units) 
+        ax.set_title(index + ', ' + data_units) 
         ax.set_ylim(self.y1max,self.ny1min)   
 
         ax.set_xlim(start,stop)
-        ax.set_ylabel('Depth (m)',fontsize= self.font_txt)
+        ax.set_ylabel('h, m',fontsize= self.font_txt)
          
         wat_levs = np.linspace(watmin,watmax,num= self.num)
 
@@ -502,8 +502,8 @@ class Window(QtGui.QDialog):
                             linewidth = 1 )                   
 
                 ax2.set_ylim(self.ysedmax,self.ysedmin) 
-                ax2.set_ylabel('Depth (cm)',fontsize= self.font_txt) 
-                ax2.set_xlabel('Distance (km)',fontsize= self.font_txt)     
+                ax2.set_ylabel('h, cm',fontsize= self.font_txt)  #Depth (cm)
+                ax2.set_xlabel('distance, m',fontsize= self.font_txt)   #Distance (km)  
                              
                 cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
                 cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
@@ -516,8 +516,8 @@ class Window(QtGui.QDialog):
             
             X,Y = np.meshgrid(self.dist,y)
             ax = self.figure.add_subplot(gs[0])  
-            ax.set_title(index + ' ' + data_units) 
-            ax.set_ylabel('Depth (m)',fontsize= self.font_txt)
+            ax.set_title(index + ', ' + data_units) 
+            ax.set_ylabel('h, m',fontsize= self.font_txt) #Depth (m)
             wat_levs = np.linspace(watmin,watmax, num = self.num)        
             int_wat_levs = []
                     
@@ -591,13 +591,13 @@ class Window(QtGui.QDialog):
         z = np.array(z[:,:,numcol]) 
         #print (z.shape)
         
-        ax00.set_title(index +' ' + data_units) 
+        ax00.set_title(index +', ' + data_units) 
         #Label y axis        
-        ax00.set_ylabel('Depth (m)',
+        ax00.set_ylabel('h, m', #Depth (m)
                         fontsize= self.font_txt) 
-        ax10.set_ylabel('Depth (m)',
+        ax10.set_ylabel('h, m', #Depth (m)
                         fontsize= self.font_txt)   
-        ax20.set_ylabel('Depth (cm)',
+        ax20.set_ylabel('h, cm', #Depth (cm)
                         fontsize= self.font_txt)
         
         ax00.set_ylim(self.y1max,0)  
