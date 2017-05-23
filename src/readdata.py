@@ -293,13 +293,13 @@ def calculate_ywat(self):
                 self.y1max = y1max                                                     
                 self.ny1max = n-1
                 self.sediment = False
-                print ('no sediment y wat', self.y1max)        
+                #print ('no sediment y wat', self.y1max)        
                 break  
         elif self.depth2[n+1] - self.depth2[n] < self.bbl:   
             self.y1max = (self.depth[n])                               
             self.ny1max = n #-1
             self.sediment = True
-            print ('calc_y_wat_y1max', self.y1max,self.ny1max)
+            #print ('calc_y_wat_y1max', self.y1max,self.ny1max)
             break
         
   
@@ -390,18 +390,18 @@ def depth_sed(self):
 def varmax(self,variable,vartype,start,stop): 
     if vartype == 'watdist': #water
         n = variable[start:stop,0:self.ny1max].max() 
-        print (self.ny1max)
-        print (variable[start:stop,0:self.ny1max].max())
-        print ('depth',self.depth)
+        #print (self.ny1max)
+        #print (variable[start:stop,0:self.ny1max].max())
+        #print ('depth',self.depth)
     elif vartype == 'seddist' :#sediment dist 
         n = variable[start:stop,self.nysedmin:].max()
   
     elif vartype == 'wattime': #time plot water
         n = variable[0:self.ny1max,:].max()
-        print (n)      
+        #print (n)      
     elif vartype == 'sedtime' : #time plot sediment
         n = variable[self.nysedmin-2:,:].max()
-        print (n) 
+        #print (n) 
         
     # make "beautiful"  values to show on ticks         2   
     if n > 10000. and n <= 100000.:  
@@ -424,7 +424,7 @@ def varmax(self,variable,vartype,start,stop):
         n =  (math.ceil(n*100000))/100000 
                                                                                                
     self.watmax =  n   
-    print (self.watmax)
+    #print (self.watmax)
     return self.watmax
 
 # make "beautiful"  values to show on ticks  
@@ -460,9 +460,9 @@ def varmin(self,variable,vartype,start,stop):
         n = np.floor(variable[start:stop,self.nysedmin:].min())
         
     elif vartype == 'wattime' : #time plot water
-        print (start,stop,variable.shape)
+        #print (start,stop,variable.shape)
         n = np.floor(variable[0:self.ny1max,:].min())  
-        print ("min",n )      
+        #print ("min",n )      
     elif vartype == 'sedtime'  : #time plot sediment
         n = np.floor(variable[self.nysedmin-2:,:].min()) 
                 
@@ -662,12 +662,13 @@ def widget_layout(self):
         self.grid.addWidget(self.textbox,0,5,1,1)   
                
         #second line    
-        self.grid.addWidget(self.fick_box,1,1,1,1)                    
+        self.grid.addWidget(self.fick_box,1,0,1,1)                    
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
         self.grid.addWidget(self.all_year_test_button,1,3,1,1)                         
-        self.grid.addWidget(self.numday_box,1,4,1,1)  
-        self.grid.addWidget(self.textbox2,1,5,1,1)    
+        self.grid.addWidget(self.numday_box,1,4,1,1) 
+        self.grid.addWidget(self.numday_stop_box,1,5,1,1)  
+        #self.grid.addWidget(self.textbox2,1,6,1,1)    
         #third line              
         self.grid.addWidget(self.canvas, 2, 1,1,5)     
         self.grid.addWidget(self.qlistwidget,2,0,1,1) 
