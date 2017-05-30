@@ -49,20 +49,25 @@ class Window(QtGui.QDialog):
               
         self.figure = plt.figure(figsize=(11.69 , 8.27), dpi=100,
                                   facecolor='white') 
+
         #for unicode text     
         rc('font', **{'sans-serif' : 'Arial', 
                            'family' : 'sans-serif'})  
+        rc({'savefig.transparent' : True})
                 
         # open file system to choose needed nc file 
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))   
+        totitle = os.path.split(self.fname)[1]
+        self.totitle = totitle[16:-3]
 
+        
         #filename = self.fname
         self.fh =  Dataset(self.fname)
         readdata.readdata_brom(self)   
         
         # Create widgets
-                            
+        self.label_choose_var = QtGui.QLabel('Choose variable:')                   
         self.time_prof_box = QtGui.QComboBox()  
         self.qlistwidget = QtGui.QListWidget()      
         self.qlistwidget.setSelectionMode(
@@ -71,22 +76,25 @@ class Window(QtGui.QDialog):
         #self.all_year_1d_box = QtGui.QComboBox()    
                            
         self.dist_prof_button = QtGui.QPushButton() 
-        self.dist_prof_checkbox = QtGui.QCheckBox("Fit scale to data")  
-            
+        self.dist_prof_checkbox = QtGui.QCheckBox(
+            "Fit scale to data")  
+        self.yearlines_checkbox = QtGui.QCheckBox(
+            'Draw year lines')   
+        self.injlines_checkbox = QtGui.QCheckBox(
+            'Draw inject lines')         
         self.time_prof_last_year =  QtGui.QPushButton()    
-        self.time_prof_all =  QtGui.QPushButton()    
-               
-        self.all_year_test_button =  QtGui.QPushButton() 
-              
+        self.time_prof_all =  QtGui.QPushButton()                   
+        self.all_year_test_button =  QtGui.QPushButton()               
         self.numcol_2d = QtGui.QSpinBox()        
        # self.varname_box = QtGui.QSpinBox()     
         self.numday_box = QtGui.QSpinBox() 
-        self.numday_stop_box = QtGui.QSpinBox() 
-        
+        self.numday_stop_box = QtGui.QSpinBox()        
         self.textbox = QtGui.QLineEdit()  
-        self.textbox2 = QtGui.QLineEdit()          
-  
+        self.textbox2 = QtGui.QLineEdit()           
         self.fick_box = QtGui.QPushButton() 
+
+
+
 
         # add items to Combobox        
         #for i in self.var_names_charts_year:
@@ -131,6 +139,8 @@ class Window(QtGui.QDialog):
 
                 
         self.lentime = len(self.fh['time'][:])
+        self.label_maxday = QtGui.QLabel('max day: '+ str(self.lentime))
+        
         self.fh.close()    
         
         self.textbox2.setText(
@@ -224,13 +234,43 @@ class Window(QtGui.QDialog):
             #print (zz.shape)
             gs = gridspec.GridSpec(1,1)
             ax00 = self.figure.add_subplot(gs[0])
-            ax00.set_xlabel('Julian day')       
+            ax00.set_xlabel('Julian day')   
+            if self.yearlines_checkbox.isChecked() == True:
+                for n in range(start,stop):
+                    if n%365 == 0: 
+                        ax00.axvline(n,
+                        color='black',
+                        linestyle = '--') 
+            if self.injlines_checkbox.isChecked()== True: 
+                    ax00.axvline(365,color='red', linewidth = 2,
+                            linestyle = '--',zorder = 10) 
+                    ax00.axvline(1825,color='red',linewidth = 2,#1825 730
+                            linestyle = '--',zorder = 10)                            
         elif len(selected_items)== 2:
             gs = gridspec.GridSpec(2,1)
             
             ax00 = self.figure.add_subplot(gs[0])
             ax01 = self.figure.add_subplot(gs[1])
             ax01.set_xlabel('Julian day')  
+            if self.yearlines_checkbox.isChecked() == True:
+                for n in range(start,stop):
+                    if n%365 == 0: 
+                        ax00.axvline(n,color='black',
+                        linestyle = '--') 
+                        ax01.axvline(n,color='black',
+                        linestyle = '--') 
+                # injection   
+            if self.injlines_checkbox.isChecked()== True: 
+                    ax00.axvline(365,color='red', linewidth = 2,
+                            linestyle = '--',zorder = 10) 
+                    ax00.axvline(1825,color='red',linewidth = 2,#1825 730
+                            linestyle = '--',zorder = 10)  
+                      
+                    ax01.axvline(365,color='red', linewidth = 2,
+                            linestyle = '--',zorder = 10) 
+                    ax01.axvline(1825,color='red',linewidth = 2,
+                            linestyle = '--',zorder = 10)    
+                                                                       
             #print (str(selected_items[1].text()))
             var2 = str(selected_items[1].text())
             z2_units = self.fh.variables[var2].units
@@ -247,7 +287,11 @@ class Window(QtGui.QDialog):
             fick2 = np.array(fick2)     
             ax01.plot(self.time[start:stop],fick2, linewidth = 1 ,
                         color = linecolor, zorder = 10)  
-    
+            #if self.yearlines_checkbox.isChecked() == True:
+            #    for n in range(start,stop):
+            #        if n%365 == 0: 
+            #            ax01.axvline(n,
+            #            color='black', linestyle = '--')      
             ax01.fill_between(self.time[start:stop], fick2, 0,
                                where= fick2 >= 0. , 
                                color = tosed, label= u"down" )
@@ -260,11 +304,14 @@ class Window(QtGui.QDialog):
             return None  
         
         
-        ax00.set_title(var1+', '+ z_units)
+        ax00.set_title(var1+', '+ z_units )
+        
+        self.figure.suptitle(str(self.totitle),fontsize=16)
+        #                , fontweight='bold')
         #print (z_units, var1)
         ax00.set_ylabel('Fluxes') #Label y axis
         
-        ax00.text(0, 0, 'column{}'.format(numcol), style='italic')
+        #ax00.text(0, 0, 'column{}'.format(numcol), style='italic')
         #bbox={'facecolor':'red', 'alpha':0.5,'pad':10}
         fick = []
         for n in range(start,stop): 
@@ -285,27 +332,22 @@ class Window(QtGui.QDialog):
         #                  where = fick > 0 ,
         #                  , interpolate=True) 
         
-        #ax.fill_between(x, y1, y2, where=y2 >= y1, facecolor='green', interpolate=True)         
-        
+        #ax.fill_between(x, y1, y2, where=y2 >= y1,
+        # facecolor='green', interpolate=True)         
+        #rc({'savefig.transparent' : True})
         self.canvas.draw()
-        
-       
+              
     def time_profile(self,start,stop):
         
         plt.clf()
         
         try:
             index = str(self.qlistwidget.currentItem().text())
-        except AttributeError: 
-            print ("Choose the variable to print ")  
-            #messagebox = QtGui.QMessageBox.about(self, "Choose the variable to print ")        
+        except AttributeError:   
             messagebox = QtGui.QMessageBox.about(self, "Retry",
                                                  'Choose variable,please') 
             return None           
         
-        #index = str(self.qlistwidget.currentItem().text())
-        #str(self.time_prof_box.currentText())
-        #print (index)
         ## read chosen variable 
         z = np.array(self.fh.variables[index]) 
         data_units = self.fh.variables[index].units
@@ -313,8 +355,8 @@ class Window(QtGui.QDialog):
         z = z[start:stop] 
         ylen1 = len(self.depth) #95  
 
-        x = np.array(self.time[start:stop]) #np.arange(6)
-        xlen = len(x) #365    
+        x = np.array(self.time[start:stop]) 
+        xlen = len(x)     
 
         # check if the variable is defined of middlepoints  
         if (z.shape[1])> ylen1: 
@@ -334,7 +376,7 @@ class Window(QtGui.QDialog):
 
         z2d = []
         numcol = self.numcol_2d.value() # 
-        #print ('number of column', numcol) # QSpinBox.value()  #1 
+
         if 'i' in self.names_vars:
             #print ("in i")
             if z.shape[2] > 1:
@@ -344,13 +386,12 @@ class Window(QtGui.QDialog):
                     for m in range(0,ylen):  
                         # take only n's column for brom             
                         z2d.append(z[n][m][numcol]) 
-            #zz = np.array(zz).reshape(ylen,xlen)        
+      
                 z = np.array(z2d)                     
         z = z.flatten()   
         z = z.reshape(xlen,ylen)       
         zz = z.T  
             
-        #varmin(self,variable,vartype,start,stop)
         if 'Kz' in self.names_vars:
             watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
             watmax = readdata.varmax(self,zz,'wattime',start,stop)
@@ -368,7 +409,6 @@ class Window(QtGui.QDialog):
         else : 
                              
             gs = gridspec.GridSpec(2, 1) 
-            #y_sed = np.array(self.depth_sed)
             X_sed,Y_sed = np.meshgrid(x,y_sed)
             ax2 = self.figure.add_subplot(gs[1])  
             sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
@@ -393,8 +433,16 @@ class Window(QtGui.QDialog):
             cb_sed.set_ticks(sed_ticks)              
             #cb.set_label('Water')   
             cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])           
-                
-            
+            if self.yearlines_checkbox.isChecked() == True:
+                for n in range(start,stop):
+                    if n%365 == 0: 
+                        ax2.axvline(n, color='white', linestyle = '--') 
+            if self.injlines_checkbox.isChecked()== True:             
+                ax2.axvline(365,color='red', linewidth = 2,
+                        linestyle = '--',zorder = 10) 
+                ax2.axvline(1825,color='red',linewidth = 2,
+                        linestyle = '--',zorder = 10)                       
+                                                                   
         X,Y = np.meshgrid(x,y)             
         ax = self.figure.add_subplot(gs[0])
          
@@ -414,9 +462,9 @@ class Window(QtGui.QDialog):
                 else:     
                     sed_max = sed_max + sed_max/10.   
              
-
         self.ny1min = min(self.depth)
         #ax.set_title(index)
+        
         ax.set_title(index + ', ' + data_units) 
         ax.set_ylim(self.y1max,self.ny1min)   
 
@@ -441,14 +489,25 @@ class Window(QtGui.QDialog):
         ## left corner, location (0,0).  
         ## If â€˜imageâ€™, the rc value for image.origin will be used.
           
-        CS = ax.contourf(X,Y, zz, levels= wat_levs, extend="both", #int_
+        CS = ax.contourf(X,Y, zz, levels = int_wat_levs, extend="both", #int_
                               cmap= self.cmap)
 
         wat_ticks = readdata.ticks(watmin,watmax)        
        
-        cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)
+        cb = plt.colorbar(CS,cax = cax, ticks = wat_ticks)       
         cb.set_ticks(wat_ticks)
-  
+        if self.yearlines_checkbox.isChecked() == True:
+            for n in range(start,stop):
+                if n%365 == 0: 
+                    ax.axvline(n, color='white', linestyle = '--') 
+                    # injection  
+        if self.injlines_checkbox.isChecked() == True:                  
+            ax.axvline(365,color='red', linewidth = 2,
+                        linestyle = '--',zorder = 10) 
+            ax.axvline(1825,color='red',linewidth = 2,
+                        linestyle = '--',zorder = 10)      
+                            
+        self.figure.suptitle(str(self.totitle),fontsize=16)            
         self.canvas.draw()
         
         # Attempt to make timer for updating 
@@ -609,19 +668,19 @@ class Window(QtGui.QDialog):
         #print (start,stop)
         self.time_profile(start,stop) 
             
-    def call_print_allyr(self): 
-        stop = len(self.time)
-        start = 0
+    def call_print_allyr(self):
+        start = self.numday_box.value() 
+        stop = self.numday_stop_box.value()  
+        #stop = len(self.time)
+        #start = 0
         self.time_profile(start,stop)   
      
     def all_year_test(self):  
-        plt.clf()
-        
+        plt.clf()        
         try:
             index = str(self.qlistwidget.currentItem().text())
         except AttributeError: 
-            print ("Choose the variable to print ")  
-            #messagebox = QtGui.QMessageBox.about(self, "Choose the variable to print ")        
+            print ("Choose the variable to print ")       
             messagebox = QtGui.QMessageBox.about(self, "Retry",
                                                  'Choose variable,please') 
             return None  

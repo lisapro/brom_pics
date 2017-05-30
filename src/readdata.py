@@ -390,41 +390,18 @@ def depth_sed(self):
 def varmax(self,variable,vartype,start,stop): 
     if vartype == 'watdist': #water
         n = variable[start:stop,0:self.ny1max].max() 
-        #print (self.ny1max)
-        #print (variable[start:stop,0:self.ny1max].max())
-        #print ('depth',self.depth)
+
     elif vartype == 'seddist' :#sediment dist 
         n = variable[start:stop,self.nysedmin:].max()
   
     elif vartype == 'wattime': #time plot water
         n = variable[0:self.ny1max,:].max()
-        #print (n)      
+      
     elif vartype == 'sedtime' : #time plot sediment
         n = variable[self.nysedmin-2:,:].max()
-        #print (n) 
-        
-    # make "beautiful"  values to show on ticks         2   
-    if n > 10000. and n <= 100000.:  
-        n = int(math.ceil(n/ 1000.0)) * 1000 + 1000.
-    elif n > 1000. and n <= 10000.:  
-        n = int(math.ceil(n / 100.0)) * 100  + 10.                                 
-    elif n >= 100. and n < 1000.:
-        n = int(math.ceil(float(n) / 10.0)) * 10 + 10.
-    elif n >= 1. and n < 100. :
-        n =  int(np.ceil(float(n)))  + 1.  
-    elif n >= 0.1 and n < 1. :
-        n =  (math.ceil(n*10.))/10. + 0.1  
-    elif n >= 0.01 and n < 0.1 :
-        n =  (math.ceil(n*100.))/100. 
-    elif n >= 0.001 and n < 0.01 :
-        n =  (math.ceil(n*1000.))/1000.
-    elif n >= 0.0001 and n < 0.001 :
-        n =  (math.ceil(n*10000))/10000 +  0.0001   
-    elif n >= 0.00001 and n < 0.0001 :
-        n =  (math.ceil(n*100000))/100000 
-                                                                                               
+
+                                                                                         
     self.watmax =  n   
-    #print (self.watmax)
     return self.watmax
 
 # make "beautiful"  values to show on ticks  
@@ -466,25 +443,6 @@ def varmin(self,variable,vartype,start,stop):
     elif vartype == 'sedtime'  : #time plot sediment
         n = np.floor(variable[self.nysedmin-2:,:].min()) 
                 
- 
-
-    '''
-    if vartype == 0: #water
-        n = variable[start:stop,0:self.ny1max].max() 
-          
-    elif vartype == 1 :#sediment
-        n = variable[start:stop,self.nysedmin:].max()
-  
-    elif vartype == 2: #time plot water
-        n = variable[0:self.ny1max,start:stop].max()
-        print (n)      
-    elif vartype == 3 : #time plot sediment
-        n = variable[self.nysedmin-2:,start:stop].max()
-        print (n) '''
-
-
-
-        
     # make "beautiful"  values to show on ticks
     ##print ('varmin', n)            
     if n > 10000. and n <= 100000.:  
@@ -514,41 +472,52 @@ def varmin(self,variable,vartype,start,stop):
 def ticks(minv,maxv):          
     if (maxv - minv) >= 50000. and (
          maxv - minv) < 150000.  :
-        ticks = np.arange(minv,maxv+10000.,50000)        
+        ticks = np.arange(minv,maxv,50000) #+10000.        
     elif (maxv - minv) >= 10000. and (
          maxv - minv) < 50000.  :
-        ticks = np.arange(minv,maxv+5000.,5000)        
+        ticks = np.arange(minv,maxv,5000) #+5000.        
     elif (maxv - minv) > 3000. and (
        maxv - minv) < 10000.  : 
-        ticks = np.arange(minv,maxv+1000.,1000)        
+        ticks = np.arange(minv,maxv,1000) #+1000.        
     elif (maxv - minv) > 1500. and ( 
      maxv - minv) <= 3000. :
-        ticks = np.arange(minv,maxv+500.,500)                        
-    elif (maxv - minv) >= 300. and ( 
+        #print('in 1500-3000')
+        ticks = np.arange(minv,maxv,500) #+500.                        
+    elif (maxv - minv) >= 1000. and ( 
      maxv - minv) <= 1500. :
-        ticks = np.arange((math.trunc(minv/10)*10),maxv+100.,100)   
+        #print('in 1000-1500',maxv-minv)
+        ticks = np.arange((math.trunc(minv/10)*10),maxv,200)           
+    elif (maxv - minv) >= 300. and ( 
+     maxv - minv) <= 1000. :
+        #print('in 300-1000',maxv-minv)
+        ticks = np.arange((math.trunc(minv/10)*10),maxv,100)   
         if minv < 100 :
-            ticks = np.arange(0,maxv+100.,100)              
+            ticks = np.arange(0,maxv,100)   #+100.               
     elif (maxv - minv) >= 100. and ( 
      maxv - minv) < 300. :
-        ticks = np.arange(minv-10,maxv+50.,50) 
+        ticks = np.arange(minv-10,maxv,50) #+50. 
     elif (maxv - minv) > 50. and ( 
      maxv - minv) < 100. :
-        ticks = np.arange(minv,maxv+10.,10)        
+        ticks = np.arange(minv,maxv,10) #+10.        
     elif (maxv - minv) > 20. and ( 
      maxv - minv) <= 50. :
-        ticks = np.arange(minv,maxv+5.,5)
+        ticks = np.arange(minv,maxv,5) #+5.
     elif (maxv - minv) > 3. and ( 
      maxv - minv) <= 20. :
-        ticks = np.arange(minv,maxv+1.,1)
+        ticks = np.arange(minv,maxv,1) #+1.
     elif (maxv - minv) >= 1. and ( 
      maxv - minv) <= 3. :
-        ticks = np.arange(minv,maxv+1.,0.5)         
+        ticks = np.arange(minv,maxv,0.5) #+1.         
     elif (maxv - minv) > 0.2 and ( 
      maxv - minv) <= 1. :
-        ticks = np.arange(minv,maxv+1.,0.1)                  
-    else :  
-        ticks = np.arange(minv,maxv + (maxv - minv)/2., (maxv - minv)/2.)                   
+        ticks = np.arange(minv,maxv,0.1) #+1.                  
+    elif (maxv - minv) > 0.02 and ( 
+     maxv - minv) <= 0.2 : 
+        ticks = np.arange((math.trunc(minv/10)*10),maxv,0.01) 
+    else : 
+        ticks = [minv,maxv]    
+        #+ (maxv - minv)/2.                  
+    #print ('ticks',ticks)
     return ticks
     #print (ticks)
 #function to define y limits 
@@ -624,7 +593,7 @@ def set_widget_styles(self):
     
     # Push buttons style
     for axis in (self.time_prof_all,self.time_prof_last_year,
-                 self.dist_prof_button,
+                 self.dist_prof_button,self.fick_box, 
                  self.all_year_test_button):   
         axis.setStyleSheet(
         'QPushButton {background-color: #c2b4ae; border-width: 5px;'
@@ -641,34 +610,42 @@ def set_widget_styles(self):
     #self.varname_box.setStyleSheet(
     #'QSpinBox {background-color: #c2b4ae; border-width: 15px;'
     #'  padding: 5px; font: bold 15px; }')        
-    
+    self.yearlines_checkbox.setStyleSheet(
+    'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
+    '  padding: 5px; font: bold 15px; }')
     self.dist_prof_checkbox.setStyleSheet(
     'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
     '  padding: 5px; font: bold 15px; }')          
     self.qlistwidget.setStyleSheet(
     'QListWidget{font: 25 px; background-color: #eadfda;  }')
      #background-color: #f9e7de; 
-            
+    self.label_choose_var.setStyleSheet(
+        'QLabel {border-width: 7px;'
+        '  padding: 7px; font: bold 15px; }')        
     
 
 def widget_layout(self):    
-        #first line     
-        self.grid.addWidget(self.dist_prof_checkbox,0,0,1,1)          
+        #first line 
+            
+        self.grid.addWidget(self.label_choose_var,0,0,1,1)           
         self.grid.addWidget(self.toolbar,0,1,1,1)        
         self.grid.addWidget(self.time_prof_all,0,2,1,1)  
         self.grid.addWidget(self.dist_prof_button,0,3,1,1)            
         #self.grid.addWidget(self.time_prof_box,1,0,1,1)               
         self.grid.addWidget(self.numcol_2d ,0,4,1,1)              
-        self.grid.addWidget(self.textbox,0,5,1,1)   
-               
-        #second line    
-        self.grid.addWidget(self.fick_box,1,0,1,1)                    
+        self.grid.addWidget(self.textbox,0,5,1,1) 
+        self.grid.addWidget(self.injlines_checkbox,0,6,1,1)  
+        self.grid.addWidget(self.dist_prof_checkbox,0,7,1,1)               
+        #second line
+        self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)     
+        self.grid.addWidget(self.fick_box,1,1,1,1)                    
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
         self.grid.addWidget(self.all_year_test_button,1,3,1,1)                         
         self.grid.addWidget(self.numday_box,1,4,1,1) 
-        self.grid.addWidget(self.numday_stop_box,1,5,1,1)  
+        self.grid.addWidget(self.numday_stop_box,1,5,1,1) 
+        self.grid.addWidget(self.label_maxday ,1,6,1,1)
         #self.grid.addWidget(self.textbox2,1,6,1,1)    
         #third line              
-        self.grid.addWidget(self.canvas, 2, 1,1,5)     
-        self.grid.addWidget(self.qlistwidget,2,0,1,1) 
+        self.grid.addWidget(self.canvas, 2, 1,1,7)     
+        self.grid.addWidget(self.qlistwidget,1,0,2,1) 
