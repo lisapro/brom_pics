@@ -244,7 +244,7 @@ class Window(QtGui.QDialog):
             if self.injlines_checkbox.isChecked()== True: 
                     ax00.axvline(365,color='red', linewidth = 2,
                             linestyle = '--',zorder = 10) 
-                    ax00.axvline(1825,color='red',linewidth = 2,#1825 730
+                    ax00.axvline(75,color='red',linewidth = 2,#1825 730
                             linestyle = '--',zorder = 10)                            
         elif len(selected_items)== 2:
             gs = gridspec.GridSpec(2,1)
@@ -718,10 +718,24 @@ class Window(QtGui.QDialog):
         ax20.set_ylabel('h, cm', #Depth (cm)
                         fontsize= self.font_txt)
         
-        ax00.set_ylim(self.y1max,0)  
-        ax10.set_ylim(self.y2max, self.y1max)   
-        ax20.set_ylim(self.ysedmax, self.ysedmin) 
+        ax00.set_ylim(self.y1max,0) 
+        ax00.axhspan(self.y1max,0,color='#dbf0fd',
+                     alpha = 0.7,label = "water" )
          
+        
+        ax10.set_ylim(self.y2max, self.y1max)   
+        ax10.axhspan(self.y2max, self.y1max,color='#c5d8e3',
+                     alpha = 0.4, label = "bbl"  )                
+        
+        
+        ax20.set_ylim(self.ysedmax, self.ysedmin) 
+
+        ax20.axhspan(self.ysedmin,0,
+                     color='#c5d8e3',alpha = 0.4,
+                     label = "bbl"  )        
+        ax20.axhspan(self.ysedmax,0,
+                     color='#b08b52',alpha = 0.4,
+                     label = "sediment"  )
         for n in range(0,len(self.time),10):#365
             """if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
             #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               
