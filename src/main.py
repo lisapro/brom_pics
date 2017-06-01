@@ -244,7 +244,7 @@ class Window(QtGui.QDialog):
             if self.injlines_checkbox.isChecked()== True: 
                     ax00.axvline(365,color='red', linewidth = 2,
                             linestyle = '--',zorder = 10) 
-                    ax00.axvline(75,color='red',linewidth = 2,#1825 730
+                    ax00.axvline(730,color='red',linewidth = 2,#1825 730
                             linestyle = '--',zorder = 10)                            
         elif len(selected_items)== 2:
             gs = gridspec.GridSpec(2,1)
@@ -263,12 +263,12 @@ class Window(QtGui.QDialog):
             if self.injlines_checkbox.isChecked()== True: 
                     ax00.axvline(365,color='red', linewidth = 2,
                             linestyle = '--',zorder = 10) 
-                    ax00.axvline(1825,color='red',linewidth = 2,#1825 730
+                    ax00.axvline(730,color='red',linewidth = 2,#1825 730
                             linestyle = '--',zorder = 10)  
                       
                     ax01.axvline(365,color='red', linewidth = 2,
                             linestyle = '--',zorder = 10) 
-                    ax01.axvline(1825,color='red',linewidth = 2,
+                    ax01.axvline(730,color='red',linewidth = 2,
                             linestyle = '--',zorder = 10)    
                                                                        
             #print (str(selected_items[1].text()))
@@ -440,7 +440,7 @@ class Window(QtGui.QDialog):
             if self.injlines_checkbox.isChecked()== True:             
                 ax2.axvline(365,color='red', linewidth = 2,
                         linestyle = '--',zorder = 10) 
-                ax2.axvline(1825,color='red',linewidth = 2,
+                ax2.axvline(730,color='red',linewidth = 2,
                         linestyle = '--',zorder = 10)                       
                                                                    
         X,Y = np.meshgrid(x,y)             
@@ -500,11 +500,11 @@ class Window(QtGui.QDialog):
             for n in range(start,stop):
                 if n%365 == 0: 
                     ax.axvline(n, color='white', linestyle = '--') 
-                    # injection  
+                    # 730ection  
         if self.injlines_checkbox.isChecked() == True:                  
             ax.axvline(365,color='red', linewidth = 2,
                         linestyle = '--',zorder = 10) 
-            ax.axvline(1825,color='red',linewidth = 2,
+            ax.axvline(730,color='red',linewidth = 2,
                         linestyle = '--',zorder = 10)      
                             
         self.figure.suptitle(str(self.totitle),fontsize=16)            
@@ -684,7 +684,8 @@ class Window(QtGui.QDialog):
             messagebox = QtGui.QMessageBox.about(self, "Retry",
                                                  'Choose variable,please') 
             return None  
-        
+        start = self.numday_box.value() 
+        stop = self.numday_stop_box.value() 
         #index = str(self.time_prof_box.currentText())
         #print ('test all year', index) 
         data_units = self.fh.variables[index].units                
@@ -736,7 +737,7 @@ class Window(QtGui.QDialog):
         ax20.axhspan(self.ysedmax,0,
                      color='#b08b52',alpha = 0.4,
                      label = "sediment"  )
-        for n in range(0,len(self.time),10):#365
+        for n in range(start,stop,10):#365
             """if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
             #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               
                 ax00.plot(z[n][0:self.ny2max],
