@@ -41,7 +41,7 @@ class Window(QtGui.QDialog):
         
         self.setWindowFlags(QtCore.Qt.Window)   
         self.setWindowTitle("BROM Pictures")
-        self.setWindowIcon(QtGui.QIcon('bromlogo.png'))
+        self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))
 
         #app1 = QtGui.QApplication(sys.argv)
         #screen_rect = app1.desktop().screenGeometry()
@@ -392,13 +392,22 @@ class Window(QtGui.QDialog):
         z = z.reshape(xlen,ylen)       
         zz = z.T  
             
-        if 'Kz' in self.names_vars:
-            watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
+        if 'Kz' in self.names_vars and index != 'pH':
+            print ('in 1')
+            watmin = readdata.varmin(self,zz,'wattime',start,stop) 
             watmax = readdata.varmax(self,zz,'wattime',start,stop)
+            wat_ticks = readdata.ticks(watmin,watmax) 
+            
+        elif 'Kz'in self.names_vars and index == 'pH':
+            
+            watmin = round(zz[0:self.ny1max,:].min(),2) 
+            watmax = round(zz[0:self.ny1max,:].max(),2) 
+            wat_ticks = np.linspace(watmin,watmax,5)    
+                   
         else:  
+            print ('in 3')
             self.ny1max = len(self.depth-1)
             self.y1max = max(self.depth)    
-            #print ('no kz',self.ny1max)
             watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
             watmax = readdata.varmax(self,zz,'wattime',start,stop)
                       
@@ -411,22 +420,30 @@ class Window(QtGui.QDialog):
             gs = gridspec.GridSpec(2, 1) 
             X_sed,Y_sed = np.meshgrid(x,y_sed)
             ax2 = self.figure.add_subplot(gs[1])  
-            sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
-            sed_max = readdata.varmax(self,zz,'sedtime',start,stop)             
-            ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
-            ax2.set_xlim(start,stop)
-            ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
-            ax2.set_xlabel('Number of day',fontsize= self.font_txt) 
             
+            if index == 'pH': 
+                sed_min  = (zz[self.nysedmin-2:,:].min()) 
+                sed_max  = (zz[self.nysedmin-2:,:].max())                 
+                sed_ticks = readdata.ticks(sed_min,sed_max) 
+                
+            else :
+                sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
+                sed_max = readdata.varmax(self,zz,'sedtime',start,stop)     
+                sed_ticks = readdata.ticks(sed_min,sed_max)   
+                   
+            ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
+            ax2.set_xlabel('Number of day',fontsize= self.font_txt)                     
             sed_levs = np.linspace(sed_min,sed_max,
                                  num = self.num) 
-             
+            ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
+            ax2.set_xlim(start,stop)
+                         
             CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_
                               extend="both", cmap= self.cmap1)
             
             # Add an axes at position rect [left, bottom, width, height]                    
             cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-            sed_ticks = readdata.ticks(sed_min,sed_max) 
+            
 
             ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )        
             cb_sed = plt.colorbar(CS1,cax = cax1)
@@ -472,14 +489,13 @@ class Window(QtGui.QDialog):
         ax.set_ylabel('h, m',fontsize= self.font_txt)
          
         wat_levs = np.linspace(watmin,watmax,num= self.num)
-
                 
-        int_wat_levs = []
-        int_sed_levs= []
+        #int_wat_levs = []
+        #int_sed_levs= []
                 
-        for n in wat_levs:
-            n = readdata.int_value(self,n,watmin,watmax)
-            int_wat_levs.append(n)  
+        #for n in wat_levs:
+        #    n = readdata.int_value(self,n,watmin,watmax)
+        #    int_wat_levs.append(n)  
                       
 
         ## contourf() draws contour lines and filled contours
@@ -489,12 +505,12 @@ class Window(QtGui.QDialog):
         ## left corner, location (0,0).  
         ## If â€˜imageâ€™, the rc value for image.origin will be used.
           
-        CS = ax.contourf(X,Y, zz, levels = int_wat_levs, extend="both", #int_
+        CS = ax.contourf(X,Y, zz, levels = wat_levs, extend="both", #int_
                               cmap= self.cmap)
 
-        wat_ticks = readdata.ticks(watmin,watmax)        
+               
        
-        cb = plt.colorbar(CS,cax = cax, ticks = wat_ticks)       
+        cb = plt.colorbar(CS,cax = cax)   #, ticks = wat_ticks   
         cb.set_ticks(wat_ticks)
         if self.yearlines_checkbox.isChecked() == True:
             for n in range(start,stop):
@@ -539,7 +555,8 @@ class Window(QtGui.QDialog):
             messagebox = QtGui.QMessageBox.about(self, "Retry",
                                                  'Choose variable,please') 
             return None            
-             
+        
+           
             #os.system("pause")
         #index = str(self.time_prof_box.currentText())
         numday = self.numday_box.value()  
@@ -581,16 +598,23 @@ class Window(QtGui.QDialog):
                         
 
             if self.dist_prof_checkbox.isChecked() == True:
-                #print ('is checked')
                 start = numday
                 stop = numday+1
-            else:     
-                start = 0
-                stop = len(self.time)    
-                    
-            watmin = readdata.varmin(self,data,'watdist',start,stop) 
-            watmax = readdata.varmax(self,data,'watdist',start,stop)             
-            wat_ticks = readdata.ticks(watmin,watmax) 
+            else:                     
+                start = self.numday_box.value() 
+                stop = self.numday_stop_box.value() 
+                
+            if index == 'pH':
+                watmin = round(
+                    data[start:stop,0:self.ny1max].min(),2)
+                watmax = round(
+                    data[start:stop,0:self.ny1max].max(),2) 
+                wat_ticks = np.linspace(watmin,watmax,5)
+
+            else :          
+                watmin = readdata.varmin(self,data,'watdist',start,stop) 
+                watmax = readdata.varmax(self,data,'watdist',start,stop)             
+                wat_ticks = readdata.ticks(watmin,watmax) 
             
             if self.sediment == False:                                 
                 gs = gridspec.GridSpec(1, 1)                        
@@ -604,13 +628,20 @@ class Window(QtGui.QDialog):
                 X_sed,Y_sed = np.meshgrid(self.dist,y_sed)                       
                 ax2 = self.figure.add_subplot(gs[1])
                                
-
-                sed_min = readdata.varmin(self,data,'seddist',start,stop)
-                sed_max = readdata.varmax(self,data,'seddist',start,stop)
+                if index == 'pH':
+                    sed_min = round(
+                        data[start:stop,self.nysedmin:].min(),2)
+                    sed_max = round(
+                        data[start:stop,self.nysedmin:].max(),2)
+                else: 
+                    sed_min = readdata.varmin(
+                        self,data,'seddist',start,stop)
+                    sed_max = readdata.varmax(
+                        self,data,'seddist',start,stop)
           
                 sed_levs = np.linspace(sed_min,sed_max,
                                      num = self.num)
-        
+            
                 #int_wat_levs = []
                 #int_sed_levs= []
                                         
@@ -636,7 +667,9 @@ class Window(QtGui.QDialog):
             ax = self.figure.add_subplot(gs[0])  
             ax.set_title(index + ', ' + data_units) 
             ax.set_ylabel('h, m',fontsize= self.font_txt) #Depth (m)
-            wat_levs = np.linspace(watmin,watmax, num = self.num)        
+            
+            wat_levs = np.linspace(watmin,watmax, num = self.num)  
+                  
             int_wat_levs = []
                     
             for n in wat_levs:
@@ -646,7 +679,7 @@ class Window(QtGui.QDialog):
                   
             CS = ax.contourf(X,Y, zz, levels= wat_levs, 
                                  extend="both",  cmap=self.cmap)
-            wat_ticks = readdata.ticks(watmin,watmax) 
+            
             cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)            
             cb.set_ticks(wat_ticks)   
                           
@@ -759,7 +792,7 @@ class Window(QtGui.QDialog):
                   self.depth[0:self.ny2max],
                   self.spr_aut,alpha = self.a_w, 
                   linewidth = self.linewidth , zorder = 10) 
-         
+
             ax10.plot(z[n][0:self.ny2max],
                   self.depth[0:self.ny2max],
                   self.spr_aut,alpha = self.a_w, 
@@ -769,7 +802,9 @@ class Window(QtGui.QDialog):
                   self.depth_sed[self.nysedmin-1:],
                   self.spr_aut, alpha = self.a_w,
                   linewidth = self.linewidth, zorder = 10)                          
-                           
+            #ax20.scatter(z[n][self.nysedmin-1:],
+            #      self.depth_sed[self.nysedmin-1:]) 
+                          
         self.canvas.draw()     
     '''def all_year_charts(self): 
         #messagebox = QtGui.QMessageBox.about(self, "Next time",

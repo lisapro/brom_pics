@@ -437,7 +437,7 @@ def varmin(self,variable,vartype,start,stop):
         n = np.floor(variable[start:stop,self.nysedmin:].min())
         
     elif vartype == 'wattime' : #time plot water
-        #print (start,stop,variable.shape)
+        # We do not need to read start:stop
         n = np.floor(variable[0:self.ny1max,:].min())  
         #print ("min",n )      
     elif vartype == 'sedtime'  : #time plot sediment
@@ -517,7 +517,7 @@ def ticks(minv,maxv):
     else : 
         ticks = [minv,maxv]    
         #+ (maxv - minv)/2.                  
-    #print ('ticks',ticks)
+
     return ticks
     #print (ticks)
 #function to define y limits 
