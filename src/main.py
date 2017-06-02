@@ -397,13 +397,13 @@ class Window(QtGui.QDialog):
             watmin = readdata.varmin(self,zz,'wattime',start,stop) 
             watmax = readdata.varmax(self,zz,'wattime',start,stop)
             wat_ticks = readdata.ticks(watmin,watmax) 
-            
+           
         elif 'Kz'in self.names_vars and index == 'pH':
             
             watmin = round(zz[0:self.ny1max,:].min(),2) 
             watmax = round(zz[0:self.ny1max,:].max(),2) 
             wat_ticks = np.linspace(watmin,watmax,5)    
-                   
+            wat_ticks = (np.floor(wat_ticks*100)/100.)   
         else:  
             print ('in 3')
             self.ny1max = len(self.depth-1)
@@ -425,7 +425,7 @@ class Window(QtGui.QDialog):
                 sed_min  = (zz[self.nysedmin-2:,:].min()) 
                 sed_max  = (zz[self.nysedmin-2:,:].max())                 
                 sed_ticks = readdata.ticks(sed_min,sed_max) 
-                
+                sed_ticks = (np.floor(sed_ticks*100)/100.)                
             else :
                 sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
                 sed_max = readdata.varmax(self,zz,'sedtime',start,stop)     
@@ -610,7 +610,7 @@ class Window(QtGui.QDialog):
                 watmax = round(
                     data[start:stop,0:self.ny1max].max(),2) 
                 wat_ticks = np.linspace(watmin,watmax,5)
-
+                wat_ticks = (np.floor(wat_ticks*100)/100.)
             else :          
                 watmin = readdata.varmin(self,data,'watdist',start,stop) 
                 watmax = readdata.varmax(self,data,'watdist',start,stop)             
@@ -633,15 +633,20 @@ class Window(QtGui.QDialog):
                         data[start:stop,self.nysedmin:].min(),2)
                     sed_max = round(
                         data[start:stop,self.nysedmin:].max(),2)
+                    sed_ticks = np.linspace(sed_min,sed_max,5)
+                    sed_ticks = (np.floor(sed_ticks*100)/100.)             
+                    
                 else: 
                     sed_min = readdata.varmin(
                         self,data,'seddist',start,stop)
                     sed_max = readdata.varmax(
                         self,data,'seddist',start,stop)
-          
-                sed_levs = np.linspace(sed_min,sed_max,
-                                     num = self.num)
+                    
+                    sed_ticks = readdata.ticks(sed_min,sed_max) 
+                                
             
+                sed_levs = np.linspace(sed_min,sed_max,
+                                     num = self.num)            
                 #int_wat_levs = []
                 #int_sed_levs= []
                                         
@@ -657,7 +662,7 @@ class Window(QtGui.QDialog):
                 cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
                 cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
                                
-                sed_ticks = readdata.ticks(sed_min,sed_max)                 
+             
                 cb1 = plt.colorbar(CS1,cax = cax1,ticks = sed_ticks)     
                 cb1.set_ticks(sed_ticks)
             
