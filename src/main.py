@@ -86,15 +86,33 @@ class Window(QtGui.QDialog):
         self.time_prof_all =  QtGui.QPushButton()                   
         self.all_year_test_button =  QtGui.QPushButton()               
         self.numcol_2d = QtGui.QSpinBox()        
-       # self.varname_box = QtGui.QSpinBox()     
+            
         self.numday_box = QtGui.QSpinBox() 
         self.numday_stop_box = QtGui.QSpinBox()        
         self.textbox = QtGui.QLineEdit()  
         self.textbox2 = QtGui.QLineEdit()           
         self.fick_box = QtGui.QPushButton() 
-
-
-
+        
+        
+        #item = QtGui.QCheckBox("item_scale_all_column")
+        #item = QtGui.QStandardItem('test')
+        #self.menu_box.addItem('item')
+        #self.menu_box.addItem('item2')
+        #self.app = QtGui.QApplication([])
+        
+        #self.w = QtGui.QDialog()
+        '''self.menu = QtGui.QMenu('menu',self.w)
+        self.menu.addAction(QtGui.QAction('50%', self.menu, checkable=True))
+        self.menu.addAction(QtGui.QAction('100%', self.menu, checkable=True))
+        self.menu.addAction(QtGui.QAction('200%', self.menu, checkable=True))
+        self.menu.addAction(QtGui.QAction('400%', self.menu, checkable=True))
+        self.w.menuBar().addMenu(self.menu)'''
+        
+        self.buttonBox = QtGui.QPushButton('Menu')
+        
+        #w.show()
+        #item.setCheckable(True)
+        #item_scale_all_column.setCheckState(QtCore.Qt.Unchecked)
 
         # add items to Combobox        
         #for i in self.var_names_charts_year:
@@ -106,7 +124,7 @@ class Window(QtGui.QDialog):
         ## we need to know the shape of other arrays
         ## If the file includes other 1d var, it 
         ## could raise an err, such var should be skipped also
-        
+        self.value = False
         self.names_vars = [] 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
@@ -163,6 +181,7 @@ class Window(QtGui.QDialog):
         #    self.time_profile) 
         self.time_prof_last_year.released.connect(self.call_print_lyr)
         self.all_year_test_button.released.connect(self.all_year_test)
+        self.buttonBox.released.connect(self.setPenProperties) 
         self.time_prof_all.released.connect(self.call_print_allyr)        
         self.fick_box.released.connect(self.fluxes)
         
@@ -1062,7 +1081,64 @@ class Window(QtGui.QDialog):
             
                           
         self.canvas.draw()  '''   
+    def setPenProperties(self):
         
+        self.dialog = PropertiesDlg(self)
+        self.dialog.setWindowTitle("Title") 
+        if self.dialog.exec_():
+            self.checker = self.dialog.button
+            #if self.dialog.button.isChecked():
+            if self.checker.isChecked():                
+                print ('1') 
+            else:
+                print("Nope")
+            #values = dialog.getValues()
+            pass
+            #print (values)
+            #self.updateData()
+        #    print (self.value1)#take the value 
+class PropertiesDlg(QtGui.QDialog): 
+    def __init__(self, parent=None):
+        super(PropertiesDlg, self).__init__(parent)
+        #self.buttonBox = QtGui.QDialogButtonBox()
+        #self.buttonBox.setGeometry(QtCore.QRect(190, 340, 341, 32))
+        #self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        #self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Apply|QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Ok)
+        #self.buttonBox.setCenterButtons(False)
+        #self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        #self.buttonBox.accepted.connect(QtGui.QDialog.accept)
+        
+        
+        #self.buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(Dialog.reject)
+        #self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(Dialog.accept)
+        #self.buttonBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(Dialog.apply)
+        
+        self.okButton = QtGui.QPushButton("&OK")
+        self.cancelButton = QtGui.QPushButton("Cancel")
+        self.button = QtGui.QCheckBox('test')
+        
+        layout = QtGui.QGridLayout()
+        layout.addWidget(self.button, 0, 0, 1, 1) 
+        layout.addWidget(self.okButton, 1, 0, 1, 1) 
+        layout.addWidget(self.cancelButton, 1, 1, 1, 1)         
+        #layout.addWidget(self.buttonBox, 3, 0, 1, 3)
+        self.setLayout(layout)
+        self.okButton.released.connect(self.accept)
+        self.cancelButton.released.connect(self.reject)
+        if self.button.isChecked():
+            #self.button_event()
+            print('is checked')
+            
+        #def button_event(self):
+        #    print ('button event')
+        #    self.value1 = True 
+        #    return self.value1         
+        
+        
+            
+            
+
+            
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setStyle("plastique")

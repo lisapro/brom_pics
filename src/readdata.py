@@ -648,4 +648,5 @@ def widget_layout(self):
         #self.grid.addWidget(self.textbox2,1,6,1,1)    
         #third line              
         self.grid.addWidget(self.canvas, 2, 1,1,7)     
-        self.grid.addWidget(self.qlistwidget,1,0,2,1) 
+        self.grid.addWidget(self.qlistwidget,2,0,2,1) 
+        self.grid.addWidget(self.buttonBox,1,0,1,1)
