@@ -666,7 +666,7 @@ class Window(QtGui.QDialog):
                 gs = gridspec.GridSpec(1, 1)                        
                 cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
                 # cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)        
-                       
+                # new comment       
                               
             else :  
                 gs = gridspec.GridSpec(2, 1)         
