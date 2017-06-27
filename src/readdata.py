@@ -613,7 +613,8 @@ def set_widget_styles(self):
     self.yearlines_checkbox.setStyleSheet(
     'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
     '  padding: 5px; font: bold 15px; }')
-    self.dist_prof_checkbox.setStyleSheet(
+     
+    self.scale_all_axes.setStyleSheet(
     'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
     '  padding: 5px; font: bold 15px; }')          
     self.qlistwidget.setStyleSheet(
@@ -634,8 +635,11 @@ def widget_layout(self):
         #self.grid.addWidget(self.time_prof_box,1,0,1,1)               
         self.grid.addWidget(self.numcol_2d ,0,4,1,1)              
         self.grid.addWidget(self.textbox,0,5,1,1) 
-        self.grid.addWidget(self.injlines_checkbox,0,6,1,1)  
-        self.grid.addWidget(self.dist_prof_checkbox,0,7,1,1)               
+        #self.grid.addWidget(self.injlines_checkbox,0,6,1,1)  
+        ####self.grid.addWidget(self.choose_scale,0,6,1,1)
+        #self.grid.addWidget(self.dist_prof_checkbox,0,7,1,1)  
+        self.grid.addWidget(self.scale_all_axes,0,7,1,1)      
+          
         #second line
         self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)     
         self.grid.addWidget(self.fick_box,1,1,1,1)                    
@@ -649,4 +653,4 @@ def widget_layout(self):
         #third line              
         self.grid.addWidget(self.canvas, 2, 1,1,7)     
         self.grid.addWidget(self.qlistwidget,2,0,2,1) 
-        self.grid.addWidget(self.buttonBox,1,0,1,1)
+        #self.grid.addWidget(self.buttonBox,1,0,1,1) #menu

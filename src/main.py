@@ -73,15 +73,25 @@ class Window(QtGui.QDialog):
         self.qlistwidget.setSelectionMode(
             QtGui.QAbstractItemView.ExtendedSelection)
 
-        #self.all_year_1d_box = QtGui.QComboBox()    
+           
                            
         self.dist_prof_button = QtGui.QPushButton() 
-        self.dist_prof_checkbox = QtGui.QCheckBox(
-            "Fit scale to data")  
+        self.scale_all_axes = QtGui.QCheckBox(
+            "scale:all columns, all time") 
+         
+        #self.dist_prof_checkbox = QtGui.QCheckBox(
+        #    
+        #
+        #self.choose_scale = QtGui.QComboBox() 
+                
         self.yearlines_checkbox = QtGui.QCheckBox(
             'Draw year lines')   
+        
         self.injlines_checkbox = QtGui.QCheckBox(
-            'Draw inject lines')         
+            'Draw inject lines')   
+            
+
+                  
         self.time_prof_last_year =  QtGui.QPushButton()    
         self.time_prof_all =  QtGui.QPushButton()                   
         self.all_year_test_button =  QtGui.QPushButton()               
@@ -93,22 +103,7 @@ class Window(QtGui.QDialog):
         self.textbox2 = QtGui.QLineEdit()           
         self.fick_box = QtGui.QPushButton() 
         
-        
-        #item = QtGui.QCheckBox("item_scale_all_column")
-        #item = QtGui.QStandardItem('test')
-        #self.menu_box.addItem('item')
-        #self.menu_box.addItem('item2')
-        #self.app = QtGui.QApplication([])
-        
-        #self.w = QtGui.QDialog()
-        '''self.menu = QtGui.QMenu('menu',self.w)
-        self.menu.addAction(QtGui.QAction('50%', self.menu, checkable=True))
-        self.menu.addAction(QtGui.QAction('100%', self.menu, checkable=True))
-        self.menu.addAction(QtGui.QAction('200%', self.menu, checkable=True))
-        self.menu.addAction(QtGui.QAction('400%', self.menu, checkable=True))
-        self.w.menuBar().addMenu(self.menu)'''
-        
-        self.buttonBox = QtGui.QPushButton('Menu')
+        ###self.buttonBox = QtGui.QPushButton('Menu')
         
         #w.show()
         #item.setCheckable(True)
@@ -117,7 +112,15 @@ class Window(QtGui.QDialog):
         # add items to Combobox        
         #for i in self.var_names_charts_year:
         #    self.all_year_1d_box.addItem(str(i))
-
+        
+        '''
+        # currentIndex() == 0 
+        self.choose_scale.addItem('Scale: All days, 1 column')
+        # currentIndex() == 1 
+        self.choose_scale.addItem('Scale: 1 day, all columns') 
+        # currentIndex() == 2 
+        self.choose_scale.addItem('Scale: All days, all columns') '''
+        
         ## self.time_prof_box.addItem('plot 1D')  
         ## add only 2d arrays to variables list       
         ## We skip z and time since they are 1d array, 
@@ -181,7 +184,7 @@ class Window(QtGui.QDialog):
         #    self.time_profile) 
         self.time_prof_last_year.released.connect(self.call_print_lyr)
         self.all_year_test_button.released.connect(self.all_year_test)
-        self.buttonBox.released.connect(self.setPenProperties) 
+        #self.buttonBox.released.connect(self.setPenProperties) 
         self.time_prof_all.released.connect(self.call_print_allyr)        
         self.fick_box.released.connect(self.fluxes)
         
@@ -225,6 +228,8 @@ class Window(QtGui.QDialog):
         
   
         self.num = 50. 
+        self.dialog = QtGui.QDialog
+        
     def fluxes(self): 
         plt.clf()     
         try:
@@ -237,7 +242,7 @@ class Window(QtGui.QDialog):
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value() 
         selected_items = self.qlistwidget.selectedItems()
-        #print ( len(selected_items),str(selected_items[0].text()))
+        
         tosed = '#d3b886'
         towater = "#c9ecfd" 
         linecolor = "#1da181" 
@@ -359,7 +364,13 @@ class Window(QtGui.QDialog):
     def time_profile(self,start,stop):
         
         plt.clf()
+
         
+        if self.value == True: 
+            print ('True')
+        else :
+            print ("False")    
+            
         try:
             index = str(self.qlistwidget.currentItem().text())
         except AttributeError:   
@@ -368,6 +379,8 @@ class Window(QtGui.QDialog):
             return None           
         
         ## read chosen variable 
+        #print (self.choose_scale.currentIndex())
+        
         z = np.array(self.fh.variables[index]) 
         data_units = self.fh.variables[index].units
         
@@ -377,7 +390,7 @@ class Window(QtGui.QDialog):
         x = np.array(self.time[start:stop]) 
         xlen = len(x)     
 
-        # check if the variable is defined of middlepoints  
+        # check if the variable is defined on middlepoints  
         if (z.shape[1])> ylen1: 
             y = self.depth2
             if self.sediment != False:
@@ -412,31 +425,41 @@ class Window(QtGui.QDialog):
         zz = z.T  
             
         if 'Kz' in self.names_vars and index != 'pH':
-            print ('in 1')
             watmin = readdata.varmin(self,zz,'wattime',start,stop) 
             watmax = readdata.varmax(self,zz,'wattime',start,stop)
-            wat_ticks = readdata.ticks(watmin,watmax) 
+            #wat_ticks = readdata.ticks(watmin,watmax) 
            
         elif 'Kz'in self.names_vars and index == 'pH':
             
+            # take the value with two decimanl places 
             watmin = round(zz[0:self.ny1max,:].min(),2) 
             watmax = round(zz[0:self.ny1max,:].max(),2) 
             wat_ticks = np.linspace(watmin,watmax,5)    
             wat_ticks = (np.floor(wat_ticks*100)/100.)   
         else:  
-            print ('in 3')
             self.ny1max = len(self.depth-1)
             self.y1max = max(self.depth)    
             watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
             watmax = readdata.varmax(self,zz,'wattime',start,stop)
-                      
- 
+            
+        #if #self.choose_scale.currentIndex() == 2:
+        if self.scale_all_axes.isChecked(): 
+            z_all_columns = np.array(self.fh.variables[index])  
+            #print(z_all_columns.shape)
+            watmin = round((z_all_columns[start:stop,0:self.ny1max,:].min()),2) 
+            watmax = round((z_all_columns[start:stop,0:self.ny1max,:].max()),2) 
+            
+        wat_ticks = np.linspace(watmin,watmax,5)    
+        wat_ticks = (np.floor(wat_ticks*100)/100.)               
+        
         if self.sediment == False: 
             gs = gridspec.GridSpec(1, 1) 
+            gs.update(left = 0.07,right = 0.9 )
             cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])  
         else : 
                              
             gs = gridspec.GridSpec(2, 1) 
+            gs.update(left = 0.07,right = 0.9 ) 
             X_sed,Y_sed = np.meshgrid(x,y_sed)
             ax2 = self.figure.add_subplot(gs[1])  
             
@@ -468,7 +491,8 @@ class Window(QtGui.QDialog):
             cb_sed = plt.colorbar(CS1,cax = cax1)
             cb_sed.set_ticks(sed_ticks)              
             #cb.set_label('Water')   
-            cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])           
+            cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])      
+                 
             if self.yearlines_checkbox.isChecked() == True:
                 for n in range(start,stop):
                     if n%365 == 0: 
@@ -569,10 +593,9 @@ class Window(QtGui.QDialog):
         try:
             index = str(self.qlistwidget.currentItem().text())
         except AttributeError: 
-            print ("Choose the variable to print ")  
-            #messagebox = QtGui.QMessageBox.about(self, "Choose the variable to print ")        
-            messagebox = QtGui.QMessageBox.about(self, "Retry",
-                                                 'Choose variable,please') 
+            print ("Choose the variable to print ")        
+            messagebox = QtGui.QMessageBox.about(
+                self, "Retry", 'Choose variable,please') 
             return None            
         
            
@@ -616,24 +639,28 @@ class Window(QtGui.QDialog):
             zz = z2.T   
                         
 
-            if self.dist_prof_checkbox.isChecked() == True:
-                start = numday
-                stop = numday+1
-            else:                     
+
+            if self.scale_all_axes.isChecked():                      
                 start = self.numday_box.value() 
                 stop = self.numday_stop_box.value() 
-                
-            if index == 'pH':
-                watmin = round(
-                    data[start:stop,0:self.ny1max].min(),2)
-                watmax = round(
-                    data[start:stop,0:self.ny1max].max(),2) 
-                wat_ticks = np.linspace(watmin,watmax,5)
-                wat_ticks = (np.floor(wat_ticks*100)/100.)
-            else :          
-                watmin = readdata.varmin(self,data,'watdist',start,stop) 
-                watmax = readdata.varmax(self,data,'watdist',start,stop)             
-                wat_ticks = readdata.ticks(watmin,watmax) 
+                print (start,stop)  
+            else : # self.dist_prof_checkbox.isChecked() == True:
+                start = numday
+                stop = numday+1 
+                print (start,stop)    
+                           
+            #if index == 'pH':
+            watmin = round(
+                data[start:stop,0:self.ny1max].min(),2)
+            watmax = round(
+                data[start:stop,0:self.ny1max].max(),2) 
+            wat_ticks = np.linspace(watmin,watmax,5)
+            wat_ticks = (np.floor(wat_ticks*100)/100.)
+            
+            #else :          
+            #    watmin = readdata.varmin(self,data,'watdist',start,stop) 
+            #    watmax = readdata.varmax(self,data,'watdist',start,stop)             
+            #    wat_ticks = readdata.ticks(watmin,watmax) 
             
             if self.sediment == False:                                 
                 gs = gridspec.GridSpec(1, 1)                        
@@ -1085,49 +1112,44 @@ class Window(QtGui.QDialog):
         
         self.dialog = PropertiesDlg(self)
         self.dialog.setWindowTitle("Title") 
+        
+        #self.dialog.button.setChecked()   
+        #self.value = None
         if self.dialog.exec_():
             self.checker = self.dialog.button
-            #if self.dialog.button.isChecked():
-            if self.checker.isChecked():                
-                print ('1') 
-            else:
-                print("Nope")
-            #values = dialog.getValues()
-            pass
-            #print (values)
-            #self.updateData()
-        #    print (self.value1)#take the value 
+            if self.dialog.button.isChecked(): 
+                self.value = True
+            else : 
+                self.value = False              
+            #if self.checker.isChecked():                
+            #    print ('1') 
+            #else:
+            #    print("Nope")
+        return self.value 
+    
 class PropertiesDlg(QtGui.QDialog): 
     def __init__(self, parent=None):
         super(PropertiesDlg, self).__init__(parent)
-        #self.buttonBox = QtGui.QDialogButtonBox()
-        #self.buttonBox.setGeometry(QtCore.QRect(190, 340, 341, 32))
-        #self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        #self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Apply|QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Ok)
-        #self.buttonBox.setCenterButtons(False)
-        #self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        #self.buttonBox.accepted.connect(QtGui.QDialog.accept)
-        
-        
-        #self.buttonBox.button(QtGui.QDialogButtonBox.Close).clicked.connect(Dialog.reject)
-        #self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(Dialog.accept)
-        #self.buttonBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(Dialog.apply)
-        
+        #window = Window(self)
+        #print (self.Window.value)
         self.okButton = QtGui.QPushButton("&OK")
         self.cancelButton = QtGui.QPushButton("Cancel")
-        self.button = QtGui.QCheckBox('test')
-        
+        self.button = QtGui.QCheckBox('test') 
+        #if self.value == True or None:
+        #    self.dialog.button.setChecked()
+                
         layout = QtGui.QGridLayout()
         layout.addWidget(self.button, 0, 0, 1, 1) 
         layout.addWidget(self.okButton, 1, 0, 1, 1) 
         layout.addWidget(self.cancelButton, 1, 1, 1, 1)         
         #layout.addWidget(self.buttonBox, 3, 0, 1, 3)
-        self.setLayout(layout)
+        self.setLayout(layout) 
         self.okButton.released.connect(self.accept)
         self.cancelButton.released.connect(self.reject)
-        if self.button.isChecked():
-            #self.button_event()
-            print('is checked')
+        
+        #if self.button.isChecked():
+        #    #self.button_event()
+        #    print('is checked')
             
         #def button_event(self):
         #    print ('button event')
