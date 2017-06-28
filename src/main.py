@@ -38,6 +38,8 @@ class Window(QtGui.QDialog):
         # usually with a window system frame and a title bar
         # ! it is not possible to unset this flag if the widget 
         # does not have a parent.
+        self.edit = QtGui.QLineEdit(self)
+        self.edit.setText('/tmp/test.pdf')
         
         self.setWindowFlags(QtCore.Qt.Window)   
         self.setWindowTitle("BROM Pictures")
@@ -87,8 +89,8 @@ class Window(QtGui.QDialog):
         self.yearlines_checkbox = QtGui.QCheckBox(
             'Draw year lines')   
         
-        self.injlines_checkbox = QtGui.QCheckBox(
-            'Draw inject lines')   
+        #self.injlines_checkbox = QtGui.QCheckBox(
+        #    'Draw inject lines')   
             
 
                   
@@ -102,8 +104,7 @@ class Window(QtGui.QDialog):
         self.textbox = QtGui.QLineEdit()  
         self.textbox2 = QtGui.QLineEdit()           
         self.fick_box = QtGui.QPushButton() 
-        
-        ###self.buttonBox = QtGui.QPushButton('Menu')
+        self.help_button = QtGui.QPushButton('? Help')
         
         #w.show()
         #item.setCheckable(True)
@@ -127,7 +128,7 @@ class Window(QtGui.QDialog):
         ## we need to know the shape of other arrays
         ## If the file includes other 1d var, it 
         ## could raise an err, such var should be skipped also
-        self.value = False
+        
         self.names_vars = [] 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
@@ -137,9 +138,13 @@ class Window(QtGui.QDialog):
             else :
                 self.time_prof_box.addItem(names)
                 #names = QlistWidgetItem(i)
-                self.qlistwidget.addItem(names)
+                ####self.qlistwidget.addItem(names)
                 self.names_vars.append(names)  
-                      
+                
+        self.sorted_names =  sorted(self.names_vars, key=lambda s: s.lower())  
+        self.qlistwidget.addItems(self.sorted_names)
+        
+                     
         #read i variable to know number of columns 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
@@ -177,7 +182,8 @@ class Window(QtGui.QDialog):
             self.numday_stop_box.setValue(self.lentime-1)
             
         # Define connection between clicking the button and 
-        # calling the function to plot figures                           
+        # calling the function to plot figures         
+                          
         #self.all_year_1d_box.currentIndexChanged.connect(
         #    self.all_year_charts)                   
         #self.numcol_2d.valueChanged.connect(
@@ -185,6 +191,7 @@ class Window(QtGui.QDialog):
         self.time_prof_last_year.released.connect(self.call_print_lyr)
         self.all_year_test_button.released.connect(self.all_year_test)
         #self.buttonBox.released.connect(self.setPenProperties) 
+        self.help_button.released.connect(self.save_figure)
         self.time_prof_all.released.connect(self.call_print_allyr)        
         self.fick_box.released.connect(self.fluxes)
         
@@ -364,12 +371,6 @@ class Window(QtGui.QDialog):
     def time_profile(self,start,stop):
         
         plt.clf()
-
-        
-        if self.value == True: 
-            print ('True')
-        else :
-            print ("False")    
             
         try:
             index = str(self.qlistwidget.currentItem().text())
@@ -379,7 +380,6 @@ class Window(QtGui.QDialog):
             return None           
         
         ## read chosen variable 
-        #print (self.choose_scale.currentIndex())
         
         z = np.array(self.fh.variables[index]) 
         data_units = self.fh.variables[index].units
@@ -407,14 +407,14 @@ class Window(QtGui.QDialog):
         ylen = len(y)           
 
         z2d = []
+        # check wich column to plot 
         numcol = self.numcol_2d.value() # 
 
+        
         if 'i' in self.names_vars:
-            #print ("in i")
+            # check if we have 2D array 
             if z.shape[2] > 1:
-                #print (z.shape)
                 for n in range(0,xlen): #xlen
-                    #print (n)
                     for m in range(0,ylen):  
                         # take only n's column for brom             
                         z2d.append(z[n][m][numcol]) 
@@ -436,6 +436,7 @@ class Window(QtGui.QDialog):
             watmax = round(zz[0:self.ny1max,:].max(),2) 
             wat_ticks = np.linspace(watmin,watmax,5)    
             wat_ticks = (np.floor(wat_ticks*100)/100.)   
+        # if we do not have kz     
         else:  
             self.ny1max = len(self.depth-1)
             self.y1max = max(self.depth)    
@@ -449,8 +450,9 @@ class Window(QtGui.QDialog):
             watmin = round((z_all_columns[start:stop,0:self.ny1max,:].min()),2) 
             watmax = round((z_all_columns[start:stop,0:self.ny1max,:].max()),2) 
             
-        wat_ticks = np.linspace(watmin,watmax,5)    
-        wat_ticks = (np.floor(wat_ticks*100)/100.)               
+        #wat_ticks = np.linspace(watmin,watmax,5)  
+        wat_ticks = readdata.ticks(watmin,watmax)   
+        #wat_ticks = (np.floor(wat_ticks*100)/100.)               
         
         if self.sediment == False: 
             gs = gridspec.GridSpec(1, 1) 
@@ -462,16 +464,27 @@ class Window(QtGui.QDialog):
             gs.update(left = 0.07,right = 0.9 ) 
             X_sed,Y_sed = np.meshgrid(x,y_sed)
             ax2 = self.figure.add_subplot(gs[1])  
-            
+
+
+            if self.scale_all_axes.isChecked(): 
+                #z_all_columns = np.array(self.fh.variables[index])  
+                #print(z_all_columns.shape)
+                sed_min  = round((
+                    z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
+                sed_max = round((
+                    z_all_columns[start:stop,self.nysedmin-2:,:].max()),2) 
+                sed_ticks = readdata.ticks(sed_min,sed_max)
+            else :
+                sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
+                sed_max = readdata.varmax(self,zz,'sedtime',start,stop)     
+                sed_ticks = readdata.ticks(sed_min,sed_max)
+                            
             if index == 'pH': 
                 sed_min  = (zz[self.nysedmin-2:,:].min()) 
                 sed_max  = (zz[self.nysedmin-2:,:].max())                 
                 sed_ticks = readdata.ticks(sed_min,sed_max) 
                 sed_ticks = (np.floor(sed_ticks*100)/100.)                
-            else :
-                sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
-                sed_max = readdata.varmax(self,zz,'sedtime',start,stop)     
-                sed_ticks = readdata.ticks(sed_min,sed_max)   
+   
                    
             ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
             ax2.set_xlabel('Number of day',fontsize= self.font_txt)                     
@@ -497,11 +510,12 @@ class Window(QtGui.QDialog):
                 for n in range(start,stop):
                     if n%365 == 0: 
                         ax2.axvline(n, color='white', linestyle = '--') 
-            if self.injlines_checkbox.isChecked()== True:             
-                ax2.axvline(365,color='red', linewidth = 2,
-                        linestyle = '--',zorder = 10) 
-                ax2.axvline(730,color='red',linewidth = 2,
-                        linestyle = '--',zorder = 10)                       
+                        
+            #if self.injlines_checkbox.isChecked()== True:             
+            #    ax2.axvline(365,color='red', linewidth = 2,
+            #            linestyle = '--',zorder = 10) 
+            #    ax2.axvline(730,color='red',linewidth = 2,
+            #            linestyle = '--',zorder = 10)                       
                                                                    
         X,Y = np.meshgrid(x,y)             
         ax = self.figure.add_subplot(gs[0])
@@ -560,14 +574,16 @@ class Window(QtGui.QDialog):
                 if n%365 == 0: 
                     ax.axvline(n, color='white', linestyle = '--') 
                     # 730ection  
-        if self.injlines_checkbox.isChecked() == True:                  
-            ax.axvline(365,color='red', linewidth = 2,
-                        linestyle = '--',zorder = 10) 
-            ax.axvline(730,color='red',linewidth = 2,
-                        linestyle = '--',zorder = 10)      
+        #if self.injlines_checkbox.isChecked() == True:                  
+        #    ax.axvline(365,color='red', linewidth = 2,
+        #                linestyle = '--',zorder = 10) 
+        #    ax.axvline(730,color='red',linewidth = 2,
+        #                linestyle = '--',zorder = 10)      
                             
-        self.figure.suptitle(str(self.totitle),fontsize=16)            
+        #self.figure.suptitle(str(self.totitle),fontsize=16)            
         self.canvas.draw()
+        
+        
         
         # Attempt to make timer for updating 
         # the datafile, while model is running 
@@ -758,7 +774,15 @@ class Window(QtGui.QDialog):
         #stop = len(self.time)
         #start = 0
         self.time_profile(start,stop)   
-     
+    def save_figure(self): 
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        printer.setPageSize(QtGui.QPrinter.A9)
+        printer.setColorMode(QtGui.QPrinter.Color)
+        printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
+        printer.setOutputFileName(self.edit.text())
+        self.render(printer)
+        #plt.savefig('pdf_fig.pdf',format = 'pdf')    
+        #self.figure.savefig('pic.png', format='png')
     def all_year_test(self):  
         plt.clf()        
         try:

@@ -625,10 +625,10 @@ def set_widget_styles(self):
         '  padding: 7px; font: bold 15px; }')        
     
 
-def widget_layout(self):    
+def widget_layout(self): 
+       
         #first line 
-            
-        self.grid.addWidget(self.label_choose_var,0,0,1,1)           
+        self.grid.addWidget(self.help_button,0,0,1,1) # help           
         self.grid.addWidget(self.toolbar,0,1,1,1)        
         self.grid.addWidget(self.time_prof_all,0,2,1,1)  
         self.grid.addWidget(self.dist_prof_button,0,3,1,1)            
@@ -651,6 +651,6 @@ def widget_layout(self):
         self.grid.addWidget(self.label_maxday ,1,6,1,1)
         #self.grid.addWidget(self.textbox2,1,6,1,1)    
         #third line              
-        self.grid.addWidget(self.canvas, 2, 1,1,7)     
+        self.grid.addWidget(self.canvas, 2, 1,1,8)     
         self.grid.addWidget(self.qlistwidget,2,0,2,1) 
-        #self.grid.addWidget(self.buttonBox,1,0,1,1) #menu
+        self.grid.addWidget(self.label_choose_var,1,0,1,1)  
