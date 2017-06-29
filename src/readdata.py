@@ -10,7 +10,8 @@ Created on 14. des. 2016
 '''
 
 
-from netCDF4 import Dataset
+from netCDF4 import Dataset,num2date
+
 import main
 import numpy as np
 import math
@@ -34,62 +35,6 @@ rc('font', **{'sans-serif' : 'Arial', #for unicode text
                 'family' : 'sans-serif'})  
       
 def readdata_brom(self): #,varname,fname
-     
-    '''self.fh = Dataset(fname)
-    self.depth = self.fh.variables['z'][:] 
-    self.depth2 = self.fh.variables['z2'][:] #middle points
-    self.alk =  self.fh.variables['Alk'][:,:,:]
-    self.temp =  self.fh.variables['T'][:,:]
-    self.sal =  self.fh.variables['S'][:,:]
-    self.kz =  self.fh.variables['Kz'][:,:]
-    self.dic =  self.fh.variables['DIC'][:,:]
-    self.phy =  self.fh.variables['Phy'][:,:]
-    self.het =  self.fh.variables['Het'][:,:]
-    self.no3 =  self.fh.variables['NO3'][:,:]
-    self.po4 =  self.fh.variables['PO4'][:,:]
-    self.nh4 =  self.fh.variables['NH4'][:,:]
-    self.pon =  self.fh.variables['PON'][:,:]
-    self.don =  self.fh.variables['DON'][:,:]
-    self.o2  =  np.array(self.fh.variables['O2'][:,:])
-    self.mn2 =  self.fh.variables['Mn2'][:,:]
-    self.mn3 =  self.fh.variables['Mn3'][:,:]
-    self.mn4 =  self.fh.variables['Mn4'][:,:]
-    self.h2s =  self.fh.variables['H2S'][:,:]
-    self.mns =  self.fh.variables['MnS'][:,:]
-    self.mnco3 =  self.fh.variables['MnCO3'][:,:]
-    self.fe2 =  self.fh.variables['Fe2'][:,:]
-    self.fe3 =  self.fh.variables['Fe3'][:,:]
-    self.fes =  self.fh.variables['FeS'][:,:]
-    self.feco3 =  self.fh.variables['FeCO3'][:,:]
-    self.no2 =  self.fh.variables['NO2'][:,:]
-    self.s0 =  self.fh.variables['S0'][:,:]
-    self.s2o3 =  self.fh.variables['S2O3'][:,:]
-    self.so4 =  self.fh.variables['SO4'][:,:]
-    self.si =  self.fh.variables['Si'][:,:]
-    self.si_part =  self.fh.variables['Sipart'][:,:]
-    self.baae =  self.fh.variables['Baae'][:,:]
-    self.bhae =  self.fh.variables['Bhae'][:,:]
-    self.baan =  self.fh.variables['Baan'][:,:]
-    self.bhan =  self.fh.variables['Bhan'][:,:]
-    self.caco3 =  self.fh.variables['CaCO3'][:,:]
-    self.fes2 =  self.fh.variables['FeS2'][:,:]
-    self.ch4 =  self.fh.variables['CH4'][:,:]
-    self.ph =  self.fh.variables['pH'][:,:]
-    self.pco2 =  self.fh.variables['pCO2'][:,:]
-    self.om_ca =  self.fh.variables['Om_Ca'][:,:]
-    self.om_ar =  self.fh.variables['Om_Ar'][:,:]
-    self.co3 =  self.fh.variables['CO3'][:,:]
-    self.ca =  self.fh.variables['Ca'][:,:]
-    self.time =  self.fh.variables['time'][:]
-    self.fick_o2 = self.fh.variables['fick:O2'][:]
-    self.fick_no2 = self.fh.variables['fick:NO2'][:]    
-    self.fick_no3 = self.fh.variables['fick:NO3'][:]        
-    self.fick_si = self.fh.variables['fick:Si'][:]  
-    self.fick_h2s = self.fh.variables['fick:H2S'][:]              
-    self.fick_nh4 = self.fh.variables['fick:NH4'][:]        
-    self.fick_dic = self.fh.variables['fick:DIC'][:]        
-    self.fick_alk = self.fh.variables['fick:Alk'][:]        
-    self.fick_po4 = self.fh.variables['fick:PO4'][:]''' 
        
     self.vars = ([],
     ['NO2','NO3','NH4'],
@@ -117,16 +62,6 @@ def readdata_brom(self): #,varname,fname
         ('om_ar, co3, ca'),
         ('salinity,Temperature,O2'))        
          
-    '''self.vars = ([],['NO2','NO3','NH4'],
-    [self.si], [self.alk],[self.po4],[self.nh4],
-    [self.h2s ],[self.pon], [self.don],[self.dic],[self.phy],
-    [self.het], [self.mn2], [self.mn3], [self.mn4],[self.mns],
-    [self.mnco3], [self.fe2], [self.fe3 ], [self.fes],
-    [self.feco3 ], [self.fes2],[self.s0], [self.s2o3], 
-    [self.so4], [self.si_part], [self.baae], [self.bhae],
-    [self.baan], [self.bhan], [self.caco3], [self.ch4],
-    [self.ph], [self.pco2], [self.om_ca], [self.om_ar],
-    [self.co3], [self.ca],[self.sal], [self.temp])'''
     
     #Variable names to add to combobox with time profiles
     self.var_names_profile = ('Time profile','O2' ,'NO3' ,'no2', 'Si', 'Alk',
@@ -221,6 +156,14 @@ def readdata2_brom(self,fname):
         else :
             self.bbl = 0.5         
     self.time =  self.fh.variables['time'][:]
+    self.time_units = self.fh.variables['time'].units
+    #time_calendar = self.fh.variables['time'].calendar
+    #print (time_calendar)
+    self.dates = num2date(self.time[:],
+                          units= self.time_units)   
+                 
+    #print (min(self.dates),max(self.dates))
+    #time = dates 
     if 'i' in self.names_vars: 
         self.dist = np.array(self.fh.variables['i']) 
 
@@ -231,12 +174,8 @@ def read_all_year_var(self,fname,varname1,varname2,varname3):
     self.var2 = self.fh.variables[varname2][:]
     self.var3 = self.fh.variables[varname3][:]  
     return  self.var1,self.var2, self.var3      
-
-    #print ('var', self.var)
     self.fh.close()
-    
-    
-     
+         
 def colors(self):
     self.spr_aut ='#998970'
     self.wint =  '#8dc0e7'
@@ -638,10 +577,11 @@ def widget_layout(self):
         #self.grid.addWidget(self.injlines_checkbox,0,6,1,1)  
         ####self.grid.addWidget(self.choose_scale,0,6,1,1)
         #self.grid.addWidget(self.dist_prof_checkbox,0,7,1,1)  
+        self.grid.addWidget(self.datescale_checkbox,0,6,1,1)
         self.grid.addWidget(self.scale_all_axes,0,7,1,1)      
           
         #second line
-        self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)     
+           
         self.grid.addWidget(self.fick_box,1,1,1,1)                    
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
@@ -649,6 +589,7 @@ def widget_layout(self):
         self.grid.addWidget(self.numday_box,1,4,1,1) 
         self.grid.addWidget(self.numday_stop_box,1,5,1,1) 
         self.grid.addWidget(self.label_maxday ,1,6,1,1)
+        self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)  
         #self.grid.addWidget(self.textbox2,1,6,1,1)    
         #third line              
         self.grid.addWidget(self.canvas, 2, 1,1,8)     
