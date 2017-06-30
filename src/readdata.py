@@ -18,7 +18,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 from matplotlib import rc
-from PyQt4 import QtGui
+from PyQt4 import QtCore, QtGui
 import os, sys 
 
 #getcontext().prec = 6 
@@ -34,117 +34,29 @@ width, height = screen_rect.width(), screen_rect.height()
 rc('font', **{'sans-serif' : 'Arial', #for unicode text
                 'family' : 'sans-serif'})  
       
-def readdata_brom(self): #,varname,fname
-       
-    self.vars = ([],
-    ['NO2','NO3','NH4'],
-    ['PO4', 'SO4','O2'],
-    ['H2S','PON','DON'],
-    ['DIC','Phy','Het'],
-    ['pCO2','pH','Alk'],
-    ['Mn2','Mn3','Mn4'],
-    ['MnS','MnCO3','Bhan'])
+def readdata_brom(self,fname): #,varname,fname
+    
+    self.fh = Dataset(fname)
+    
+    self.time =  self.fh.variables['time'][:]
+    self.time_units = self.fh.variables['time'].units
+    self.lentime = len(self.time)  
 
-    # list of names to add to Combobox All year charts
-    self.var_names_charts_year = (('All year(last) graphs'),
-        ('NO2, NO3, NH4'),
-        ('PO4, SO4, O2'),
-        ('H2S, PON, DON'),
-        ('DIC, Phy, Het'), 
-        ('pCO2,pH,Alk'),
-        ('MNII,MnIII,MnIV'),
-        ('MnS, MnCO3,bhan'), 
-        ('FeII,FeIII,FeS'),
-        ('FeCO3,FeS2,Si'),  
-        ('S0 ,S2O3,Si_part'),
-        ('baae, bhae,baan'),
-        ('caco3, ch4, om_ca'), 
-        ('om_ar, co3, ca'),
-        ('salinity,Temperature,O2'))        
-         
-    
-    #Variable names to add to combobox with time profiles
-    self.var_names_profile = ('Time profile','O2' ,'NO3' ,'no2', 'Si', 'Alk',
-    'PO4','NH4', 'H2S','PON',  'DON',  'DIC','Phy', 'Het', 
-    'MnII',  'MnIII',  'MnIV','MnS', 'MnCO3', 
-    'FeII' ,'FeIII' , 'FeS','FeCO3', 'FeS2',  
-    'S0' ,'S2O3', 'SO4', 'Si_part',
-    'baae', 'bhae', 'baan', 'bhan',
-    'CaCO3', 'CH4', 'pH', 'pCO2','om_Ca', 
-    'om_ar', 'CO3', 'ca', 'sal', 'Temperature')  
-      
-    # list of names to add to Combobox All year charts
-    self.var_names_charts_year = (('All year(last) graphs'),
-        ('NO2, NO3, NH4'),
-        ('PO4, SO4, O2'),
-        ('H2S, PON, DON'),('DIC, Phy, Het'), 
-        ('pCO2,pH,Alk'),
-        ('MNII,MnIII,MnIV'),
-        ('MnS, MnCO3,bhan'), 
-        ('FeII,FeIII,FeS'),
-        ('FeCO3,FeS2,Si'),  
-        ('S0 ,S2O3,Si_part'),
-        ('baae, bhae,baan'),
-        ('caco3, ch4, om_ca'), 
-        ('om_ar, co3, ca'),
-        ('salinity,Temperature,O2'))  
-    #len
-    # list of titles to add to figures at All year charts    
-    self.titles_all_year = (('All year charts'),
-        (r'$\rm NO _2   \mu M/l$',r'$\rm NO _3  \mu M/l $',
-         r'$\rm NH _4   \mu M/l$'),
-        (r'$\rm PO _4 $',r'$\rm SO _4 $', r'$\rm O _2 \mu M/l $'),
-        (r'$\rm H _2 S $', r'$\rm PON $', r'$\rmDON $'),
-        (r'$\rm DIC $', r'$\rm Phy $', r'$\rm Het $'), 
-        (r'$\rm pCO _2 $',r'$\rm pH $',r'$\rm Alk $'),
-        (r'$\rm MnII $',r'$\rm MnIII $',r'$\rm MnIV $'),
-        (r'$\rm MnS $', r'$\rm MnCO _3 $',r'$\rm bhan $'), 
-        (r'$\rm FeII $',r'$\rm FeIII $',r'$\rm FeS $'),
-        (r'$\rm FeCO _3 $',r'$\rm FeS _2 $',r'$\rm Si $'),  
-        (r'$\rm S ^0 $' ,r'$\rm S _2 O _3 $',r'$\rm Si part $'),
-        (r'$\rm Baae $', r'$\rm Bhae $',r'$\rm Baan $'),
-        (r'$\rm CaCO _3 $', r'$\rm CH _4 $', r'$\rm \Omega Ca $'), 
-        (r'$\rm \Omega Aragonite $', r'$\rm CO _3 $', r'$\rm Ca $'),
-        (r'$\rm Salinity $',r'$\rm Temperature $',r'$\rm O _2 $'))     
-     
-    # list of variable names to connect titles and variables 
-    '''self.vars_year = ([],
-                      [[self.no2],[self.no3],[self.nh4]],
-                      [[self.po4],[self.so4],[self.o2]],
-                      [[self.h2s],[self.pon],[self.don]],
-                      [[self.dic],[self.phy],[self.het]],
-                      [[self.pco2],[self.ph],[self.alk]],                      
-                      [[self.mn2],[self.mn3],[self.mn4]],
-                      [[self.mns],[self.mnco3],[self.bhan]], 
-                      [[self.fe2],[self.fe3],[self.fes]],
-                      [[self.feco3],[self.fes2],[self.si]],
-                      [[self.s0],[self.s2o3],[self.si_part]], 
-                      [[self.baae],[self.bhae],[self.baan]],                                                                                        
-                      [[self.caco3],[self.ch4],[self.om_ca]],     
-                      [[self.om_ar],[self.co3],[self.ca]],       
-                      [[self.sal],[self.temp],[self.o2]],                                                                             
-    ) 
-    
-    self.fh.close() '''
-    #self.lentime = len(self.time)
-    # numbers of first days of each month to add to combobox 'One day'                           
-    self.months_start = [1,32,61,92,122,153,183,
-                          214,245,275,306,336,366]
-    
-    '''self.resolutions = [('Resoluton'),(1000,700),(842,595),
-                        (2339,1654),(3508,2480),
-                        (4677,3307),(40,10)]'''
 
-    #def calc_last_year(self):
-    #self.start_last_year = self.lentime - 365  
-    #self.last_year_time = self.time[self.start_last_year:]
+    #self.dates = num2date(self.time[:],
+    #                      units= self.time_units)                
+  
+    #time = dates 
+
+
+    self.fh.close()
 
 
 def readdata2_brom(self,fname):  
     #print ('in readdata_brom')   
     self.fh = Dataset(fname)
-    
     self.depth = self.fh.variables['z'][:]  
+    
     if 'kz' in self.names_vars or 'Kz' in self.names_vars:    
         self.depth2 = self.fh.variables['z2'][:] 
         #middle points   
@@ -533,11 +445,18 @@ def set_widget_styles(self):
     # Push buttons style
     for axis in (self.time_prof_all,self.time_prof_last_year,
                  self.dist_prof_button,self.fick_box, 
-                 self.all_year_test_button):   
+                 self.all_year_test_button,self.help_button):   
         axis.setStyleSheet(
         'QPushButton {background-color: #c2b4ae; border-width: 5px;'
-        '  padding: 2px; font: bold 15px; }')     
-        
+        '  padding: 2px; font: bold 15px; }')   
+          
+    self.help_button.setIcon(QtGui.QIcon('hepl.png'))
+    #self.help_button.setIcon(('hepl.png'))   
+    self.help_button.setIconSize(QtCore.QSize(40,40))   
+    # set zero border.
+    self.help_button.setStyleSheet('QPushButton{border: 0px solid;}')
+    
+    
     # Combo boxes style
     #for axis in (self.time_prof_box): #,self.all_year_1d_box
     self.time_prof_box.setStyleSheet(
@@ -573,10 +492,12 @@ def widget_layout(self):
         self.grid.addWidget(self.dist_prof_button,0,3,1,1)            
         #self.grid.addWidget(self.time_prof_box,1,0,1,1)               
         self.grid.addWidget(self.numcol_2d ,0,4,1,1)              
-        self.grid.addWidget(self.textbox,0,5,1,1) 
+        ###self.grid.addWidget(self.textbox,0,5,1,1) 
+        self.grid.addWidget(self.label_maxcol ,0,5,1,1)
+        
+        
         #self.grid.addWidget(self.injlines_checkbox,0,6,1,1)  
         ####self.grid.addWidget(self.choose_scale,0,6,1,1)
-        #self.grid.addWidget(self.dist_prof_checkbox,0,7,1,1)  
         self.grid.addWidget(self.datescale_checkbox,0,6,1,1)
         self.grid.addWidget(self.scale_all_axes,0,7,1,1)      
           

@@ -10,13 +10,13 @@ Created on 14. des. 2016
 
 @author: E.Protsenko
 '''
-
+#import helpform
 import math
 import os,sys
 import numpy as np
 from netCDF4 import Dataset,num2date
 from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import QSpinBox,QLabel,QComboBox,QCheckBox
+#from PyQt4.QtGui import QSpinBox,QLabel,QComboBox,QCheckBox
 
 from matplotlib import rc, style
 from matplotlib.backends.backend_qt4agg import (
@@ -29,6 +29,8 @@ import matplotlib.gridspec as gridspec
 import matplotlib.dates as mdates
 
 import readdata
+import time_plot 
+import dist_plot
 
 class Window(QtGui.QDialog):
     #QDialog - the base class of dialog windows.Inherits QWidget.
@@ -45,7 +47,7 @@ class Window(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)   
         self.setWindowTitle("BROM Pictures")
         self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))
-              
+        #self.help_button.setIconSize(QtCore.QSize(50,50))         
         self.figure = plt.figure(figsize=(11.69 , 8.27), dpi=100,
                                   facecolor='white') 
 
@@ -59,25 +61,11 @@ class Window(QtGui.QDialog):
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)")) 
           
         totitle = os.path.split(self.fname)[1]
-        
         self.totitle = totitle[16:-3]
-
-        
-        #filename = self.fname
-        self.fh =  Dataset(self.fname)
-        self.time =  self.fh.variables['time'][:]
-        self.lentime = len(self.time)          
-        self.time_units = self.fh.variables['time'].units
-        #time_calendar = self.fh.variables['time'].calendar
-        #print (time_calendar)
-        self.dates = num2date(self.time[:],
-                              units= self.time_units)                
-        
-        #time = dates 
-
             
-        #readdata.readdata_brom(self)           
-      
+        readdata.readdata_brom(self,self.fname)     
+              
+        
          
               
         # Create widgets
@@ -91,7 +79,7 @@ class Window(QtGui.QDialog):
                            
         self.dist_prof_button = QtGui.QPushButton() 
         self.scale_all_axes = QtGui.QCheckBox(
-            "scale:all columns, all time") 
+            "Scale:\nall columns, all time") 
          
         #self.dist_prof_checkbox = QtGui.QCheckBox(
         #self.choose_scale = QtGui.QComboBox() 
@@ -107,7 +95,8 @@ class Window(QtGui.QDialog):
 
                   
         self.time_prof_last_year =  QtGui.QPushButton()    
-        self.time_prof_all =  QtGui.QPushButton()                   
+        self.time_prof_all =  QtGui.QPushButton()       
+                    
         self.all_year_test_button =  QtGui.QPushButton()               
         self.numcol_2d = QtGui.QSpinBox()        
             
@@ -116,31 +105,18 @@ class Window(QtGui.QDialog):
         self.textbox = QtGui.QLineEdit()  
         self.textbox2 = QtGui.QLineEdit()           
         self.fick_box = QtGui.QPushButton() 
-        self.help_button = QtGui.QPushButton('? Help')
+        self.help_button = QtGui.QPushButton(' ')
         
-        #w.show()
-        #item.setCheckable(True)
-        #item_scale_all_column.setCheckState(QtCore.Qt.Unchecked)
+   
 
-        # add items to Combobox        
-        #for i in self.var_names_charts_year:
-        #    self.all_year_1d_box.addItem(str(i))
         
-        '''
-        # currentIndex() == 0 
-        self.choose_scale.addItem('Scale: All days, 1 column')
-        # currentIndex() == 1 
-        self.choose_scale.addItem('Scale: 1 day, all columns') 
-        # currentIndex() == 2 
-        self.choose_scale.addItem('Scale: All days, all columns') '''
-        
-        ## self.time_prof_box.addItem('plot 1D')  
         ## add only 2d arrays to variables list       
         ## We skip z and time since they are 1d array, 
         ## we need to know the shape of other arrays
         ## If the file includes other 1d var, it 
         ## could raise an err, such var should be skipped also
         
+        self.fh =  Dataset(self.fname)
         self.names_vars = [] 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
@@ -152,13 +128,14 @@ class Window(QtGui.QDialog):
                 self.names_vars.append(names)  
                 
         if 'i' in self.names_vars: 
-            self.dist = np.array(self.fh.variables['i'])          
-        # sort variables alpahabetically non-case sensitive        
+            self.dist = np.array(self.fh.variables['i'])  
+                    
+        # sort variables alphabetically non-case sensitive        
         self.sorted_names =  sorted(self.names_vars, key=lambda s: s.lower())  
         self.qlistwidget.addItems(self.sorted_names)
         
                      
-        #read i variable to know number of columns 
+        #Read i variable to know number of columns 
         for names,vars in self.fh.variables.items():
             if names == 'z' or names == 'z2' : 
                 pass
@@ -171,25 +148,18 @@ class Window(QtGui.QDialog):
                     break  
                 
         self.fh.close()  
-                
-   
+                        
+        self.label_maxday = QtGui.QLabel('max day: '+ str(self.lentime-1))
+        self.label_maxcol = QtGui.QLabel('max\ncolumn: '+ str(testvar.shape[0]-1)) 
         
-        self.label_maxday = QtGui.QLabel('max day: '+ str(self.lentime))
-        
-
-        if 'i' in self.names_vars:  
-            self.textbox.setText(
-                'Number of columns = {}'.format(str(
-                testvar.shape[0])))                        
-            self.numcol_2d.setRange(0, int(testvar.shape[0]-1))
-               
-            self.numday_box.setRange(0, self.lentime-1)  
-            
+        if 'i' in self.names_vars:                        
+            self.numcol_2d.setRange(0, int(testvar.shape[0]-1))               
+            self.numday_box.setRange(0, self.lentime-1)              
             self.numday_stop_box.setRange(0, self.lentime-1)             
             self.numday_stop_box.setValue(self.lentime-1)
             
-        # Define connection between clicking the button and 
-        # calling the function to plot figures         
+        ### Define connection between clicking the button and 
+        ### calling the function to plot figures         
                           
         #self.all_year_1d_box.currentIndexChanged.connect(
         #    self.all_year_charts)                   
@@ -200,11 +170,15 @@ class Window(QtGui.QDialog):
         self.all_year_test_button.released.connect(self.all_year_test)
         self.time_prof_all.released.connect(self.call_print_allyr)        
         self.fick_box.released.connect(self.fluxes)        
-        self.dist_prof_button.released.connect(self.dist_profile)           
+        #self.dist_prof_button.released.connect(self.dist_profile)   
+                
+        self.dist_prof_button.released.connect(self.call_print_dist)         
         
+
+     
         
         #self.buttonBox.released.connect(self.setPenProperties) 
-        #self.help_button.released.connect(self.save_figure)
+        self.help_button.released.connect(self.help_dialog)
 
         # Create widget 2         
         self.all_year_box = QtGui.QComboBox()
@@ -353,6 +327,7 @@ class Window(QtGui.QDialog):
         
         #ax00.text(0, 0, 'column{}'.format(numcol), style='italic')
         #bbox={'facecolor':'red', 'alpha':0.5,'pad':10}
+        
         fick = []
         for n in range(start,stop): 
             # take values for fluxes at sed-vat interf
@@ -377,466 +352,36 @@ class Window(QtGui.QDialog):
         #rc({'savefig.transparent' : True})
         self.canvas.draw()
               
-    def time_profile(self,start,stop):
-        
-        plt.clf()
-            
-        try:
-            index = str(self.qlistwidget.currentItem().text())
-        except AttributeError:   
-            messagebox = QtGui.QMessageBox.about(self, "Retry",
-                                                 'Choose variable,please') 
-            return None           
-        
-        ## read chosen variable 
-        
-        z = np.array(self.fh.variables[index]) 
-        # take the value of data units for the title
-        data_units = self.fh.variables[index].units
-        
-        z = z[start:stop] 
-        ylen1 = len(self.depth) #95  
 
-        x = np.array(self.time[start:stop]) 
-
-        xlen = len(x)     
-
-        # check if the variable is defined on middlepoints  
-        if (z.shape[1])> ylen1: 
-            y = self.depth2
-            if self.sediment != False:
-                #print ('in sed1')                
-                y_sed = np.array(self.depth_sed2) 
-        elif (z.shape[1]) == ylen1:
-            y = self.depth #pass
-            if self.sediment != False:
-                #print ('in sed1')                
-                y_sed = np.array(self.depth_sed) 
-        else :
-            print ("wrong depth array size") 
-
-        ylen = len(y)           
-
-        z2d = []
-        # check wich column to plot 
-        numcol = self.numcol_2d.value() # 
-
-        
-        if 'i' in self.names_vars:
-            # check if we have 2D array 
-            if z.shape[2] > 1:
-                for n in range(0,xlen): #xlen
-                    for m in range(0,ylen):  
-                        # take only n's column for brom             
-                        z2d.append(z[n][m][numcol]) 
-      
-                z = np.array(z2d)                     
-        z = z.flatten()   
-        z = z.reshape(xlen,ylen)       
-        zz = z.T  
-            
-        if 'Kz' in self.names_vars and index != 'pH':
-            watmin = readdata.varmin(self,zz,'wattime',start,stop) 
-            watmax = readdata.varmax(self,zz,'wattime',start,stop)
-            #wat_ticks = readdata.ticks(watmin,watmax) 
-           
-        elif 'Kz'in self.names_vars and index == 'pH':
-            
-            # take the value with two decimanl places 
-            watmin = round(zz[0:self.ny1max,:].min(),2) 
-            watmax = round(zz[0:self.ny1max,:].max(),2) 
-            wat_ticks = np.linspace(watmin,watmax,5)    
-            wat_ticks = (np.floor(wat_ticks*100)/100.)   
-        # if we do not have kz     
-        else:  
-            self.ny1max = len(self.depth-1)
-            self.y1max = max(self.depth)    
-            watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
-            watmax = readdata.varmax(self,zz,'wattime',start,stop)
-            
-        #if #self.choose_scale.currentIndex() == 2:
-        if self.scale_all_axes.isChecked(): 
-            z_all_columns = np.array(self.fh.variables[index])  
-            #print(z_all_columns.shape)
-            watmin = round((z_all_columns[start:stop,0:self.ny1max,:].min()),2) 
-            watmax = round((z_all_columns[start:stop,0:self.ny1max,:].max()),2) 
-            
-        wat_ticks = np.linspace(watmin,watmax,5)         
-        #wat_ticks = readdata.ticks(watmin,watmax)   
-        wat_ticks = (np.floor(wat_ticks*100)/100.)               
-        
-        if self.sediment == False: 
-            gs = gridspec.GridSpec(1, 1) 
-            gs.update(left = 0.07,right = 0.9 )
-            cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])  
-        else : 
-                             
-            gs = gridspec.GridSpec(2, 1) 
-            gs.update(left = 0.07,right = 0.9 )
-             
-
-            X_sed,Y_sed = np.meshgrid(x,y_sed)
-            
-            if self.datescale_checkbox.isChecked() == True:
-                
-                self.format_time = num2date(X_sed,
-                                             units= self.time_units)   
-                X_sed = self.format_time
-            
-            ax2 = self.figure.add_subplot(gs[1])  
-
-
-            if self.scale_all_axes.isChecked(): 
-                #z_all_columns = np.array(self.fh.variables[index])  
-                #print(z_all_columns.shape)
-                sed_min  = round((
-                    z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
-                sed_max = round((
-                    z_all_columns[start:stop,self.nysedmin-2:,:].max()),2) 
-                sed_ticks = readdata.ticks(sed_min,sed_max)
-            else :
-                sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
-                sed_max = readdata.varmax(self,zz,'sedtime',start,stop)     
-                sed_ticks = readdata.ticks(sed_min,sed_max)
-                            
-            if index == 'pH': 
-                sed_min  = (zz[self.nysedmin-2:,:].min()) 
-                sed_max  = (zz[self.nysedmin-2:,:].max())                 
-                sed_ticks = readdata.ticks(sed_min,sed_max) 
-                sed_ticks = (np.floor(sed_ticks*100)/100.)                
-   
-                   
-            ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
-            ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
-                               
-            sed_levs = np.linspace(sed_min,sed_max,
-                                 num = self.num) 
-            ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
-            #ax2.set_xlim(start,stop)
-
-
-            
-                       
-            #print (self.dates)
-            #x = self.dates
-
-            #   x = self.dates
-            #print (self.dates, x )
-            #calendar= time_calendar)
-            #self.time = self.dates 
- 
-            #print (X_sed[0])
-            CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_
-            
-                              extend="both", cmap= self.cmap1)
-            
-            if self.datescale_checkbox.isChecked() == True: 
-                if len(x) > 365:
-                    ax2.xaxis_date()
-                    ax2.xaxis.set_major_formatter(
-                        mdates.DateFormatter('%m/%Y'))  
-                else : 
-                    ax2.xaxis_date()
-                    ax2.xaxis.set_major_formatter(
-                        mdates.DateFormatter('%d/%m'))                                 
-            
-            # Add an axes at position rect [left, bottom, width, height]                    
-            cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-            
-
-            ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )        
-            cb_sed = plt.colorbar(CS1,cax = cax1)
-            cb_sed.set_ticks(sed_ticks)   
-              
-            
-  
-     
-               
-            #cb.set_label('Water')   
-            cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])      
-                 
-            #if self.yearlines_checkbox.isChecked() == True:
-            #    for n in range(start,stop):
-            #        if n%365 == 0: 
-            #            ax2.axvline(n, color='white', linestyle = '--') 
-                        
-                      
-                        
-            #if self.injlines_checkbox.isChecked()== True:             
-            #    ax2.axvline(365,color='red', linewidth = 2,
-            #            linestyle = '--',zorder = 10) 
-            #    ax2.axvline(730,color='red',linewidth = 2,
-            #            linestyle = '--',zorder = 10)                       
-                                                                   
-        X,Y = np.meshgrid(x,y)  
-        ax = self.figure.add_subplot(gs[0])
-        
-        if self.datescale_checkbox.isChecked() == True: 
-            X = self.format_time     
-                          
-        
-         
-
-        if watmin == watmax :
-            if watmax == 0: 
-                watmax = 0.1
-                watmin = 0
-            else:      
-                watmax = watmax + watmax/10.
-                 
-        if self.sediment != False:        
-            if sed_min == sed_max: 
-                if sed_max == 0: 
-                    sed_max = 0.1
-                    sed_min = 0
-                else:     
-                    sed_max = sed_max + sed_max/10.   
-             
-        self.ny1min = min(self.depth)
-        #ax.set_title(index)
-        
-        ax.set_title(index + ', ' + data_units) 
-        ax.set_ylim(self.y1max,self.ny1min)   
-
-        ax.set_ylabel('h, m',fontsize= self.font_txt)
-         
-        wat_levs = np.linspace(watmin,watmax,num= self.num)
-                                
-        ## contourf() draws contour lines and filled contours
-        ## levels = A list of floating point numbers indicating 
-        ## the level curves to draw, in increasing order    
-        ## If None, the first value of Z will correspond to the lower
-        ## left corner, location (0,0).  
-        ## If â€˜imageâ€™, the rc value for image.origin will be used.
-          
-        CS = ax.contourf(X,Y, zz, levels = wat_levs, extend="both", #int_
-                              cmap= self.cmap)
-
-        
-        if self.datescale_checkbox.isChecked() == True: 
-            if len(x) > 365:
-                ax.xaxis_date()
-                ax.xaxis.set_major_formatter(
-                    mdates.DateFormatter('%m/%Y'))  
-                 
-            else : 
-                ax.xaxis_date()
-                ax.xaxis.set_major_formatter(
-                    mdates.DateFormatter('%d/%m'))     
-                      
-        cb = plt.colorbar(CS,cax = cax)   #, ticks = wat_ticks   
-        cb.set_ticks(wat_ticks)
-        
-
-                    # 730ection  
-        #if self.injlines_checkbox.isChecked() == True:                  
-        #    ax.axvline(365,color='red', linewidth = 2,
-        #                linestyle = '--',zorder = 10) 
-        #    ax.axvline(730,color='red',linewidth = 2,
-        #                linestyle = '--',zorder = 10)      
-                            
-        #self.figure.suptitle(str(self.totitle),fontsize=16)            
-        self.canvas.draw()
-        
-        
-        
-        # Attempt to make timer for updating 
-        # the datafile, while model is running 
-        # still does not work 
-        
-        #timer = QtCore.QTimer(self)
-        #timer.timeout.connect(self.update_all_year)
-        #timer.start(20000) 
-        
-        #timer.timeout.connect(test) #(self.call_print_allyr)
-        #timer.start(1)
-        #QtCore.QTimer.connect(timer, QtCore.SIGNAL("timeout()"), self, QtCore.SLOT("func()"))
-        
-        #QtCore.QTimer.singleShot(1000, self.updateCost())   
-     
-             
     ## function to plot figure where 
     ## xaxis - is horizontal distance between columns
     ## yaxis is depth 
     
-    def dist_profile(self): 
-        plt.clf()
-        try:
-            index = str(self.qlistwidget.currentItem().text())
-        except AttributeError: 
-            print ("Choose the variable to print ")        
-            messagebox = QtGui.QMessageBox.about(
-                self, "Retry", 'Choose variable,please') 
-            return None            
-        
-           
-            #os.system("pause")
-        #index = str(self.time_prof_box.currentText())
-        numday = self.numday_box.value()  
-        #z = np.array(self.fh.variables[index]) 
-        data = np.array(self.fh.variables[index])
-        data_units = self.fh.variables[index].units
-        ylen = len(self.depth)        
-        xlen = len(self.dist)  
-
-        # for some variables defined at grid middlepoints
-        # kz and fluxes 
-        if (data.shape[1])> ylen:
-            y = self.depth2 # = np.array(self.fh.variables['z2'][:])   
-            if self.sediment != False:
-                #print ('in sed2')
-                y_sed = np.array(self.depth_sed2) 
-        elif (data.shape[1]) == ylen :
-            y = self.depth 
-            if self.sediment != False:
-                #print ('in sed1')                
-                y_sed = np.array(self.depth_sed)            
-        else :
-            print ("wrong depth array size") 
-        
-        ylen = len(y) 
-
-            
-        z2d = []
-        if data.shape[2] > 1: 
-            for n in range(0,xlen): # distance 
-                for m in range(0,ylen):  # depth 
-                    # take only n's column for brom             
-                    z2d.append(data[numday][m][n])                     
-            
-            z2 = np.array(z2d).flatten() 
-            #z = z2  
-            z2 = z2.reshape(xlen,ylen)       
-            zz = z2.T   
-                        
-
-
-            if self.scale_all_axes.isChecked():                      
-                start = self.numday_box.value() 
-                stop = self.numday_stop_box.value() 
-                print (start,stop)  
-            else : # self.dist_prof_checkbox.isChecked() == True:
-                start = numday
-                stop = numday+1 
-                print (start,stop)    
-                           
-            #if index == 'pH':
-            watmin = round(
-                data[start:stop,0:self.ny1max].min(),2)
-            watmax = round(
-                data[start:stop,0:self.ny1max].max(),2) 
-            wat_ticks = np.linspace(watmin,watmax,5)
-            wat_ticks = (np.floor(wat_ticks*100)/100.)
-            
-            #else :          
-            #    watmin = readdata.varmin(self,data,'watdist',start,stop) 
-            #    watmax = readdata.varmax(self,data,'watdist',start,stop)             
-            #    wat_ticks = readdata.ticks(watmin,watmax) 
-            
-            if self.sediment == False:                                 
-                gs = gridspec.GridSpec(1, 1)                        
-                cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
-                # cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)        
-                # new comment       
-                              
-            else :  
-                gs = gridspec.GridSpec(2, 1)         
-                
-                X_sed,Y_sed = np.meshgrid(self.dist,y_sed)                       
-                ax2 = self.figure.add_subplot(gs[1])
-                               
-                if index == 'pH':
-                    sed_min = round(
-                        data[start:stop,self.nysedmin:].min(),2)
-                    sed_max = round(
-                        data[start:stop,self.nysedmin:].max(),2)
-                    sed_ticks = np.linspace(sed_min,sed_max,5)
-                    sed_ticks = (np.floor(sed_ticks*100)/100.)             
-                    
-                else: 
-                    sed_min = readdata.varmin(
-                        self,data,'seddist',start,stop)
-                    sed_max = readdata.varmax(
-                        self,data,'seddist',start,stop)
-                    
-                    sed_ticks = readdata.ticks(sed_min,sed_max) 
-                                
-            
-                sed_levs = np.linspace(sed_min,sed_max,
-                                     num = self.num)            
-                #int_wat_levs = []
-                #int_sed_levs= []
-                                        
-                CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,
-                                      extend="both", cmap=self.cmap1)      
-                ax2.axhline(0, color='white', linestyle = '--',
-                            linewidth = 1 )                   
-
-                ax2.set_ylim(self.ysedmax,self.ysedmin) 
-                ax2.set_ylabel('h, cm',fontsize= self.font_txt)  #Depth (cm)
-                ax2.set_xlabel('distance, m',fontsize= self.font_txt)   #Distance (km)  
-                             
-                cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-                cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
-                               
-             
-                cb1 = plt.colorbar(CS1,cax = cax1,ticks = sed_ticks)     
-                cb1.set_ticks(sed_ticks)
-            
-
-            
-            X,Y = np.meshgrid(self.dist,y)
-            ax = self.figure.add_subplot(gs[0])  
-            ax.set_title(index + ', ' + data_units) 
-            ax.set_ylabel('h, m',fontsize= self.font_txt) #Depth (m)
-            
-            wat_levs = np.linspace(watmin,watmax, num = self.num)  
-                  
-            int_wat_levs = []
-                    
-            for n in wat_levs:
-                n = readdata.int_value(self,n,watmin,watmax)
-                int_wat_levs.append(n)            
     
-                  
-            CS = ax.contourf(X,Y, zz, levels= wat_levs, 
-                                 extend="both",  cmap=self.cmap)
+    def call_print_dist(self): 
+        dist_plot.dist_profile(self)
             
-            cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)            
-            cb.set_ticks(wat_ticks)   
-                          
-            ax.set_ylim(self.y1max,0)
-              
-            self.canvas.draw()
-                                
-                
-                                                 
-        else:
-            messagebox = QtGui.QMessageBox.about(self, "Retry,please",
-                                                 'it is 1D BROM')
-            pass
-
-        
     def call_print_lyr(self): 
-        stop = len(self.time) #175
+        stop = len(self.time)
         start = stop - 365
-        #print (start,stop)
-        self.time_profile(start,stop) 
+        time_plot.time_profile(self,start,stop)
+        #self.time_profile(start,stop) 
             
     def call_print_allyr(self):
         
         #start = min(self.dates)
-        #stop = max(self.dates)
-        
+        #stop = max(self.dates)        
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()  
         #stop = len(self.time)
         #start = 0
-        self.time_profile(start,stop)   
+        time_plot.time_profile(self,start,stop)
+        #self.time_profile(start,stop)   
         
         
         
     def save_figure(self): 
+        #does not work 
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setPageSize(QtGui.QPrinter.A9)
         printer.setColorMode(QtGui.QPrinter.Color)
@@ -845,6 +390,9 @@ class Window(QtGui.QDialog):
         self.render(printer)
         #plt.savefig('pdf_fig.pdf',format = 'pdf')    
         #self.figure.savefig('pic.png', format='png')
+        
+        
+        
     def all_year_test(self):  
         plt.clf()        
         try:
@@ -853,7 +401,8 @@ class Window(QtGui.QDialog):
             print ("Choose the variable to print ")       
             messagebox = QtGui.QMessageBox.about(self, "Retry",
                                                  'Choose variable,please') 
-            return None  
+            return None 
+         
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value() 
         #index = str(self.time_prof_box.currentText())
@@ -873,7 +422,6 @@ class Window(QtGui.QDialog):
             axis.xaxis.grid(True,'major')                
             axis.yaxis.grid(True,'major')    
                          
-
         numcol = self.numcol_2d.value() # 
         # read chosen variable 
         z = np.array(self.fh.variables[index])
@@ -881,12 +429,13 @@ class Window(QtGui.QDialog):
         #print (z.shape)
         
         ax00.set_title(index +', ' + data_units) 
+        
         #Label y axis        
-        ax00.set_ylabel('h, m', #Depth (m)
+        ax00.set_ylabel('h, m', 
                         fontsize= self.font_txt) 
-        ax10.set_ylabel('h, m', #Depth (m)
+        ax10.set_ylabel('h, m', 
                         fontsize= self.font_txt)   
-        ax20.set_ylabel('h, cm', #Depth (cm)
+        ax20.set_ylabel('h, cm', 
                         fontsize= self.font_txt)
         
         ax00.set_ylim(self.y1max,0) 
@@ -907,6 +456,8 @@ class Window(QtGui.QDialog):
         ax20.axhspan(self.ysedmax,0,
                      color='#b08b52',alpha = 0.4,
                      label = "sediment"  )
+        
+        
         for n in range(start,stop,10):#365
             """if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
             #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               
@@ -943,6 +494,9 @@ class Window(QtGui.QDialog):
             #      self.depth_sed[self.nysedmin-1:]) 
                           
         self.canvas.draw()     
+    
+    
+    
     '''def all_year_charts(self): 
         #messagebox = QtGui.QMessageBox.about(self, "Next time",
         #                                     'it does not work yet =(')           
@@ -1188,20 +742,32 @@ class Window(QtGui.QDialog):
                           alpha = self.a_aut, zorder = 10)
                 ax22.plot(z2[n],self.depth_sed,self.spr_aut,
                           alpha = self.a_aut, zorder = 10)      
-
-
-           
-            
-                          
-        self.canvas.draw()  '''   
-    def setPenProperties(self):
+     
+        self.canvas.draw()  ''' 
         
-        self.dialog = PropertiesDlg(self)
-        self.dialog.setWindowTitle("Title") 
+          
+    def help_dialog(self):
+        messagebox = QtGui.QMessageBox.about(
+                self, "Help",
+                ' <b> Help Dialog</b> <br /> '
+                ' Time: all year <br />'
+                ' Time: last year  <br />'
+                ' new line<br />'
+                ' new line<br />'
+                ' new line<br />'
+                ' new line<br />'
+                ' new line<br />'
+                ' new line<br />'
+                ) 
+        
+        
+        #self.dialog = PropertiesDlg(self)
+        #self.dialog.setWindowTitle("Title") 
         
         #self.dialog.button.setChecked()   
         #self.value = None
-        if self.dialog.exec_():
+        '''if self.dialog.exec_():
+            
             self.checker = self.dialog.button
             if self.dialog.button.isChecked(): 
                 self.value = True
@@ -1211,27 +777,40 @@ class Window(QtGui.QDialog):
             #    print ('1') 
             #else:
             #    print("Nope")
-        return self.value 
+        return self.value '''
     
 class PropertiesDlg(QtGui.QDialog): 
     def __init__(self, parent=None):
         super(PropertiesDlg, self).__init__(parent)
+        
+        
+        #QMessageBox.about(self, "About Image Changer",
+        '''         """<b>Image Changer</b> v %s
+                 <p>Copyright &copy; 2007 Qtrac Ltd.
+                 All rights reserved.
+                <p>This application can be used to perform
+                simple image manipulations.
+                <p>Python %s - Qt %s - PyQt %s on %s""" % (
+            __version__, platform.python_version(),
+            QT_VERSION_STR, PYQT_VERSION_STR, platform.system()))'''
+        
+        
         #window = Window(self)
         #print (self.Window.value)
-        self.okButton = QtGui.QPushButton("&OK")
-        self.cancelButton = QtGui.QPushButton("Cancel")
-        self.button = QtGui.QCheckBox('test') 
+        #self.okButton = QtGui.QPushButton("&OK")
+        #self.cancelButton = QtGui.QPushButton("Cancel")
+        #self.button = QtGui.QCheckBox('test') 
         #if self.value == True or None:
         #    self.dialog.button.setChecked()
-                
-        layout = QtGui.QGridLayout()
-        layout.addWidget(self.button, 0, 0, 1, 1) 
-        layout.addWidget(self.okButton, 1, 0, 1, 1) 
-        layout.addWidget(self.cancelButton, 1, 1, 1, 1)         
+        #layout = QtGui.QGridLayout()
+        #layout.addWidget(self.button, 0, 0, 1, 1) 
+        #layout.addWidget(self.okButton, 1, 0, 1, 1) 
+        
+        #layout.addWidget(self.cancelButton, 1, 1, 1, 1)         
         #layout.addWidget(self.buttonBox, 3, 0, 1, 3)
-        self.setLayout(layout) 
-        self.okButton.released.connect(self.accept)
-        self.cancelButton.released.connect(self.reject)
+        #self.setLayout(layout) 
+        #self.okButton.released.connect(self.accept)
+        #self.cancelButton.released.connect(self.reject)
         
         #if self.button.isChecked():
         #    #self.button_event()
@@ -1240,13 +819,9 @@ class PropertiesDlg(QtGui.QDialog):
         #def button_event(self):
         #    print ('button event')
         #    self.value1 = True 
-        #    return self.value1         
+        #    return self.value1                
         
-        
-            
-            
-
-            
+                       
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setStyle("plastique")
