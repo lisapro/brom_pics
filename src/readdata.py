@@ -350,7 +350,8 @@ def varmin(self,variable,vartype,start,stop):
     return self.watmin
 
 # make "beautiful"  values to show on ticks 
-def ticks(minv,maxv):          
+def ticks(minv,maxv):    
+    print (maxv-minv)      
     if (maxv - minv) >= 50000. and (
          maxv - minv) < 150000.  :
         ticks = np.arange(minv,maxv,50000) #+10000.        
@@ -508,25 +509,19 @@ def widget_layout(self):
         self.grid.addWidget(self.fick_box,0,2,1,1)         
         self.grid.addWidget(self.time_prof_all,0,3,1,1)  
         self.grid.addWidget(self.dist_prof_button,0,4,1,1)            
-        #self.grid.addWidget(self.time_prof_box,1,0,1,1) 
-        
-                      
+        #self.grid.addWidget(self.time_prof_box,1,0,1,1)                              
         ###self.grid.addWidget(self.numcol_2d ,0,5,1,1)                      
-        ###self.grid.addWidget(self.label_maxcol ,0,6,1,1)
-        
-        
+        ###self.grid.addWidget(self.label_maxcol ,0,6,1,1)                
         #self.grid.addWidget(self.injlines_checkbox,0,6,1,1)  
 
         self.grid.addWidget(self.groupBox,0,7,2,1)  
         
         #second line
-           
-                          
+                                     
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
         self.grid.addWidget(self.all_year_button,1,3,1,1)    
-        
-                             
+                                     
         ####self.grid.addWidget(self.numday_box,1,4,1,1) 
         ####self.grid.addWidget(self.numday_stop_box,1,5,1,1) 
         ######self.grid.addWidget(self.label_maxday ,1,6,1,1)

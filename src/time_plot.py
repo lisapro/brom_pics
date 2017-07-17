@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 # this ↑ comment is important to have 
 # at the very first line 
 # to define using unicode 
@@ -100,12 +101,12 @@ def time_profile(self,start,stop):
 
     if self.scale_all_axes.isChecked(): 
         z_all_columns = np.array(self.fh.variables[index])  
-        watmin = round((z_all_columns[start:stop,0:self.ny1max,:].min()),2) 
+        watmin = round((z_all_columns[start:stop,0:self.ny1max,:].min()),0) 
         watmax = round((z_all_columns[start:stop,0:self.ny1max,:].max()),2) 
         
-    wat_ticks = np.linspace(watmin,watmax,5)         
-    #wat_ticks = readdata.ticks(watmin,watmax)   
-    wat_ticks = (np.floor(wat_ticks*100)/100.)               
+    #wat_ticks = np.linspace(watmin,watmax,5)         
+    wat_ticks = readdata.ticks(watmin,watmax)   
+    #wat_ticks = (np.floor(wat_ticks*100)/100.)               
     
     if self.sediment == False: 
         gs = gridspec.GridSpec(1, 1) 
@@ -136,6 +137,7 @@ def time_profile(self,start,stop):
             sed_max = round((
                 z_all_columns[start:stop,self.nysedmin-2:,:].max()),2) 
             sed_ticks = readdata.ticks(sed_min,sed_max)
+            
         else :
             sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
             sed_max = readdata.varmax(self,zz,'sedtime',start,stop)     

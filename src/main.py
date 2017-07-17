@@ -183,9 +183,7 @@ class Window(QtGui.QDialog):
         #start = 0
         time_plot.time_profile(self,start,stop)
         #self.time_profile(start,stop)   
-        
-        
-        
+                       
     def save_figure(self): 
         #does not work 
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
