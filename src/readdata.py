@@ -50,7 +50,37 @@ def readdata_brom(self,fname): #,varname,fname
 
 
     self.fh.close()
-
+def read_num_col(self,fname):
+    # Read all variables name from the file 
+    # And add them to the qlistwidget        
+    self.fh = Dataset(fname)    
+    self.names_vars = [] 
+    for names,vars in self.fh.variables.items():
+        if names == 'z' or names == 'z2' : 
+            self.names_vars.append(names)
+        elif names == 'time' or names == 'i' : 
+            self.names_vars.append(names) 
+        else :
+            #self.time_prof_box.addItem(names)
+            self.names_vars.append(names)  
+    
+    
+    #Read i variable to know number of columns     
+    for names,vars in self.fh.variables.items():
+        if names == 'z' or names == 'z2' : 
+            pass
+        elif names == 'time': # or names == 'i' : 
+            pass 
+        else :
+            if 'i' in self.names_vars:
+                self.testvar = np.array(self.fh['i'][:]) 
+                self.max_num_col = self.testvar.shape[0]     
+                break  
+       
+    #return testvar        
+           
+        
+        
 
 def readdata2_brom(self,fname):  
     #print ('in readdata_brom')   
@@ -445,39 +475,26 @@ def set_widget_styles(self):
     # Push buttons style
     for axis in (self.time_prof_all,self.time_prof_last_year,
                  self.dist_prof_button,self.fick_box, 
-                 self.all_year_test_button,self.help_button):   
+                 self.all_year_button,self.help_button):   
         axis.setStyleSheet(
         'QPushButton {background-color: #c2b4ae; border-width: 5px;'
         '  padding: 2px; font: bold 15px; }')   
           
-    self.help_button.setIcon(QtGui.QIcon('hepl.png'))
-    #self.help_button.setIcon(('hepl.png'))   
-    self.help_button.setIconSize(QtCore.QSize(40,40))   
+    self.help_button.setIcon(QtGui.QIcon('hepl.png'))   
+    self.help_button.setIconSize(QtCore.QSize(30,30))   
     # set zero border.
     self.help_button.setStyleSheet('QPushButton{border: 0px solid;}')
     
     
     # Combo boxes style
     #for axis in (self.time_prof_box): #,self.all_year_1d_box
-    self.time_prof_box.setStyleSheet(
-        'QComboBox {background-color: #c2b4ae; border-width: 7px;'
-        '  padding: 7px; font: bold 14px; }')  
-    #self.time_prof_box.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)   
-    
-    # Spinbox style
-    #self.varname_box.setStyleSheet(
-    #'QSpinBox {background-color: #c2b4ae; border-width: 15px;'
-    #'  padding: 5px; font: bold 15px; }')        
-    self.yearlines_checkbox.setStyleSheet(
-    'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
-    '  padding: 5px; font: bold 15px; }')
-     
-    self.scale_all_axes.setStyleSheet(
-    'QCheckBox {border-width: 15px;' #background-color: #c2b4ae; 
-    '  padding: 5px; font: bold 15px; }')          
+    #self.time_prof_box.setStyleSheet(
+    #    'QComboBox {background-color: #c2b4ae; border-width: 7px;'
+    #    '  padding: 7px; font: bold 14px; }')  
+        
     self.qlistwidget.setStyleSheet(
     'QListWidget{font: 25 px; background-color: #eadfda;  }')
-     #background-color: #f9e7de; 
+     
     self.label_choose_var.setStyleSheet(
         'QLabel {border-width: 7px;'
         '  padding: 7px; font: bold 15px; }')        
@@ -486,33 +503,41 @@ def set_widget_styles(self):
 def widget_layout(self): 
        
         #first line 
-        self.grid.addWidget(self.help_button,0,0,1,1) # help           
-        self.grid.addWidget(self.toolbar,0,1,1,1)        
-        self.grid.addWidget(self.time_prof_all,0,2,1,1)  
-        self.grid.addWidget(self.dist_prof_button,0,3,1,1)            
-        #self.grid.addWidget(self.time_prof_box,1,0,1,1)               
-        self.grid.addWidget(self.numcol_2d ,0,4,1,1)              
-        ###self.grid.addWidget(self.textbox,0,5,1,1) 
-        self.grid.addWidget(self.label_maxcol ,0,5,1,1)
+        self.grid.addWidget(self.help_button,0,0,1,1) # help_dialog           
+        self.grid.addWidget(self.toolbar,0,1,1,1) 
+        self.grid.addWidget(self.fick_box,0,2,1,1)         
+        self.grid.addWidget(self.time_prof_all,0,3,1,1)  
+        self.grid.addWidget(self.dist_prof_button,0,4,1,1)            
+        #self.grid.addWidget(self.time_prof_box,1,0,1,1) 
+        
+                      
+        ###self.grid.addWidget(self.numcol_2d ,0,5,1,1)                      
+        ###self.grid.addWidget(self.label_maxcol ,0,6,1,1)
         
         
         #self.grid.addWidget(self.injlines_checkbox,0,6,1,1)  
-        ####self.grid.addWidget(self.choose_scale,0,6,1,1)
-        self.grid.addWidget(self.datescale_checkbox,0,6,1,1)
-        self.grid.addWidget(self.scale_all_axes,0,7,1,1)      
-          
+
+        self.grid.addWidget(self.groupBox,0,7,2,1)  
+        
         #second line
            
-        self.grid.addWidget(self.fick_box,1,1,1,1)                    
+                          
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
-        self.grid.addWidget(self.all_year_test_button,1,3,1,1)                         
-        self.grid.addWidget(self.numday_box,1,4,1,1) 
-        self.grid.addWidget(self.numday_stop_box,1,5,1,1) 
-        self.grid.addWidget(self.label_maxday ,1,6,1,1)
-        self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)  
-        #self.grid.addWidget(self.textbox2,1,6,1,1)    
+        self.grid.addWidget(self.all_year_button,1,3,1,1)    
+        
+                             
+        ####self.grid.addWidget(self.numday_box,1,4,1,1) 
+        ####self.grid.addWidget(self.numday_stop_box,1,5,1,1) 
+        ######self.grid.addWidget(self.label_maxday ,1,6,1,1)
+        
+        self.grid.addWidget(self.dist_groupBox,0,5,2,1)        
+        self.grid.addWidget(self.time_groupBox,0,6,2,1)
+        #self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)          
+        #self.grid.addWidget(self.textbox2,1,6,1,1)  
+ 
         #third line              
         self.grid.addWidget(self.canvas, 2, 1,1,8)     
         self.grid.addWidget(self.qlistwidget,2,0,2,1) 
         self.grid.addWidget(self.label_choose_var,1,0,1,1)  
+        

@@ -40,7 +40,6 @@ def time_profile(self,start,stop):
     ylen1 = len(self.depth) #95  
 
     x = np.array(self.time[start:stop]) 
-
     xlen = len(x)     
 
     # check if the variable is defined on middlepoints  
@@ -191,10 +190,6 @@ def time_profile(self,start,stop):
         cb_sed = plt.colorbar(CS1,cax = cax1)
         cb_sed.set_ticks(sed_ticks)   
           
-        
-
- 
-           
         #cb.set_label('Water')   
         cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])      
              
@@ -275,16 +270,20 @@ def time_profile(self,start,stop):
                   
     cb = plt.colorbar(CS,cax = cax)   #, ticks = wat_ticks   
     cb.set_ticks(wat_ticks)
-    
 
-                # 730ection  
-    #if self.injlines_checkbox.isChecked() == True:                  
-    #    ax.axvline(365,color='red', linewidth = 2,
-    #                linestyle = '--',zorder = 10) 
-    #    ax.axvline(730,color='red',linewidth = 2,
-    #                linestyle = '--',zorder = 10)      
-                        
-    #self.figure.suptitle(str(self.totitle),fontsize=16)            
+  
+    '''def format_coord():
+        
+        col = int(x)
+        row = int(y)
+        #if col>=0 and col<numcols and row>=0 and row<numrows:
+        z = zz[x,y]
+        return 'z=%1.4f'%(z)
+
+    ax.format_coord = format_coord()'''     
+    
+    
+    
     self.canvas.draw()
     
     

@@ -9,12 +9,12 @@ Created on 29. jun. 2017
 
 @author: ELP
 '''
-
 import matplotlib.pyplot as plt
 from PyQt4 import QtGui
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
+
 
 
 def dist_profile(self): 
