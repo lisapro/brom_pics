@@ -76,7 +76,7 @@ def dist_profile(self):
         else : # self.dist_prof_checkbox.isChecked() == True:
             start = numday
             stop = numday+1 
-            print (start,stop)    
+            #print (start,stop)    
                        
         #if index == 'pH':
         watmin = round(

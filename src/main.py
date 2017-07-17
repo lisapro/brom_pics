@@ -79,10 +79,7 @@ class Window(QtGui.QDialog):
         self.fick_box = QtGui.QPushButton() 
         self.help_button = QtGui.QPushButton(' ')
         
-        # Add group Boxes - boxes of widgets
-        createOptionsGroup(self)
-        createTimeGroup(self)
-        createDistGroup(self)
+
         
         ## add only 2d arrays to variables list       
         ## We skip z and time since they are 1d array, 
@@ -96,7 +93,10 @@ class Window(QtGui.QDialog):
         readdata.read_num_col(self,self.fname)
             #max_num_col = self.testvar.shape[0]
             #return (self.testvar)
-        
+        # Add group Boxes - boxes of widgets
+        createOptionsGroup(self)
+        createTimeGroup(self)
+        createDistGroup(self)        
                 
         if 'i' in self.names_vars: 
             self.dist = np.array(self.fh.variables['i'])  
@@ -228,9 +228,9 @@ def createDistGroup(self):
     
     self.col_label = QtGui.QLabel('Column: ')
     self.numcol_2d = QtGui.QSpinBox() 
-    self.label_maxcol = QtGui.QLabel('max\ncolumn: ') #+ str(testvar.shape[0]-1)) 
-    #testvar = self.Window.testvar()
-    #print (testvar[0])
+    readdata.read_num_col(self,self.fname)
+    self.label_maxcol = QtGui.QLabel('max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
+
     #max_col = readdata.read_num_col(self,self.fname)
     #self.label_maxcol_n = QtGui.QLabel('max\ncolumn: ') #+ str(testvar.shape[0]-1))      
     
@@ -240,8 +240,7 @@ def createDistGroup(self):
     self.dist_grid.addWidget(self.label_maxcol,1,1,1,1) 
     
     #self.time_grid.addWidget(self.numday_start,0,1,1,1)
-    #self.time_grid.addWidget(self.numday_stop,0,2,1,1)
-            
+    #self.time_grid.addWidget(self.numday_stop,0,2,1,1)            
     #self.time_grid.addWidget(self.numday_box,1,0,1,1) 
     #self.time_grid.addWidget(self.numday_stop_box,1,1,1,1)      
     #self.time_grid.addWidget(self.label_maxday,1,2,1,1)      
@@ -259,7 +258,7 @@ def createTimeGroup(self):
 
     self.time_grid = QtGui.QGridLayout(self.time_groupBox)   
 
-    self.time_grid.addWidget(self.last_year_button,0,0,1,1)
+    #self.time_grid.addWidget(self.last_year_button,0,0,1,1)
       
     self.time_grid.addWidget(self.numday_start_label,1,0,1,1)
     self.time_grid.addWidget(self.numday_stop_label,1,1,1,1)

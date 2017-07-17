@@ -351,7 +351,7 @@ def varmin(self,variable,vartype,start,stop):
 
 # make "beautiful"  values to show on ticks 
 def ticks(minv,maxv):    
-    print (maxv-minv)      
+        
     if (maxv - minv) >= 50000. and (
          maxv - minv) < 150000.  :
         ticks = np.arange(minv,maxv,50000) #+10000.        
