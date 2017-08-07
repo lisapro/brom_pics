@@ -170,9 +170,12 @@ def time_profile(self,start,stop):
         #self.time = self.dates 
 
         #print (X_sed[0])
-        CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_
         
-                          extend="both", cmap= self.cmap1)
+        #CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_        
+        #                  extend="both", cmap= self.cmap1)
+        
+        CS1 = ax2.pcolormesh(X_sed,Y_sed, zz,    
+                         cmap= self.cmap1)       
         
         if self.datescale_checkbox.isChecked() == True: 
             if len(x) > 365:
@@ -250,9 +253,11 @@ def time_profile(self,start,stop):
     ## left corner, location (0,0).  
     ## If â€˜imageâ€™, the rc value for image.origin will be used.
       
-    CS = ax.contourf(X,Y, zz, levels = wat_levs, extend="both", #int_
-                          cmap= self.cmap)
-
+    #CS = ax.contourf(X,Y, zz, levels = wat_levs, extend="both", #int_
+    #                      cmap= self.cmap)
+    CS = ax.pcolormesh(X,Y, zz,    
+                         cmap= self.cmap) 
+        
     if self.yearlines_checkbox.isChecked()==True and \
        self.datescale_checkbox.isChecked()== False:
         for n in range(start,stop):
