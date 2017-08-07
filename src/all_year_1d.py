@@ -17,7 +17,7 @@ from PyQt4 import QtGui
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
-
+from matplotlib.ticker import ScalarFormatter
 
 def plot(self):  
     plt.clf()        
@@ -49,10 +49,10 @@ def plot(self):
         axis.yaxis.grid(True,'major')    
                      
     numcol = self.numcol_2d.value() # 
+    
     # read chosen variable 
     z = np.array(self.fh.variables[index])
     z = np.array(z[:,:,numcol]) 
-    #print (z.shape)
     
     ax00.set_title(index +', ' + data_units) 
     
@@ -68,7 +68,7 @@ def plot(self):
     ax00.axhspan(self.y1max,0,color='#dbf0fd',
                  alpha = 0.7,label = "water" )
      
-    
+    ax10.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
     ax10.set_ylim(self.y2max, self.y1max)   
     ax10.axhspan(self.y2max, self.y1max,color='#c5d8e3',
                  alpha = 0.4, label = "bbl"  )                
