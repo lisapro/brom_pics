@@ -190,8 +190,7 @@ def time_profile(self,start,stop):
         # Add an axes at position rect [left, bottom, width, height]                    
         cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
         
-
-        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1 )        
+        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1)        
         cb_sed = plt.colorbar(CS1,cax = cax1)
         cb_sed.set_ticks(sed_ticks)   
           
@@ -244,7 +243,7 @@ def time_profile(self,start,stop):
 
     ax.set_ylabel('h, m',fontsize= self.font_txt)
      
-    wat_levs = np.linspace(watmin,watmax,num= self.num)
+    wat_levs = np.linspace(watmin,watmax,num = self.num)
                             
     ## contourf() draws contour lines and filled contours
     ## levels = A list of floating point numbers indicating 
@@ -255,17 +254,18 @@ def time_profile(self,start,stop):
       
     #CS = ax.contourf(X,Y, zz, levels = wat_levs, extend="both", #int_
     #                      cmap= self.cmap)
-    CS = ax.pcolormesh(X,Y, zz,    
+    CS = ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
                          cmap= self.cmap) 
         
-    if self.yearlines_checkbox.isChecked()==True and \
+    if self.yearlines_checkbox.isChecked()==True  and \
        self.datescale_checkbox.isChecked()== False:
         for n in range(start,stop):
             if n%365 == 0: 
                 ax.axvline(n, color='white', linestyle = '--')     
                 
     if self.datescale_checkbox.isChecked() == True: 
-        if len(x) > 365:
+        print (len(x))
+        if len(x) > 366:
             ax.xaxis_date()
             ax.xaxis.set_major_formatter(
                 mdates.DateFormatter('%m/%Y'))  
@@ -273,43 +273,11 @@ def time_profile(self,start,stop):
         else : 
             ax.xaxis_date()
             ax.xaxis.set_major_formatter(
-                mdates.DateFormatter('%d/%m'))     
+                mdates.DateFormatter('%d %b'))     
                   
     cb = plt.colorbar(CS,cax = cax)   #, ticks = wat_ticks   
-    cb.set_ticks(wat_ticks)
+    #cb.set_ticks(wat_ticks)
 
   
-    '''def format_coord():
-        
-        col = int(x)
-        row = int(y)
-        #if col>=0 and col<numcols and row>=0 and row<numrows:
-        z = zz[x,y]
-        return 'z=%1.4f'%(z)
-
-    ax.format_coord = format_coord()'''     
-    
-    
     
     self.canvas.draw()
-    
-    
-    
-    # Attempt to make timer for updating 
-    # the datafile, while model is running 
-    # still does not work 
-    
-    #timer = QtCore.QTimer(self)
-    #timer.timeout.connect(self.update_all_year)
-    #timer.start(20000) 
-    
-    #timer.timeout.connect(test) #(self.call_print_allyr)
-    #timer.start(1)
-    #QtCore.QTimer.connect(timer, QtCore.SIGNAL("timeout()"), self, QtCore.SLOT("func()"))
-    
-    #QtCore.QTimer.singleShot(1000, self.updateCost())   
- 
-         
-## function to plot figure where 
-## xaxis - is horizontal distance between columns
-## yaxis is depth 

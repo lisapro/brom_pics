@@ -109,10 +109,7 @@ class Window(QtGui.QDialog):
         self.fh.close()
         
        #print (max_num_col)        
-        
-                                
-                 
-        
+               
         if 'i' in self.names_vars:                        
             self.numcol_2d.setRange(0, int(self.testvar.shape[0]-1))               
             self.numday_box.setRange(0, self.lentime-1)              
@@ -148,7 +145,7 @@ class Window(QtGui.QDialog):
         if 'Kz'  in self.names_vars :
             readdata.calculate_ywat(self)
             readdata.calculate_ybbl(self)   
-            readdata.y2max_fill_water(self)        
+            readdata.y2max_fill_water(self)
             readdata.depth_sed(self)
             readdata.calculate_ysed(self)
             readdata.calculate_ysed(self)
@@ -199,27 +196,7 @@ class Window(QtGui.QDialog):
    
     def call_help(self):
         help_dialog.show(self) 
-           
-    
-    #self.dialog = PropertiesDlg(self)
-     #
-    #self.dialog.setWindowTitle("Title") 
-    
-    #self.dialog.button.setChecked()   
-    #self.value = None
-    '''if self.dialog.exec_():
-        
-        self.checker = self.dialog.button
-        if self.dialog.button.isChecked(): 
-            self.value = True
-        else : 
-            self.value = False              
-        #if self.checker.isChecked():                
-        #    print ('1') 
-        #else:
-        #    print("Nope")
-    return self.value '''
-        
+
         
 def createDistGroup(self):  
         
