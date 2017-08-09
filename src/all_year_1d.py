@@ -15,11 +15,15 @@ Created on 30. jun. 2017
 import matplotlib.pyplot as plt
 from PyQt4 import QtGui
 import numpy as np
-import readdata
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 
-def plot(self):  
+import readdata
+import read_field
+
+
+def plot(self): 
+               
     plt.clf()        
     try:
         index = str(self.qlistwidget.currentItem().text())
@@ -39,11 +43,11 @@ def plot(self):
     gs.update(left=0.3, right=0.7,top = 0.94,bottom = 0.04,
                wspace=0.2,hspace=0.3) 
     
-    ax00 = self.figure.add_subplot(gs[0]) # water         
-    ax10 = self.figure.add_subplot(gs[1]) # bbl
-    ax20 = self.figure.add_subplot(gs[2]) # sediment 
+    self.ax00 = self.figure.add_subplot(gs[0]) # water         
+    self.ax10 = self.figure.add_subplot(gs[1]) # bbl
+    self.ax20 = self.figure.add_subplot(gs[2]) # sediment 
     
-    for axis in (ax00,ax10,ax20):
+    for axis in (self.ax00,self.ax10,self.ax20):
         axis.yaxis.grid(True,'minor')
         axis.xaxis.grid(True,'major')                
         axis.yaxis.grid(True,'major')    
@@ -54,32 +58,32 @@ def plot(self):
     z = np.array(self.fh.variables[index])
     z = np.array(z[:,:,numcol]) 
     
-    ax00.set_title(index +', ' + data_units) 
+    self.ax00.set_title(index +', ' + data_units) 
     
     #Label y axis        
-    ax00.set_ylabel('h, m', 
+    self.ax00.set_ylabel('h, m', 
                     fontsize= self.font_txt) 
-    ax10.set_ylabel('h, m', 
+    self.ax10.set_ylabel('h, m', 
                     fontsize= self.font_txt)   
-    ax20.set_ylabel('h, cm', 
+    self.ax20.set_ylabel('h, cm', 
                     fontsize= self.font_txt)
     
-    ax00.set_ylim(self.y1max,0) 
-    ax00.axhspan(self.y1max,0,color='#dbf0fd',
+    self.ax00.set_ylim(self.y1max,0) 
+    self.ax00.axhspan(self.y1max,0,color='#dbf0fd',
                  alpha = 0.7,label = "water" )
      
-    ax10.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
-    ax10.set_ylim(self.y2max, self.y1max)   
-    ax10.axhspan(self.y2max, self.y1max,color='#c5d8e3',
+    self.ax10.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+    self.ax10.set_ylim(self.y2max, self.y1max)   
+    self.ax10.axhspan(self.y2max, self.y1max,color='#c5d8e3',
                  alpha = 0.4, label = "bbl"  )                
     
     
-    ax20.set_ylim(self.ysedmax, self.ysedmin) 
+    self.ax20.set_ylim(self.ysedmax, self.ysedmin) 
 
-    ax20.axhspan(self.ysedmin,0,
+    self.ax20.axhspan(self.ysedmin,0,
                  color='#c5d8e3',alpha = 0.4,
                  label = "bbl"  )        
-    ax20.axhspan(self.ysedmax,0,
+    self.ax20.axhspan(self.ysedmax,0,
                  color='#b08b52',alpha = 0.4,
                  label = "sediment"  )
     
@@ -102,22 +106,29 @@ def plot(self):
                   self.wint, alpha = self.a_w,
                   linewidth = self.linewidth, zorder = 10) """  
         #else: 
-        ax00.plot(z[n][0:self.ny2max],
+        self.ax00.plot(z[n][0:self.ny2max],
               self.depth[0:self.ny2max],
               self.spr_aut,alpha = self.a_w, 
-              linewidth = self.linewidth , zorder = 10) 
+              linewidth = self.linewidth , zorder = 8) 
 
-        ax10.plot(z[n][0:self.ny2max],
+        self.ax10.plot(z[n][0:self.ny2max],
               self.depth[0:self.ny2max],
               self.spr_aut,alpha = self.a_w, 
-              linewidth = self.linewidth , zorder = 10) 
+              linewidth = self.linewidth , zorder = 8) 
     
-        ax20.plot(z[n][self.nysedmin-1:],
+        self.ax20.plot(z[n][self.nysedmin-1:],
               self.depth_sed[self.nysedmin-1:],
               self.spr_aut, alpha = self.a_w,
-              linewidth = self.linewidth, zorder = 10)                          
+              linewidth = self.linewidth, zorder = 8)                          
         #ax20.scatter(z[n][self.nysedmin-1:],
         #      self.depth_sed[self.nysedmin-1:]) 
+   
+    if self.fielddata_checkbox.isChecked():
+        #print ('is checked')
+        read_field.read(self) 
+        
+ 
+
                       
     self.canvas.draw()     
 
@@ -133,13 +144,13 @@ def plot(self):
     self.figure.patch.set_facecolor('white') 
     #self.figure.patch.set_facecolor(self.background) 
     #Set the background color  
-    ax00 = self.figure.add_subplot(gs[0]) # water         
-    ax10 = self.figure.add_subplot(gs[1]) # water
-    ax20 = self.figure.add_subplot(gs[2]) # water 
+    self.ax00 = self.figure.add_subplot(gs[0]) # water         
+    self.ax10 = self.figure.add_subplot(gs[1]) # water
+    self.ax20 = self.figure.add_subplot(gs[2]) # water 
 
-    ax01 = self.figure.add_subplot(gs[3])          
-    ax11 = self.figure.add_subplot(gs[4])
-    ax21 = self.figure.add_subplot(gs[5])
+    self.ax01 = self.figure.add_subplot(gs[3])          
+    self.ax11 = self.figure.add_subplot(gs[4])
+    self.ax21 = self.figure.add_subplot(gs[5])
 
     ax02 = self.figure.add_subplot(gs[6])    
     ax12 = self.figure.add_subplot(gs[7])

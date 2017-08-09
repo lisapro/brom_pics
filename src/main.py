@@ -214,14 +214,8 @@ def createDistGroup(self):
     
     self.dist_grid.addWidget(self.col_label,0,0,1,1) 
     self.dist_grid.addWidget(self.numcol_2d,1,0,1,1) 
-    #######self.dist_grid.addWidget(self.label_maxcol_text,1,1,1,1)
     self.dist_grid.addWidget(self.label_maxcol,1,1,1,1) 
     
-    #self.time_grid.addWidget(self.numday_start,0,1,1,1)
-    #self.time_grid.addWidget(self.numday_stop,0,2,1,1)            
-    #self.time_grid.addWidget(self.numday_box,1,0,1,1) 
-    #self.time_grid.addWidget(self.numday_stop_box,1,1,1,1)      
-    #self.time_grid.addWidget(self.label_maxday,1,2,1,1)      
        
 def createTimeGroup(self):  
      
@@ -252,18 +246,19 @@ def createOptionsGroup(self):
         self.groupBox = QtGui.QGroupBox(" Properties ")  
         
         self.scale_all_axes = QtGui.QCheckBox(
-            "Scale:all columns, all time") 
-                
+            "Scale:all columns, all time")                 
         self.yearlines_checkbox = QtGui.QCheckBox(
-            'Draw year lines')   
-        
+            'Draw year lines')           
         self.datescale_checkbox = QtGui.QCheckBox(
             'Format time axis')         
-        
+        self.fielddata_checkbox = QtGui.QCheckBox(
+            'Add field data') 
+                 
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(self.scale_all_axes)
         vbox.addWidget(self.yearlines_checkbox)
         vbox.addWidget(self.datescale_checkbox)
+        vbox.addWidget(self.fielddata_checkbox)        
         vbox.addStretch(1)
         self.groupBox.setLayout(vbox)     
                
