@@ -118,14 +118,14 @@ def time_profile(self,start,stop):
         gs.update(left = 0.07,right = 0.9 )
          
 
-        X_sed,Y_sed = np.meshgrid(x,y_sed)
+        X_sed,Y_sed = np.meshgrid(x[start:stop],y_sed)
         
         if self.datescale_checkbox.isChecked() == True:
             
             self.format_time = num2date(X_sed,
                                          units= self.time_units)   
             X_sed = self.format_time
-        
+            
         ax2 = self.figure.add_subplot(gs[1])  
 
 
@@ -153,11 +153,9 @@ def time_profile(self,start,stop):
         ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
         ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
                            
-        sed_levs = np.linspace(sed_min,sed_max,
-                             num = self.num) 
-        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
-        #ax2.set_xlim(start,stop)
 
+        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
+        #
 
         
                    
@@ -174,8 +172,18 @@ def time_profile(self,start,stop):
         #CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_        
         #                  extend="both", cmap= self.cmap1)
         
-        CS1 = ax2.pcolormesh(X_sed,Y_sed, zz,    
-                         cmap= self.cmap1)       
+        #CS1 = ax2.pcolormesh(X_sed,Y_sed, zz,    
+        #                 cmap= self.cmap1)       
+
+        if self.interpolate_checkbox.isChecked():
+            sed_levs = np.linspace(sed_min,sed_max,
+                            num = self.num) 
+            CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,        
+                              extend="both", cmap= self.cmap1)                  
+        else: 
+            CS1 = ax2.pcolormesh(X_sed,Y_sed, zz,    
+                             cmap= self.cmap1) 
+        ax2.set_xlim(np.min(X_sed),np.max(X_sed))
         
         if self.datescale_checkbox.isChecked() == True: 
             if len(x) > 365:
@@ -217,9 +225,6 @@ def time_profile(self,start,stop):
     if self.datescale_checkbox.isChecked() == True: 
         X = self.format_time     
                       
-    
-     
-
     if watmin == watmax :
         if watmax == 0: 
             watmax = 0.1
@@ -252,11 +257,17 @@ def time_profile(self,start,stop):
     ## left corner, location (0,0).  
     ## If â€˜imageâ€™, the rc value for image.origin will be used.
       
-    #CS = ax.contourf(X,Y, zz, levels = wat_levs, extend="both", #int_
-    #                      cmap= self.cmap)
-    CS = ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
+
+    if self.interpolate_checkbox.isChecked():
+        CS = ax.contourf(X,Y, zz, 
+                         levels = wat_levs, extend="both", 
+                              cmap= self.cmap)        
+    else:         
+        CS = ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
                          cmap= self.cmap) 
         
+    ax.set_xlim(np.min(X),np.max(X))
+       
     if self.yearlines_checkbox.isChecked()==True  and \
        self.datescale_checkbox.isChecked()== False:
         for n in range(start,stop):
@@ -264,7 +275,7 @@ def time_profile(self,start,stop):
                 ax.axvline(n, color='white', linestyle = '--')     
                 
     if self.datescale_checkbox.isChecked() == True: 
-        print (len(x))
+        
         if len(x) > 366:
             ax.xaxis_date()
             ax.xaxis.set_major_formatter(

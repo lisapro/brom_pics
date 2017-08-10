@@ -7,7 +7,6 @@ Created on 14. des. 2016
 @author: E.Protsenko
 '''
 
-
 import os,sys
 import numpy as np
 from netCDF4 import Dataset 
@@ -19,7 +18,6 @@ from matplotlib.backends.backend_qt4agg import (
 from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar)
 import matplotlib.pyplot as plt
-
 
 import readdata
 import time_plot 
@@ -43,15 +41,16 @@ class Window(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)   
         self.setWindowTitle("BROM Pictures")
         self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))       
-        self.figure = plt.figure(figsize=(11.69 , 8.27), dpi=100,
+        self.figure = plt.figure(figsize=(9.69 , 11.27),
+                                  dpi=100,
                                   facecolor='white') 
                 
         # open file system to choose needed nc file 
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)")) 
           
-        totitle = os.path.split(self.fname)[1]
-        self.totitle = totitle[16:-3]
+        #totitle = os.path.split(self.fname)[1]
+        #self.totitle = totitle[16:-3]
             
         readdata.readdata_brom(self,self.fname)    
          
@@ -63,7 +62,8 @@ class Window(QtGui.QDialog):
         # Create widgets
         self.label_choose_var = QtGui.QLabel('Choose variable:')                   
 
-        self.qlistwidget = QtGui.QListWidget()      
+        self.qlistwidget = QtGui.QListWidget() 
+
         self.qlistwidget.setSelectionMode(
             QtGui.QAbstractItemView.ExtendedSelection)
         
@@ -80,7 +80,6 @@ class Window(QtGui.QDialog):
         self.fick_box = QtGui.QPushButton() 
         self.help_button = QtGui.QPushButton(' ')
         
-
         
         ## add only 2d arrays to variables list       
         ## We skip z and time since they are 1d array, 
@@ -104,8 +103,10 @@ class Window(QtGui.QDialog):
                     
         # sort variables alphabetically non-case sensitive        
         self.sorted_names =  sorted(self.names_vars, key=lambda s: s.lower())  
-        self.qlistwidget.addItems(self.sorted_names)
-        
+
+            #self.qlistwidget.sizeHintForRow(0) * self.qlistwidget.count()+ 
+            # 2 * self.qlistwidget.frameWidth())
+              
         self.fh.close()
         
        #print (max_num_col)        
@@ -158,6 +159,12 @@ class Window(QtGui.QDialog):
         readdata.set_widget_styles(self) 
         
         self.num = 50. 
+
+
+        self.qlistwidget.addItems(self.sorted_names)
+        self.qlistwidget.setFixedSize(
+            self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
+              self.canvas.height())
         
     def call_all_year(self):    
         all_year_1d.plot(self)
@@ -207,10 +214,12 @@ def createDistGroup(self):
     self.col_label = QtGui.QLabel('Column: ')
     self.numcol_2d = QtGui.QSpinBox() 
     readdata.read_num_col(self,self.fname)
-    self.label_maxcol = QtGui.QLabel('max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
+    self.label_maxcol = QtGui.QLabel(
+        'max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
 
     #max_col = readdata.read_num_col(self,self.fname)
-    #self.label_maxcol_n = QtGui.QLabel('max\ncolumn: ') #+ str(testvar.shape[0]-1))      
+    #self.label_maxcol_n =
+    # QtGui.QLabel('max\ncolumn: ') #+ str(testvar.shape[0]-1))      
     
     self.dist_grid.addWidget(self.col_label,0,0,1,1) 
     self.dist_grid.addWidget(self.numcol_2d,1,0,1,1) 
@@ -228,14 +237,17 @@ def createTimeGroup(self):
     self.numday_stop_label = QtGui.QLabel('stop: ') 
     self.numday_stop_box = QtGui.QSpinBox()    
 
+    
     self.time_grid = QtGui.QGridLayout(self.time_groupBox)   
+ 
 
-    #self.time_grid.addWidget(self.last_year_button,0,0,1,1)
+    self.time_grid.addWidget(self.numday_start_label,1,0,1,1)
+    
       
     self.time_grid.addWidget(self.numday_start_label,1,0,1,1)
     self.time_grid.addWidget(self.numday_stop_label,1,1,1,1)
     self.time_grid.addWidget(self.label_maxday_label,1,2,1,1) 
-    
+
     
     self.time_grid.addWidget(self.label_maxday,2,2,1,1)                    
     self.time_grid.addWidget(self.numday_box,2,0,1,1) 
@@ -252,13 +264,16 @@ def createOptionsGroup(self):
         self.datescale_checkbox = QtGui.QCheckBox(
             'Format time axis')         
         self.fielddata_checkbox = QtGui.QCheckBox(
-            'Add field data') 
-                 
+            'Add field data (1D)') 
+        self.interpolate_checkbox = QtGui.QCheckBox(
+            'Interpolate')       
+                     
         vbox = QtGui.QVBoxLayout()
         vbox.addWidget(self.scale_all_axes)
         vbox.addWidget(self.yearlines_checkbox)
         vbox.addWidget(self.datescale_checkbox)
-        vbox.addWidget(self.fielddata_checkbox)        
+        vbox.addWidget(self.fielddata_checkbox) 
+        vbox.addWidget(self.interpolate_checkbox)       
         vbox.addStretch(1)
         self.groupBox.setLayout(vbox)     
                
