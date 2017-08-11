@@ -79,8 +79,7 @@ def dist_profile(self):
             
             X_sed,Y_sed = np.meshgrid(self.dist,y_sed)                       
             ax2 = self.figure.add_subplot(gs[1])
-            sed_levs = np.linspace(sed_min,sed_max,
-                                 num = self.num)                            
+                           
             if index == 'pH':
                 sed_min = round(
                     data[start:stop,self.nysedmin:].min(),2)
@@ -95,8 +94,9 @@ def dist_profile(self):
                 sed_max = readdata.varmax(
                     self,data,'seddist',start,stop)
                 
-                sed_ticks = readdata.ticks(sed_min,sed_max) 
-                                    
+            sed_ticks = readdata.ticks(sed_min,sed_max) 
+            sed_levs = np.linspace(sed_min,sed_max,
+                                 num = self.num)                                     
            
             #int_wat_levs = []
             #int_sed_levs= []
