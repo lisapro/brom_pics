@@ -193,7 +193,7 @@ def time_profile(self,start,stop):
             else : 
                 ax2.xaxis_date()
                 ax2.xaxis.set_major_formatter(
-                    mdates.DateFormatter('%d/%m'))                                 
+                    mdates.DateFormatter('%b'))                                 
         
         # Add an axes at position rect [left, bottom, width, height]                    
         cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
@@ -284,7 +284,7 @@ def time_profile(self,start,stop):
         else : 
             ax.xaxis_date()
             ax.xaxis.set_major_formatter(
-                mdates.DateFormatter('%d %b'))     
+                mdates.DateFormatter('%b'))     
                   
     cb = plt.colorbar(CS,cax = cax)   #, ticks = wat_ticks   
     #cb.set_ticks(wat_ticks)

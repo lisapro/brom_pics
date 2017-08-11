@@ -148,9 +148,9 @@ class Window(QtGui.QDialog):
         self.num = 50. 
 
         self.qlistwidget.addItems(self.sorted_names)
-        #self.qlistwidget.setFixedSize(
-        #    self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
-        #      self.canvas.height())
+        self.qlistwidget.setFixedSize(
+        self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
+              self.canvas.height())
         
     def call_all_year(self):    
         all_year_1d.plot(self)
