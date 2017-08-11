@@ -119,7 +119,7 @@ def fluxes(self):
     
     ax00.set_title(var1+', '+ z_units )
     
-    self.figure.suptitle(str(self.totitle),fontsize=16)
+    #self.figure.suptitle(str(self.totitle),fontsize=16)
     #                , fontweight='bold')
     #print (z_units, var1)
     ax00.set_ylabel('Fluxes') #Label y axis

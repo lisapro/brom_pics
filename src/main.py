@@ -50,8 +50,7 @@ class Window(QtGui.QDialog):
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)")) 
           
         #totitle = os.path.split(self.fname)[1]
-        #self.totitle = totitle[16:-3]
-            
+        #self.totitle = totitle[16:-3]           
         readdata.readdata_brom(self,self.fname)    
          
         # Add group Boxes - boxes of widgets
@@ -74,53 +73,32 @@ class Window(QtGui.QDialog):
         self.time_prof_last_year =  QtGui.QPushButton()    
         self.time_prof_all =  QtGui.QPushButton()  
         
-        #self.time_prof_box = QtGui.QComboBox()  
-                                 
+        #self.time_prof_box = QtGui.QComboBox()                                   
         self.all_year_button =  QtGui.QPushButton()                                  
         self.fick_box = QtGui.QPushButton() 
         self.help_button = QtGui.QPushButton(' ')
         
-        
-        ## add only 2d arrays to variables list       
-        ## We skip z and time since they are 1d array, 
-        ## we need to know the shape of other arrays
-        ## If the file includes other 1d var, it 
-        ## could raise an err, such var should be skipped also
-        
-        self.fh =  Dataset(self.fname)
-        
+        self.fh =  Dataset(self.fname)        
         #def testvar(self):                    
         readdata.read_num_col(self,self.fname)
             #max_num_col = self.testvar.shape[0]
             #return (self.testvar)
-        # Add group Boxes - boxes of widgets
+            
+        # Add group Boxes - boxes of widgets       
         createOptionsGroup(self)
         createTimeGroup(self)
         createDistGroup(self)        
-                
-        if 'i' in self.names_vars: 
-            self.dist = np.array(self.fh.variables['i'])  
-                    
-        # sort variables alphabetically non-case sensitive        
-        #self.sorted_names =  sorted(self.names_vars, key=lambda s: s.lower())  
-        #flux_list = []
-        #for name in self.sorted_names: 
-        #    if name[:4] is 'fick':
-        #        pass
-
-            #self.qlistwidget.sizeHintForRow(0) * self.qlistwidget.count()+ 
-            # 2 * self.qlistwidget.frameWidth())
-              
-        self.fh.close()
-        
-       #print (max_num_col)        
-               
-        if 'i' in self.names_vars:                        
+                              
+        if 'i' in self.names_vars:
+            self.dist = np.array(self.fh.variables['i'])                          
             self.numcol_2d.setRange(0, int(self.testvar.shape[0]-1))               
             self.numday_box.setRange(0, self.lentime-1)              
             self.numday_stop_box.setRange(0, self.lentime-1)             
             self.numday_stop_box.setValue(self.lentime-1)
-
+        
+        self.fh.close()
+        
+        # Add titles to buttons 
         self.time_prof_all.setText('Time: all year')
         self.fick_box.setText('Fluxes SWI')
         self.all_year_button.setText('1D plot')
@@ -137,9 +115,14 @@ class Window(QtGui.QDialog):
         self.dist_prof_button.released.connect(self.call_print_dist)                             
         self.help_button.released.connect(self.call_help)
                   
-        self.canvas = FigureCanvas(self.figure)    
-        self.toolbar = NavigationToolbar(self.canvas, self) #, self.qfigWidget
-        self.canvas.setMinimumSize(self.canvas.size())
+        self.canvas = FigureCanvas(self.figure)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,
+                                        QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)  
+        self.canvas.setSizePolicy(sizePolicy)         
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        #self.canvas.setMinimumSize(self.canvas.size())
         
         ## The QGridLayout class lays out widgets in a grid          
         self.grid = QtGui.QGridLayout(self)
@@ -164,11 +147,10 @@ class Window(QtGui.QDialog):
         
         self.num = 50. 
 
-
         self.qlistwidget.addItems(self.sorted_names)
-        self.qlistwidget.setFixedSize(
-            self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
-              self.canvas.height())
+        #self.qlistwidget.setFixedSize(
+        #    self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
+        #      self.canvas.height())
         
     def call_all_year(self):    
         all_year_1d.plot(self)
@@ -179,7 +161,7 @@ class Window(QtGui.QDialog):
     def call_print_dist(self): 
         dist_plot.dist_profile(self)
             
-    def call_print_lyr(self): 
+    def call_print_lyr(self): #last year
         stop = len(self.time)
         start = stop - 365
         time_plot.time_profile(self,start,stop)
@@ -280,37 +262,7 @@ def createOptionsGroup(self):
         vbox.addWidget(self.interpolate_checkbox)       
         vbox.addStretch(1)
         self.groupBox.setLayout(vbox)     
-               
-class PropertiesDlg(QtGui.QDialog): 
-    def __init__(self, parent=None):
-        super(PropertiesDlg, self).__init__(parent)    
-        #window = Window(self)
-        #print (self.Window.value)
-        #self.okButton = QtGui.QPushButton("&OK")
-        #self.cancelButton = QtGui.QPushButton("Cancel")
-        #self.button = QtGui.QCheckBox('test') 
-        #if self.value == True or None:
-        #    self.dialog.button.setChecked()
-        #layout = QtGui.QGridLayout()
-        #layout.addWidget(self.button, 0, 0, 1, 1) 
-        #layout.addWidget(self.okButton, 1, 0, 1, 1) 
-        
-        #layout.addWidget(self.cancelButton, 1, 1, 1, 1)         
-        #layout.addWidget(self.buttonBox, 3, 0, 1, 3)
-        #self.setLayout(layout) 
-        #self.okButton.released.connect(self.accept)
-        #self.cancelButton.released.connect(self.reject)
-        
-        #if self.button.isChecked():
-        #    #self.button_event()
-        #    print('is checked')
-            
-        #def button_event(self):
-        #    print ('button event')
-        #    self.value1 = True 
-        #    return self.value1                
-        
-                       
+                                    
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setStyle("plastique")

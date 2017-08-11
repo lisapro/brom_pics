@@ -67,7 +67,8 @@ def read_num_col(self,fname):
             sink_list.append(name)
         elif name not in ['z','z2','kz','time','i']:    
             other_list.append(name) 
-               
+            
+    # sort variables alphabetically non-case sensitive            
     self.sorted_names =  sorted(other_list, key=lambda s: s.lower())  
     self.sorted_names.extend(flux_list) 
     self.sorted_names.extend(sink_list)    

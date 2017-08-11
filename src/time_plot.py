@@ -118,7 +118,7 @@ def time_profile(self,start,stop):
         gs.update(left = 0.07,right = 0.9 )
          
 
-        X_sed,Y_sed = np.meshgrid(x[start:stop],y_sed)
+        X_sed,Y_sed = np.meshgrid(x,y_sed)
         
         if self.datescale_checkbox.isChecked() == True:
             
