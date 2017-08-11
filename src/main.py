@@ -41,8 +41,8 @@ class Window(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)   
         self.setWindowTitle("BROM Pictures")
         self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))       
-        self.figure = plt.figure(figsize=(9.69 , 11.27),
-                                  dpi=100,
+        self.figure = plt.figure(figsize=(8.69 , 11.27),
+                                  #dpi=100,
                                   facecolor='white') 
                 
         # open file system to choose needed nc file 
@@ -102,7 +102,11 @@ class Window(QtGui.QDialog):
             self.dist = np.array(self.fh.variables['i'])  
                     
         # sort variables alphabetically non-case sensitive        
-        self.sorted_names =  sorted(self.names_vars, key=lambda s: s.lower())  
+        #self.sorted_names =  sorted(self.names_vars, key=lambda s: s.lower())  
+        #flux_list = []
+        #for name in self.sorted_names: 
+        #    if name[:4] is 'fick':
+        #        pass
 
             #self.qlistwidget.sizeHintForRow(0) * self.qlistwidget.count()+ 
             # 2 * self.qlistwidget.frameWidth())

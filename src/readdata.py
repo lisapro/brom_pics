@@ -56,14 +56,21 @@ def read_num_col(self,fname):
     self.fh = Dataset(fname)    
     self.names_vars = [] 
     for names,vars in self.fh.variables.items():
-        if names == 'z' or names == 'z2' : 
-            self.names_vars.append(names)
-        elif names == 'time' or names == 'i' : 
-            self.names_vars.append(names) 
-        else :
-            #self.time_prof_box.addItem(names)
-            self.names_vars.append(names)  
-    
+        self.names_vars.append(names)  
+    flux_list = []
+    sink_list = []
+    other_list = []
+    for name in self.names_vars: 
+        if name[:4] == 'fick':
+            flux_list.append(name) 
+        elif name[:4] == 'sink':
+            sink_list.append(name)
+        elif name not in ['z','z2','kz','time','i']:    
+            other_list.append(name) 
+               
+    self.sorted_names =  sorted(other_list, key=lambda s: s.lower())  
+    self.sorted_names.extend(flux_list) 
+    self.sorted_names.extend(sink_list)    
     
     #Read i variable to know number of columns     
     for names,vars in self.fh.variables.items():

@@ -1,21 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# this ↑ comment is important to have 
-# at the very first line 
-# to define using unicode 
 
 '''
 Created on 29. jun. 2017
 
-@author: ELP
+@author: Elizaveta Protsenko
 '''
 import matplotlib.pyplot as plt
 from PyQt4 import QtGui
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
-
-
 
 def dist_profile(self): 
     plt.clf()
@@ -26,12 +21,8 @@ def dist_profile(self):
         messagebox = QtGui.QMessageBox.about(
             self, "Retry", 'Choose variable,please') 
         return None            
-    
-       
-        #os.system("pause")
-    #index = str(self.time_prof_box.currentText())
+
     numday = self.numday_box.value()  
-    #z = np.array(self.fh.variables[index]) 
     data = np.array(self.fh.variables[index])
     data_units = self.fh.variables[index].units
     ylen = len(self.depth)        
@@ -40,20 +31,17 @@ def dist_profile(self):
     # for some variables defined at grid middlepoints
     # kz and fluxes 
     if (data.shape[1])> ylen:
-        y = self.depth2 # = np.array(self.fh.variables['z2'][:])   
+        y = self.depth2 
         if self.sediment != False:
-            #print ('in sed2')
             y_sed = np.array(self.depth_sed2) 
     elif (data.shape[1]) == ylen :
         y = self.depth 
-        if self.sediment != False:
-            #print ('in sed1')                
+        if self.sediment != False:              
             y_sed = np.array(self.depth_sed)            
     else :
         print ("wrong depth array size") 
     
     ylen = len(y) 
-
         
     z2d = []
     if data.shape[2] > 1: 
@@ -63,21 +51,17 @@ def dist_profile(self):
                 z2d.append(data[numday][m][n])                     
         
         z2 = np.array(z2d).flatten() 
-        #z = z2  
         z2 = z2.reshape(xlen,ylen)       
         zz = z2.T   
-                    
-
 
         if self.scale_all_axes.isChecked():                      
             start = self.numday_box.value() 
             stop = self.numday_stop_box.value() 
             print (start,stop)  
-        else : # self.dist_prof_checkbox.isChecked() == True:
+        else : 
             start = numday
             stop = numday+1 
-            #print (start,stop)    
-                       
+                        
         #if index == 'pH':
         watmin = round(
             data[start:stop,0:self.ny1max].min(),2)
@@ -86,23 +70,17 @@ def dist_profile(self):
         wat_ticks = np.linspace(watmin,watmax,5)
         wat_ticks = (np.floor(wat_ticks*100)/100.)
         
-        #else :          
-        #    watmin = readdata.varmin(self,data,'watdist',start,stop) 
-        #    watmax = readdata.varmax(self,data,'watdist',start,stop)             
-        #    wat_ticks = readdata.ticks(watmin,watmax) 
-        
         if self.sediment == False:                                 
             gs = gridspec.GridSpec(1, 1)                        
             cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
-            # cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)        
-            # new comment       
-                          
+                              
         else :  
             gs = gridspec.GridSpec(2, 1)         
             
             X_sed,Y_sed = np.meshgrid(self.dist,y_sed)                       
             ax2 = self.figure.add_subplot(gs[1])
-                           
+            sed_levs = np.linspace(sed_min,sed_max,
+                                 num = self.num)                            
             if index == 'pH':
                 sed_min = round(
                     data[start:stop,self.nysedmin:].min(),2)
@@ -118,10 +96,8 @@ def dist_profile(self):
                     self,data,'seddist',start,stop)
                 
                 sed_ticks = readdata.ticks(sed_min,sed_max) 
-                            
-        
-            sed_levs = np.linspace(sed_min,sed_max,
-                                 num = self.num)            
+                                    
+           
             #int_wat_levs = []
             #int_sed_levs= []
                                     
