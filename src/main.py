@@ -41,9 +41,9 @@ class Window(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)   
         self.setWindowTitle("BROM Pictures")
         self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))       
-        self.figure = plt.figure(figsize=(8.69 , 11.27),
+        self.figure = plt.figure(figsize=(8.69 , 10.27),
                                   #dpi=100,
-                                  facecolor='white') 
+                                  facecolor='#f2f2f2') 
                 
         # open file system to choose needed nc file 
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
@@ -88,6 +88,7 @@ class Window(QtGui.QDialog):
         createOptionsGroup(self)
         createTimeGroup(self)
         createDistGroup(self)        
+        createCmapLimitsGroup(self)
                               
         if 'i' in self.names_vars:
             self.dist = np.array(self.fh.variables['i'])                          
@@ -262,6 +263,10 @@ def createOptionsGroup(self):
         vbox.addWidget(self.interpolate_checkbox)       
         vbox.addStretch(1)
         self.groupBox.setLayout(vbox)     
+
+def createCmapLimitsGroup(self):
+        self.cmap_groupBox = QtGui.QGroupBox("colour map limits ")  
+
                                     
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
