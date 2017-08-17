@@ -181,7 +181,8 @@ def time_profile(self,start,stop):
             CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,        
                               extend="both", cmap= self.cmap1)                  
         else: 
-            CS1 = ax2.pcolormesh(X_sed,Y_sed, zz,    
+            CS1 = ax2.pcolormesh(X_sed,Y_sed, zz, 
+                                 vmin = sed_min, vmax = sed_max,    
                              cmap= self.cmap1) 
         ax2.set_xlim(np.min(X_sed),np.max(X_sed))
         
@@ -289,6 +290,5 @@ def time_profile(self,start,stop):
     cb = plt.colorbar(CS,cax = cax)   #, ticks = wat_ticks   
     #cb.set_ticks(wat_ticks)
 
-  
-    
+
     self.canvas.draw()

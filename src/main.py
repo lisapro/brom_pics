@@ -26,7 +26,13 @@ import fluxes_plot
 import all_year_1d
 import help_dialog
 
-
+import matplotlib.pylab as pylab
+params = {'legend.fontsize': 'x-large',
+         'axes.labelsize': 'x-large',
+         'axes.titlesize':'x-large',
+         'xtick.labelsize':'x-large',
+         'ytick.labelsize':'x-large'}
+pylab.rcParams.update(params)
 class Window(QtGui.QDialog):
     
     def __init__(self, parent=None):
