@@ -42,13 +42,6 @@ def readdata_brom(self,fname): #,varname,fname
     self.time_units = self.fh.variables['time'].units
     self.lentime = len(self.time)  
 
-
-    #self.dates = num2date(self.time[:],
-    #                      units= self.time_units)                
-  
-    #time = dates 
-
-
     self.fh.close()
 def read_num_col(self,fname):
     # Read all variables name from the file 
