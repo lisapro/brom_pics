@@ -48,9 +48,8 @@ class Window(QtGui.QDialog):
         self.setWindowTitle("BROM Pictures")
         self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))       
         self.figure = plt.figure(figsize=(8.69 , 10.27),
-                                  #dpi=100,
-                                  facecolor='#f2f2f2') 
-                
+                        facecolor='None',edgecolor='None') 
+        self.figure.patch.set_alpha(0)        
         # open file system to choose needed nc file 
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)")) 

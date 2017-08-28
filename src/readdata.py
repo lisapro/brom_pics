@@ -42,13 +42,6 @@ def readdata_brom(self,fname): #,varname,fname
     self.time_units = self.fh.variables['time'].units
     self.lentime = len(self.time)  
 
-
-    #self.dates = num2date(self.time[:],
-    #                      units= self.time_units)                
-  
-    #time = dates 
-
-
     self.fh.close()
 def read_num_col(self,fname):
     # Read all variables name from the file 
@@ -143,8 +136,8 @@ def colors(self):
     self.sed_col1 = '#a3abb1'
         
     #define color maps 
-    self.cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
-    self.cmap1 = plt.cm.rainbow 
+    self.cmap = plt.get_cmap('magma') #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
+    self.cmap1 = plt.get_cmap('inferno') 
 
     self.font_txt = 15 #(height / 190.)
     # text on figure 2 (Water; BBL, Sed) 
