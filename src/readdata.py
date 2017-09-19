@@ -136,8 +136,8 @@ def colors(self):
     self.sed_col1 = '#a3abb1'
         
     #define color maps 
-    self.cmap = plt.cm.jet #gnuplot#jet#gist_rainbow
-    self.cmap1 = plt.cm.rainbow 
+    self.cmap = plt.get_cmap('magma') #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
+    self.cmap1 = plt.get_cmap('inferno') 
 
     self.font_txt = 15 #(height / 190.)
     # text on figure 2 (Water; BBL, Sed) 
@@ -509,26 +509,21 @@ def widget_layout(self):
         self.grid.addWidget(self.toolbar,0,1,1,1) 
         self.grid.addWidget(self.fick_box,0,2,1,1)         
         self.grid.addWidget(self.time_prof_all,0,3,1,1)  
-        self.grid.addWidget(self.dist_prof_button,0,4,1,1)            
-        #self.grid.addWidget(self.time_prof_box,1,0,1,1)                              
-        ###self.grid.addWidget(self.numcol_2d ,0,5,1,1)                      
-        ###self.grid.addWidget(self.label_maxcol ,0,6,1,1)                
-        #self.grid.addWidget(self.injlines_checkbox,0,6,1,1)  
-
-        self.grid.addWidget(self.groupBox,0,7,2,1)  
+        self.grid.addWidget(self.cmap_groupBox,0,4,2,1) 
+        self.grid.addWidget(self.dist_groupBox,0,5,2,1)        
+        self.grid.addWidget(self.time_groupBox,0,6,2,1)                      
+        self.grid.addWidget(self.options_groupBox,0,7,2,1)  
         
         #second line
                                      
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
-        self.grid.addWidget(self.all_year_button,1,3,1,1)    
+        self.grid.addWidget(self.all_year_button,1,1,1,1)    
                                      
-        ####self.grid.addWidget(self.numday_box,1,4,1,1) 
-        ####self.grid.addWidget(self.numday_stop_box,1,5,1,1) 
-        ######self.grid.addWidget(self.label_maxday ,1,6,1,1)
-        
-        self.grid.addWidget(self.dist_groupBox,0,5,2,1)        
-        self.grid.addWidget(self.time_groupBox,0,6,2,1)
+
+
+        self.grid.addWidget(self.dist_prof_button,1,3,1,1)              
+
         #self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)          
         #self.grid.addWidget(self.textbox2,1,6,1,1)  
  

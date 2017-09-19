@@ -45,17 +45,17 @@ class Window(QtGui.QDialog):
         # does not have a parent.
         
         self.setWindowFlags(QtCore.Qt.Window)   
-        self.setWindowTitle("BROM Pictures")
+        
         self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))       
-        self.figure = plt.figure(figsize=(4.69 , 5.27),
-                                  #dpi=100,
-                                  facecolor='None',edgecolor='None') 
+        self.figure = plt.figure(figsize=(8.69 , 10.27),
+                        facecolor='None',edgecolor='None') 
         self.figure.patch.set_alpha(0)        
         # open file system to choose needed nc file 
         self.fname = str(QtGui.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)")) 
-          
-        #totitle = os.path.split(self.fname)[1]
+
+        totitle = os.path.split(self.fname)[1]
+        self.setWindowTitle("BROM Pictures ("+str(totitle)+')') 
         #self.totitle = totitle[16:-3]           
         readdata.readdata_brom(self,self.fname)    
          
@@ -66,7 +66,6 @@ class Window(QtGui.QDialog):
                 
         # Create widgets
         self.label_choose_var = QtGui.QLabel('Choose variable:')                   
-
         self.qlistwidget = QtGui.QListWidget() 
 
         self.qlistwidget.setSelectionMode(
@@ -94,6 +93,7 @@ class Window(QtGui.QDialog):
         createOptionsGroup(self)
         createTimeGroup(self)
         createDistGroup(self)        
+        createCmapLimitsGroup(self)
                               
         if 'i' in self.names_vars:
             self.dist = np.array(self.fh.variables['i'])                          
@@ -246,7 +246,7 @@ def createTimeGroup(self):
 
    
 def createOptionsGroup(self):
-        self.groupBox = QtGui.QGroupBox(" Properties ")  
+        self.options_groupBox = QtGui.QGroupBox(" Properties ")  
         
         self.scale_all_axes = QtGui.QCheckBox(
             "Scale:all columns, all time")                 
@@ -266,8 +266,30 @@ def createOptionsGroup(self):
         vbox.addWidget(self.fielddata_checkbox) 
         vbox.addWidget(self.interpolate_checkbox)       
         vbox.addStretch(1)
-        self.groupBox.setLayout(vbox)     
-                                    
+        self.options_groupBox.setLayout(vbox)     
+
+def createCmapLimitsGroup(self):
+        self.cmap_groupBox = QtGui.QGroupBox("colour map limits ")  
+        self.label_maxwater = QtGui.QLabel('cmap max water: ')
+        self.label_minwater = QtGui.QLabel('min water: ')   
+        self.label_maxsed = QtGui.QLabel('cmap max sediment: ')
+        self.label_minsed = QtGui.QLabel('min sediment: ')  
+        self.box_minwater = QtGui.QSpinBox()
+        self.box_maxwater = QtGui.QSpinBox()
+        self.box_minsed = QtGui.QSpinBox()
+        self.box_maxsed = QtGui.QSpinBox()        
+               
+        cmap_grid = QtGui.QGridLayout(self.cmap_groupBox) 
+         
+        cmap_grid.addWidget(self.label_minwater,0,0,1,1)
+        cmap_grid.addWidget(self.label_maxwater,0,1,1,1)
+        cmap_grid.addWidget(self.box_minwater,1,0,1,1)
+        cmap_grid.addWidget(self.box_maxwater,1,1,1,1)           
+        cmap_grid.addWidget(self.label_minsed,2,0,1,1)        
+        cmap_grid.addWidget(self.label_maxsed,2,1,1,1)
+        cmap_grid.addWidget(self.box_minsed,3,0,1,1)
+        cmap_grid.addWidget(self.box_maxsed,3,1,1,1)       
+                                
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setStyle("plastique")
