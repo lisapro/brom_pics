@@ -181,9 +181,13 @@ def time_profile(self,start,stop):
             CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,        
                               extend="both", cmap= self.cmap1)                  
         else: 
-            CS1 = ax2.pcolormesh(X_sed,Y_sed, zz, 
+            CS1 = ax2.pcolor(X_sed,Y_sed, zz, #mesh
                                  vmin = sed_min, vmax = sed_max,    
                              cmap= self.cmap1) 
+            
+            # here we can add contour of some level with interesting value 
+            #ax2.contour(X_sed,Y_sed,zz,levels = [1],
+            #     colors=('k',),linestyles=('--',),linewidths=(3,))
         ax2.set_xlim(np.min(X_sed),np.max(X_sed))
         
         if self.datescale_checkbox.isChecked() == True: 
@@ -266,6 +270,10 @@ def time_profile(self,start,stop):
     else:         
         CS = ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
                          cmap= self.cmap) 
+        ## here we can add contour of some level with interesting value
+        #add contour to 1 om ar saturation
+        #ax.contour(X, Y,zz,levels = [1],
+        #         colors=('k',),linestyles=('--',),linewidths=(3,))
         
     ax.set_xlim(np.min(X),np.max(X))
        

@@ -239,7 +239,6 @@ def createTimeGroup(self):
     self.time_grid.addWidget(self.numday_start_label,1,0,1,1)
     self.time_grid.addWidget(self.numday_stop_label,1,1,1,1)
     self.time_grid.addWidget(self.label_maxday_label,1,2,1,1) 
-
     
     self.time_grid.addWidget(self.label_maxday,2,2,1,1)                    
     self.time_grid.addWidget(self.numday_box,2,0,1,1) 
