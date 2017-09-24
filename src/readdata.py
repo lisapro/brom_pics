@@ -14,6 +14,7 @@ from netCDF4 import Dataset,num2date
 
 import main
 import numpy as np
+import numpy.ma as ma
 import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
@@ -78,11 +79,6 @@ def read_num_col(self,fname):
                 self.max_num_col = self.testvar.shape[0]     
                 break  
        
-    #return testvar        
-           
-        
-        
-
 def readdata2_brom(self,fname):  
     #print ('in readdata_brom')   
     self.fh = Dataset(fname)
@@ -136,9 +132,12 @@ def colors(self):
     self.sed_col1 = '#a3abb1'
         
     #define color maps 
-    self.cmap = plt.get_cmap('magma') #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
-    self.cmap1 = plt.get_cmap('inferno') 
-
+    try:
+        self.cmap = plt.get_cmap('magma') #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
+        self.cmap1 = plt.get_cmap('inferno') 
+    except ValueError:
+        self.cmap = plt.get_cmap('jet')
+        self.cmap1 = plt.get_cmap('gist_rainbow')
     self.font_txt = 15 #(height / 190.)
     # text on figure 2 (Water; BBL, Sed) 
     self.xlabel_fontsize = 10
@@ -167,7 +166,7 @@ def axis_pos(self): # for plot with all var in one page
     self.axis5 = 0 + dy * 4  
   
 def calculate_ywat(self):
-    for n in range(0,(len(self.depth2)-1)):
+    for n in range(0,(len(self.depth2))):
         if self.depth2[n+1] - self.depth2[n] >= self.bbl:
             if n == self.lendepth2-2: # len(self.depth2):
                 y1max = (self.depth2[n]-1)
@@ -181,6 +180,10 @@ def calculate_ywat(self):
             self.y1max = (self.depth[n])                               
             self.ny1max = n #-1
             self.sediment = True
+            if self.ny1max == 0 :
+                self.y1max = (self.depth[len(self.depth2)-2])
+                self.ny1max = len(self.depth2)
+                self.sediment = False            
             #print ('calc_y_wat_y1max', self.y1max,self.ny1max)
             break
         
@@ -277,7 +280,7 @@ def varmax(self,variable,vartype,start,stop):
         n = variable[start:stop,self.nysedmin:].max()
   
     elif vartype == 'wattime': #time plot water
-        n = variable[0:self.ny1max,:].max()
+        n = ma.max(variable[0:self.ny1max,:]) #.max()
       
     elif vartype == 'sedtime' : #time plot sediment
         n = variable[self.nysedmin-2:,:].max()
@@ -320,8 +323,7 @@ def varmin(self,variable,vartype,start,stop):
         
     elif vartype == 'wattime' : #time plot water
         # We do not need to read start:stop
-        n = np.floor(variable[0:self.ny1max,:].min())  
-        #print ("min",n )      
+        n = np.floor(ma.min(variable[0:self.ny1max,:]))      
     elif vartype == 'sedtime'  : #time plot sediment
         n = np.floor(variable[self.nysedmin-2:,:].min()) 
                 

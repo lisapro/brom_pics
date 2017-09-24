@@ -47,7 +47,7 @@ class Window(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)   
         
         self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))       
-        self.figure = plt.figure(figsize=(8.69 , 10.27),
+        self.figure = plt.figure(figsize=(5.69 , 8.27),
                         facecolor='None',edgecolor='None') 
         self.figure.patch.set_alpha(0)        
         # open file system to choose needed nc file 

@@ -18,7 +18,7 @@ import readdata
 import matplotlib.gridspec as gridspec
 from netCDF4 import num2date 
 import matplotlib.dates as mdates
-
+import numpy.ma as ma
 
 def time_profile(self,start,stop):
     
@@ -58,13 +58,11 @@ def time_profile(self,start,stop):
         print ("wrong depth array size") 
 
     ylen = len(y)           
-
     z2d = []
     
     # check wich column to plot 
     numcol = self.numcol_2d.value() # 
 
-    
     if 'i' in self.names_vars:
         # check if we have 2D array 
         if z.shape[2] > 1:
@@ -73,11 +71,16 @@ def time_profile(self,start,stop):
                     # take only n's column for brom             
                     z2d.append(z[n][m][numcol]) 
   
-            z = np.array(z2d)                     
+            z = ma.array(z2d)
+    #print(z)                             
     z = z.flatten()   
     z = z.reshape(xlen,ylen)       
-    zz = z.T  
-        
+    tomask_zz = z.T  
+    zz = ma.masked_invalid(tomask_zz)
+    
+    if 'V_air' in self.names_vars:
+        air = np.array(self.fh.variables['V_air'][0:-1,:,1]).T
+        zz =  ma.masked_where(air >= 100, zz)
     if 'Kz' in self.names_vars and index != 'pH':
         watmin = readdata.varmin(self,zz,'wattime',start,stop) 
         watmax = readdata.varmax(self,zz,'wattime',start,stop)
@@ -98,15 +101,12 @@ def time_profile(self,start,stop):
         watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
         watmax = readdata.varmax(self,zz,'wattime',start,stop)
         
-
     if self.scale_all_axes.isChecked(): 
         z_all_columns = np.array(self.fh.variables[index])  
         watmin = round((z_all_columns[start:stop,0:self.ny1max,:].min()),0) 
         watmax = round((z_all_columns[start:stop,0:self.ny1max,:].max()),2) 
-        
-    #wat_ticks = np.linspace(watmin,watmax,5)         
+                
     wat_ticks = readdata.ticks(watmin,watmax)   
-    #wat_ticks = (np.floor(wat_ticks*100)/100.)               
     
     if self.sediment == False: 
         gs = gridspec.GridSpec(1, 1) 
