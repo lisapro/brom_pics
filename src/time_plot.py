@@ -37,10 +37,10 @@ def time_profile(self,start,stop):
     # take the value of data units for the title
     data_units = self.fh.variables[index].units
     
-    z = z[start:stop] 
+    z = z[start:stop+1] 
     ylen1 = len(self.depth) #95  
 
-    x = np.array(self.time[start:stop]) 
+    x = np.array(self.time[start:stop+1]) 
     xlen = len(x)     
 
     # check if the variable is defined on middlepoints  
@@ -79,8 +79,11 @@ def time_profile(self,start,stop):
     zz = ma.masked_invalid(tomask_zz)
     
     if 'V_air' in self.names_vars:
-        air = np.array(self.fh.variables['V_air'][0:-1,:,1]).T
+        air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
         zz =  ma.masked_where(air >= 100, zz)
+    if 'V_sed' in self.names_vars:
+        v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,1]).T
+        zz =  ma.masked_where(v_sed > 0.4, zz)        
     if 'Kz' in self.names_vars and index != 'pH':
         watmin = readdata.varmin(self,zz,'wattime',start,stop) 
         watmax = readdata.varmax(self,zz,'wattime',start,stop)
@@ -110,12 +113,12 @@ def time_profile(self,start,stop):
     
     if self.sediment == False: 
         gs = gridspec.GridSpec(1, 1) 
-        gs.update(left = 0.07,right = 0.9 )
+        gs.update(left = 0.07,right = 0.85)
         cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])  
     else : 
                          
         gs = gridspec.GridSpec(2, 1) 
-        gs.update(left = 0.07,right = 0.9 )
+        gs.update(left = 0.07,right = 0.85 )
          
 
         X_sed,Y_sed = np.meshgrid(x,y_sed)
@@ -228,6 +231,9 @@ def time_profile(self,start,stop):
     ax = self.figure.add_subplot(gs[0])
     
     if self.datescale_checkbox.isChecked() == True: 
+        if self.sediment == False:
+            self.format_time = num2date(X,
+                units= self.time_units)             
         X = self.format_time     
                       
     if watmin == watmax :

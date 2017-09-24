@@ -47,7 +47,7 @@ class Window(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)   
         
         self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))       
-        self.figure = plt.figure(figsize=(5.69 , 8.27),
+        self.figure = plt.figure(figsize=(5.69 , 6.27),
                         facecolor='None',edgecolor='None') 
         self.figure.patch.set_alpha(0)        
         # open file system to choose needed nc file 
@@ -176,10 +176,7 @@ class Window(QtGui.QDialog):
     def call_print_allyr(self):  
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()  
-        #stop = len(self.time)
-        #start = 0
-        time_plot.time_profile(self,start,stop)
-        #self.time_profile(start,stop)   
+        time_plot.time_profile(self,start,stop)  
                        
     def save_figure(self): 
         #does not work 
