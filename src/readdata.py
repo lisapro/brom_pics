@@ -19,7 +19,8 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 from matplotlib import rc
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
+from PyQt5 import QtWidgets
 import os, sys 
 
 #getcontext().prec = 6 
@@ -28,7 +29,7 @@ majorFormatter = mtick.ScalarFormatter(useOffset=False)
 #format y scales to be scalar 
 minorLocator = mtick.MultipleLocator(1.)
 
-app1 = QtGui.QApplication(sys.argv)
+app1 = QtWidgets.QApplication(sys.argv)
 screen_rect = app1.desktop().screenGeometry()
 width, height = screen_rect.width(), screen_rect.height()
 

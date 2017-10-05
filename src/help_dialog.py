@@ -10,7 +10,7 @@ Created on 30. jun. 2017
 @author: ELP
 '''
 
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 
 
 text = (' <a href= "https://github.com/lisapro/brom_pics2/wiki">'

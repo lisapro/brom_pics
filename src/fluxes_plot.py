@@ -12,7 +12,7 @@ Created on 30. jun. 2017
 
 
 import matplotlib.pyplot as plt
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec

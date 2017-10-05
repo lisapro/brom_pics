@@ -1,6 +1,6 @@
 import csv 
 import numpy as np
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 
 def read(self):    
     index = str(self.qlistwidget.currentItem().text())    
