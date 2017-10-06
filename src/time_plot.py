@@ -12,7 +12,7 @@ Created on 29. jun. 2017
 '''
 
 import matplotlib.pyplot as plt
-from PyQt5 import QtGui
+from PyQt5 import QtGui,QtWidgets
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
@@ -27,10 +27,21 @@ def time_profile(self,start,stop):
     try:
         index = str(self.qlistwidget.currentItem().text())
     except AttributeError:   
-        messagebox = QtGui.QMessageBox.about(self, "Retry",
+        messagebox = QtWidgets.QMessageBox.about(self, "Retry",
                                              'Choose variable,please') 
         return None           
-    
+        #define color maps 
+        
+    try:
+        cmap_name = self.cmap_water_box.currentText()
+        cmap1_name = self.cmap_water_box.currentText()
+        #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
+        self.cmap = plt.get_cmap(cmap_name) 
+        self.cmap1 = plt.get_cmap(cmap1_name) 
+    except ValueError:
+        self.cmap = plt.get_cmap('jet')
+        self.cmap1 = plt.get_cmap('gist_rainbow')
+        
     ## read chosen variable     
     z = np.array(self.fh.variables[index]) 
     
@@ -242,12 +253,10 @@ def time_profile(self,start,stop):
         X = self.format_time     
                       
     if watmin == watmax :
-        print('in ==')
         if watmax == 0: 
             watmax = 0.1
             watmin = 0
-        else: 
-            print('watmin = watmax')     
+        else:     
             watmax = watmax + watmax/1000.
             watmin = watmin - watmax/1000. 
     if self.sediment != False:        

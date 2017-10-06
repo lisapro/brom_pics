@@ -12,7 +12,7 @@ Created on 30. jun. 2017
 
 
 import matplotlib.pyplot as plt
-from PyQt5 import QtGui
+from PyQt5 import QtGui,QtWidgets
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
@@ -24,7 +24,7 @@ def fluxes(self):
     try:
         index = str(self.qlistwidget.currentItem().text())
     except AttributeError:       
-        messagebox = QtGui.QMessageBox.about(
+        messagebox = QtWidgets.QMessageBox.about(
             self, "Retry",'Choose variable,please') 
         return None           
     numcol = self.numcol_2d.value() # 
@@ -112,7 +112,7 @@ def fluxes(self):
                       where= fick2 < 0.,color = towater, label=u"up")            
         ax01.set_ylim(max(fick2),min(fick2)) 
     else : 
-        messagebox = QtGui.QMessageBox.about(
+        messagebox = QtWidgets.QMessageBox.about(
             self, "Retry",'Choose 1 or 2 variables,please') 
         return None  
     

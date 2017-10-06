@@ -13,7 +13,7 @@ Created on 30. jun. 2017
 
 
 import matplotlib.pyplot as plt
-from PyQt5 import QtGui
+from PyQt5 import QtGui,QtWidgets
 import numpy as np
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
@@ -29,7 +29,7 @@ def plot(self):
         index = str(self.qlistwidget.currentItem().text())
     except AttributeError: 
         print ("Choose the variable to print ")       
-        messagebox = QtGui.QMessageBox.about(self, "Retry",
+        messagebox = QtWidgets.QMessageBox.about(self, "Retry",
                                              'Choose variable,please') 
         return None 
      

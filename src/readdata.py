@@ -28,7 +28,6 @@ majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   
 #format y scales to be scalar 
 minorLocator = mtick.MultipleLocator(1.)
-
 app1 = QtWidgets.QApplication(sys.argv)
 screen_rect = app1.desktop().screenGeometry()
 width, height = screen_rect.width(), screen_rect.height()
@@ -131,14 +130,19 @@ def colors(self):
     self.wat_col1 = '#c9ecfd'  
     self.bbl_col1 = '#ccd6de'
     self.sed_col1 = '#a3abb1'
-        
+    
+    '''    
     #define color maps 
     try:
-        self.cmap = plt.get_cmap('viridis') #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
-        self.cmap1 = plt.get_cmap('inferno') 
+        cmap_name = self.cmap_water_box.currentText()
+        cmap1_name = self.cmap_water_box.currentText()
+        #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
+        self.cmap = plt.get_cmap(cmap_name) 
+        self.cmap1 = plt.get_cmap(cmap1_name) 
     except ValueError:
         self.cmap = plt.get_cmap('jet')
-        self.cmap1 = plt.get_cmap('gist_rainbow')
+        self.cmap1 = plt.get_cmap('gist_rainbow')'''
+        
     self.font_txt = 15 #(height / 190.)
     # text on figure 2 (Water; BBL, Sed) 
     self.xlabel_fontsize = 10
@@ -327,7 +331,7 @@ def varmin(self,variable,vartype,start,stop):
         n = (ma.min(variable[0:self.ny1max,start:stop]))  #np.floor    
     elif vartype == 'sedtime'  : #time plot sediment
         n = np.floor(variable[self.nysedmin-2:,:].min()) 
-                
+    '''            
     # make "beautiful"  values to show on ticks
     ##print ('varmin', n)            
     if n > 10000. and n <= 100000.:  
@@ -347,7 +351,7 @@ def varmin(self,variable,vartype,start,stop):
     elif n >= 0.0001 and n < 0.001 :
         n =  (np.floor(n*10000))/10000 -  0.0001   
     elif n >= 0.00001 and n < 0.0001 :
-        n =  (np.floor(n*100000))/100000 
+        n =  (np.floor(n*100000))/100000 '''
   
     self.watmin =  n  
                  
@@ -530,4 +534,7 @@ def widget_layout(self):
         self.grid.addWidget(self.canvas, 2, 1,1,8)     
         self.grid.addWidget(self.qlistwidget,2,0,2,1) 
         self.grid.addWidget(self.label_choose_var,1,0,1,1)  
-        
+  
+def cmap_list(self):
+    self.cmap_list = ['jet','inferno','rainbow','viridis','plasma','Paired']
+    return self.cmap_list    

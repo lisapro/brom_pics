@@ -7,7 +7,7 @@ Created on 29. jun. 2017
 @author: Elizaveta Protsenko
 '''
 import matplotlib.pyplot as plt
-from PyQt5 import QtGui
+from PyQt5 import QtGui,QtWidgets
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
@@ -18,7 +18,7 @@ def dist_profile(self):
         index = str(self.qlistwidget.currentItem().text())
     except AttributeError: 
         print ("Choose the variable to print ")        
-        messagebox = QtGui.QMessageBox.about(
+        messagebox = QtWidgets.QMessageBox.about(
             self, "Retry", 'Choose variable,please') 
         return None            
 
@@ -146,6 +146,6 @@ def dist_profile(self):
             
                                              
     else:
-        messagebox = QtGui.QMessageBox.about(self, "Retry,please",
+        messagebox = QtWidgets.QMessageBox.about(self, "Retry,please",
                                              'it is 1D BROM')
         pass

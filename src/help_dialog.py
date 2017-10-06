@@ -10,14 +10,14 @@ Created on 30. jun. 2017
 @author: ELP
 '''
 
-from PyQt5 import QtGui
+from PyQt5 import QtGui,QtWidgets
 
 
 text = (' <a href= "https://github.com/lisapro/brom_pics2/wiki">'
     ' Find online help here </a>')
 
 def show(self):
-        messagebox = QtGui.QMessageBox.about(
+        messagebox = QtWidgets.QMessageBox.about(
                 self, "Help",
                 text
                 ) 

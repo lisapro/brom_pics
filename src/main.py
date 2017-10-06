@@ -185,7 +185,7 @@ class Window(QtWidgets.QDialog):
         stop = self.numday_stop_box.value()  
         time_plot.time_profile(self,start,stop)  
                        
-    def save_figure(self): 
+    '''def save_figure(self): 
         #does not work 
         printer = QtWidgets.QPrinter(QtWidgets.QPrinter.HighResolution)
         printer.setPageSize(QtWidgets.QPrinter.A9)
@@ -194,7 +194,7 @@ class Window(QtWidgets.QDialog):
         printer.setOutputFileName(self.edit.text())
         self.render(printer)
         #plt.savefig('pdf_fig.pdf',format = 'pdf')    
-        #self.figure.savefig('pic.png', format='png')
+        #self.figure.savefig('pic.png', format='png')'''
    
    
     def call_help(self):
@@ -226,28 +226,46 @@ def createTimeGroup(self):
      
     self.last_year_button = QtWidgets.QPushButton('last year')    
     self.time_groupBox = QtWidgets.QGroupBox(" Time axis")        
-    self.label_maxday_label = QtWidgets.QLabel('max day: ')
-    self.label_maxday = QtWidgets.QLabel(str(self.lentime-1))    
+
     self.numday_start_label = QtWidgets.QLabel('start: ') 
-    self.numday_box = QtWidgets.QSpinBox()     
-    self.numday_stop_label = QtWidgets.QLabel('stop: ') 
-    self.numday_stop_box = QtWidgets.QSpinBox()    
+    self.numday_stop_label = QtWidgets.QLabel('stop: ')  
+    self.maxday_label = QtWidgets.QLabel('max day: ')
+           
 
+         
+    self.numday_box = QtWidgets.QSpinBox()     #start
+    self.numday_stop_box = QtWidgets.QSpinBox()  
+    self.value_maxday = QtWidgets.QLabel(str(self.lentime-1))  
+          
+    self.cmap_water_box = QtWidgets.QComboBox() 
+    self.cmap_water_label = QtWidgets.QLabel('cmap water: ') 
+    self.cmap_water_box.addItems(readdata.cmap_list(self))  
+    self.cmap_sed_box = QtWidgets.QComboBox()
+    self.cmap_sed_box.addItems(readdata.cmap_list(self))
+    self.cmap_sed_label = QtWidgets.QLabel('cmap sed: ')
     
+         
     self.time_grid = QtWidgets.QGridLayout(self.time_groupBox)   
- 
 
-    self.time_grid.addWidget(self.numday_start_label,1,0,1,1)
+    #line 0
+    self.time_grid.addWidget(self.cmap_water_label,0,0,1,1)
+    self.time_grid.addWidget( self.cmap_sed_label,0,1,1,1) 
+        
+    #line 1
+    self.time_grid.addWidget(self.cmap_water_box,1,0,1,1)
+    self.time_grid.addWidget( self.cmap_sed_box,1,1,1,1)    
     
+    #line 2 
+    self.time_grid.addWidget(self.numday_start_label,2,0,1,1)
+    self.time_grid.addWidget( self.numday_stop_label,2,1,1,1) 
+    self.time_grid.addWidget(      self.maxday_label,2,2,1,1)      
       
-    self.time_grid.addWidget(self.numday_start_label,1,0,1,1)
-    self.time_grid.addWidget(self.numday_stop_label,1,1,1,1)
-    self.time_grid.addWidget(self.label_maxday_label,1,2,1,1) 
+    #self.time_grid.addWidget(self.numday_start_label,1,0,1,1)
     
-    self.time_grid.addWidget(self.label_maxday,2,2,1,1)                    
-    self.time_grid.addWidget(self.numday_box,2,0,1,1) 
-    self.time_grid.addWidget(self.numday_stop_box,2,1,1,1)      
-
+    #line 3             
+    self.time_grid.addWidget(     self.numday_box,3,0,1,1) 
+    self.time_grid.addWidget(self.numday_stop_box,3,1,1,1)      
+    self.time_grid.addWidget(   self.value_maxday,3,2,1,1)   
    
 def createOptionsGroup(self):
         self.options_groupBox = QtWidgets.QGroupBox(" Properties ")  
