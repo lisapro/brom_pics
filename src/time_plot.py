@@ -23,19 +23,18 @@ import numpy.ma as ma
 def time_profile(self,start,stop):
     
     plt.clf()
-        
+    changing_depth = False    
     try:
         index = str(self.qlistwidget.currentItem().text())
     except AttributeError:   
         messagebox = QtWidgets.QMessageBox.about(self, "Retry",
                                              'Choose variable,please') 
         return None           
-        #define color maps 
         
     try:
+        # take values of cmaps from comboboxes 
         cmap_name = self.cmap_water_box.currentText()
-        cmap1_name = self.cmap_water_box.currentText()
-        #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
+        cmap1_name = self.cmap_sed_box.currentText()
         self.cmap = plt.get_cmap(cmap_name) 
         self.cmap1 = plt.get_cmap(cmap1_name) 
     except ValueError:
@@ -83,27 +82,28 @@ def time_profile(self,start,stop):
                     z2d.append(z[n][m][numcol]) 
   
             z = ma.array(z2d)
-    #print(z)                             
+                            
     z = z.flatten()   
     z = z.reshape(xlen,ylen)       
     tomask_zz = z.T  
-    zz = ma.masked_invalid(tomask_zz)
+    zz = ma.masked_invalid(tomask_zz) #mask NaNs 
     
     if 'V_air' in self.names_vars:
         air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
+        changing_depth = True
         v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
         v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,1]).T    
-            
+        
+        zz_sed = zz     
         zz =  ma.masked_where(air >= 90, zz)
         zz =  ma.masked_where(v_sed > 30, zz)   #_Change value  
         zz =  ma.masked_where(v_wat < 40, zz )   
         
-    '''if 'V_air' in self.names_vars: 
-        # for Urmia
-        #wat_ticks = readdata.ticks(watmin,watmax) 
-        watmin = readdata.varmin(self,zz,'wattime',start,stop) 
-        watmax = readdata.varmax(self,zz,'wattime',start,stop)   
-        print ('in v_air') '''     
+        zz_sed =  ma.masked_where(air >= 90, zz_sed) 
+        zz_sed =  ma.masked_where(v_sed < 30, zz_sed)   
+            
+
+           
     if 'Kz' in self.names_vars and index != 'pH':
         watmin = readdata.varmin(self,zz,'wattime',start,stop) 
         watmax = readdata.varmax(self,zz,'wattime',start,stop)     
@@ -113,14 +113,12 @@ def time_profile(self,start,stop):
         watmax = round(zz[0:self.ny1max,:].max(),2) 
         wat_ticks = np.linspace(watmin,watmax,5)    
         wat_ticks = (np.floor(wat_ticks*100)/100.)   
-
-
         
     # if we do not have kz     
     else:  
         self.ny1max = len(self.depth-1)
         self.y1max = max(self.depth)    
-        watmin = readdata.varmin(self,zz,'wattime',start,stop) #0 - water 
+        watmin = readdata.varmin(self,zz,'wattime',start,stop) 
         watmax = readdata.varmax(self,zz,'wattime',start,stop)
         
     if self.scale_all_axes.isChecked(): 
@@ -130,30 +128,43 @@ def time_profile(self,start,stop):
                 
     wat_ticks = readdata.ticks(watmin,watmax)   
     
-    if self.sediment == False: 
+    #Urmia or any other file with changing depth 
+    if changing_depth == True:     
+        gs = gridspec.GridSpec(2, 1) 
+        gs.update(left = 0.07,right = 0.85 ) 
+        ax2 = self.figure.add_subplot(gs[1])   
+        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
+        cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])     
+        sedmin = readdata.varmin(self,zz_sed,'wattime',start,stop) 
+        sedmax = readdata.varmax(self,zz_sed,'wattime',start,stop)                        
+        '''X_sed,Y_sed = np.meshgrid(x,y)   
+
+        ax2.set_ylabel('h, m',fontsize= self.font_txt) 
+        ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
+        CS1 = ax2.contourf(X_sed,Y_sed, zz, #levels = sed_levs,        
+                              extend="both", cmap= self.cmap1) '''                             
+    elif self.sediment == False: 
+        #print()
         gs = gridspec.GridSpec(1, 1) 
         gs.update(left = 0.07,right = 0.85)
-        cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])  
-    else : 
-                         
+        cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])        
+         
+    elif self.sediment == True:                          
         gs = gridspec.GridSpec(2, 1) 
         gs.update(left = 0.07,right = 0.85 )
-         
-
         X_sed,Y_sed = np.meshgrid(x,y_sed)
-        
-        if self.datescale_checkbox.isChecked() == True:
-            
-            self.format_time = num2date(X_sed,
-                                         units= self.time_units)   
-            X_sed = self.format_time
-            
-        ax2 = self.figure.add_subplot(gs[1])  
+        ax2 = self.figure.add_subplot(gs[1])
 
-
+              
+        if self.datescale_checkbox.isChecked() == True:  
+            pass   
+            #X_sed = readdata.format_time_axis(X_sed,self.time_units)  
+                  
+            #self.format_time = num2date(X_sed,
+            #                             units= self.time_units)   
+            #X_sed = self.format_time
+                 
         if self.scale_all_axes.isChecked(): 
-            #z_all_columns = np.array(self.fh.variables[index])  
-            #print(z_all_columns.shape)
             sed_min  = round((
                 z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
             sed_max = round((
@@ -175,25 +186,8 @@ def time_profile(self,start,stop):
         ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
         ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
                            
-
         ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
-        #       
-        #print (self.dates)
-        #x = self.dates
-
-        #   x = self.dates
-        #print (self.dates, x )
-        #calendar= time_calendar)
-        #self.time = self.dates 
-
-        #print (X_sed[0])
-        
-        #CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs, #int_        
-        #                  extend="both", cmap= self.cmap1)
-        
-        #CS1 = ax2.pcolormesh(X_sed,Y_sed, zz,    
-        #                 cmap= self.cmap1)       
-
+    
         if self.interpolate_checkbox.isChecked():
             sed_levs = np.linspace(sed_min,sed_max,
                             num = self.num) 
@@ -226,7 +220,6 @@ def time_profile(self,start,stop):
         cb_sed = plt.colorbar(CS1,cax = cax1)
         cb_sed.set_ticks(sed_ticks)   
           
-        #cb.set_label('Water')   
         cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])      
              
         if self.yearlines_checkbox.isChecked()==True and \
@@ -259,6 +252,7 @@ def time_profile(self,start,stop):
         else:     
             watmax = watmax + watmax/1000.
             watmin = watmin - watmax/1000. 
+            
     if self.sediment != False:        
         if sed_min == sed_max: 
             if sed_max == 0: 
@@ -272,7 +266,6 @@ def time_profile(self,start,stop):
     
     ax.set_title(index + ', ' + data_units) 
     ax.set_ylim(self.y1max,self.ny1min)   
-
     ax.set_ylabel('h, m',fontsize= self.font_txt)
      
     wat_levs = np.linspace(watmin,watmax,num = self.num)
@@ -289,27 +282,34 @@ def time_profile(self,start,stop):
         CS = ax.contourf(X,Y, zz, 
                          levels = wat_levs, extend="both", 
                               cmap= self.cmap)        
-    else:
-        pass          
+    else:       
         CS = ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
                         cmap= self.cmap) 
         
-        if 'V_air' in self.names_vars:
-            mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
-            mask_sed_air = np.ma.masked_where(v_sed < 40, v_sed) 
-            #ax.contour(X, Y,zz,levels = [1800,1900,2000,2100],
-            #     colors=('k',),linestyles=('--',),linewidths=(3,))              
-            ax.pcolormesh(X,Y,mask_sed_air,vmin=0,vmax=100,cmap = 'copper') #coolwarm_r'             
-            ax.pcolormesh(X,Y,mask_air,vmin=0,vmax=100,cmap = 'tab20_r') #coolwarm_r'
-            
+    if 'V_air' in self.names_vars:
+        mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
+        mask_wat = np.ma.masked_where(v_wat < 30 , v_wat)        
+        mask_sed_air = np.ma.masked_where(v_sed < 30, v_sed)
+ 
+        # add masks for sediment and water               
+        ax.pcolormesh(X,Y,mask_sed_air,vmin=0,vmax=100,cmap = 'copper')                    
+        #ax.pcolormesh(X,Y,mask_air,vmin=0,vmax=100,cmap = 'tab20_r')
+        #ax2.pcolormesh(X,Y,mask_air,vmin=0,vmax=100,cmap = 'tab20_r') 
+        ax2.pcolormesh(X,Y,mask_wat,vmin=0,vmax=100,cmap = 'tab20_r') 
+        CS1 = ax2.pcolormesh(X,Y, zz_sed, vmin = sedmin, vmax = sedmax,    
+                    cmap= self.cmap1)        
+        ax2.set_ylim(self.y1max,self.ny1min)   
+        ax2.set_ylabel('h, m',fontsize= self.font_txt)           
             #air_line = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
             #ax.contour(X, Y,air,levels = [100],
             #     colors=('k',),linestyles=('--',),linewidths=(3,))                
                 #zz =  ma.masked_where(air >= 100, zz)
+                
         ## here we can add contour of some level with interesting value
         #add contour to 1 om ar saturation
         #ax.contour(X, Y,zz,levels = [1],
         #         colors=('k',),linestyles=('--',),linewidths=(3,))
+        cb_sed = plt.colorbar(CS1,cax = cax1)
         
     ax.set_xlim(np.min(X),np.max(X))
        

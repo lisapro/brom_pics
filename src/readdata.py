@@ -321,16 +321,13 @@ def int_value(self,n,minv,maxv):
 def varmin(self,variable,vartype,start,stop):
     
     if vartype == 'watdist': #dist plot water
-        n = np.floor(variable[start:stop,0:self.ny1max].min())
-        
+        n = np.floor(variable[start:stop,0:self.ny1max].min())        
     elif vartype == 'seddist' :  #dist plot sediment
-        n = np.floor(variable[start:stop,self.nysedmin:].min())
-        
+        n = np.floor(variable[start:stop,self.nysedmin:].min())        
     elif vartype == 'wattime' : #time plot water
-        # We do not need to read start:stop
-        n = (ma.min(variable[0:self.ny1max,start:stop]))  #np.floor    
+        n = (ma.min(variable[0:self.ny1max,start:stop]))         
     elif vartype == 'sedtime'  : #time plot sediment
-        n = np.floor(variable[self.nysedmin-2:,:].min()) 
+        n = np.floor(variable[self.nysedmin-2:,start:stop].min()) 
     '''            
     # make "beautiful"  values to show on ticks
     ##print ('varmin', n)            
@@ -538,3 +535,10 @@ def widget_layout(self):
 def cmap_list(self):
     self.cmap_list = ['jet','inferno','rainbow','viridis','plasma','Paired']
     return self.cmap_list    
+
+
+def format_time_axis(self, xaxis,time_units):   
+    self.format_time = num2date(xaxis,
+                            units = time_units)  
+    self.xaxis = self.format_time   
+    return self.xaxis
