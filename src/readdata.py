@@ -134,7 +134,7 @@ def colors(self):
         
     #define color maps 
     try:
-        self.cmap = plt.get_cmap('magma') #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
+        self.cmap = plt.get_cmap('viridis') #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
         self.cmap1 = plt.get_cmap('inferno') 
     except ValueError:
         self.cmap = plt.get_cmap('jet')
@@ -324,7 +324,7 @@ def varmin(self,variable,vartype,start,stop):
         
     elif vartype == 'wattime' : #time plot water
         # We do not need to read start:stop
-        n = np.floor(ma.min(variable[0:self.ny1max,:]))      
+        n = (ma.min(variable[0:self.ny1max,start:stop]))  #np.floor    
     elif vartype == 'sedtime'  : #time plot sediment
         n = np.floor(variable[self.nysedmin-2:,:].min()) 
                 

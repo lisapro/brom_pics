@@ -80,22 +80,30 @@ def time_profile(self,start,stop):
     
     if 'V_air' in self.names_vars:
         air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
-        zz =  ma.masked_where(air >= 100, zz)
-    if 'V_sed' in self.names_vars:
-        v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,1]).T
-        zz =  ma.masked_where(v_sed > 0.4, zz)        
+        v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
+        v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,1]).T    
+            
+        zz =  ma.masked_where(air >= 90, zz)
+        zz =  ma.masked_where(v_sed > 30, zz)   #_Change value  
+        zz =  ma.masked_where(v_wat < 40, zz )   
+        
+    '''if 'V_air' in self.names_vars: 
+        # for Urmia
+        #wat_ticks = readdata.ticks(watmin,watmax) 
+        watmin = readdata.varmin(self,zz,'wattime',start,stop) 
+        watmax = readdata.varmax(self,zz,'wattime',start,stop)   
+        print ('in v_air') '''     
     if 'Kz' in self.names_vars and index != 'pH':
         watmin = readdata.varmin(self,zz,'wattime',start,stop) 
-        watmax = readdata.varmax(self,zz,'wattime',start,stop)
-        #wat_ticks = readdata.ticks(watmin,watmax) 
-       
-    elif 'Kz'in self.names_vars and index == 'pH':
-        
+        watmax = readdata.varmax(self,zz,'wattime',start,stop)     
+    elif 'Kz'in self.names_vars and index == 'pH':       
         # take the value with two decimal places 
         watmin = round(zz[0:self.ny1max,:].min(),2) 
         watmax = round(zz[0:self.ny1max,:].max(),2) 
         wat_ticks = np.linspace(watmin,watmax,5)    
         wat_ticks = (np.floor(wat_ticks*100)/100.)   
+
+
         
     # if we do not have kz     
     else:  
@@ -158,10 +166,7 @@ def time_profile(self,start,stop):
                            
 
         ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
-        #
-
-        
-                   
+        #       
         #print (self.dates)
         #x = self.dates
 
@@ -237,12 +242,14 @@ def time_profile(self,start,stop):
         X = self.format_time     
                       
     if watmin == watmax :
+        print('in ==')
         if watmax == 0: 
             watmax = 0.1
             watmin = 0
-        else:      
-            watmax = watmax + watmax/10.
-             
+        else: 
+            print('watmin = watmax')     
+            watmax = watmax + watmax/1000.
+            watmin = watmin - watmax/1000. 
     if self.sediment != False:        
         if sed_min == sed_max: 
             if sed_max == 0: 
@@ -273,9 +280,23 @@ def time_profile(self,start,stop):
         CS = ax.contourf(X,Y, zz, 
                          levels = wat_levs, extend="both", 
                               cmap= self.cmap)        
-    else:         
+    else:
+        pass          
         CS = ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
-                         cmap= self.cmap) 
+                        cmap= self.cmap) 
+        
+        if 'V_air' in self.names_vars:
+            mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
+            mask_sed_air = np.ma.masked_where(v_sed < 40, v_sed) 
+            #ax.contour(X, Y,zz,levels = [1800,1900,2000,2100],
+            #     colors=('k',),linestyles=('--',),linewidths=(3,))              
+            ax.pcolormesh(X,Y,mask_sed_air,vmin=0,vmax=100,cmap = 'copper') #coolwarm_r'             
+            ax.pcolormesh(X,Y,mask_air,vmin=0,vmax=100,cmap = 'tab20_r') #coolwarm_r'
+            
+            #air_line = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
+            #ax.contour(X, Y,air,levels = [100],
+            #     colors=('k',),linestyles=('--',),linewidths=(3,))                
+                #zz =  ma.masked_where(air >= 100, zz)
         ## here we can add contour of some level with interesting value
         #add contour to 1 om ar saturation
         #ax.contour(X, Y,zz,levels = [1],
