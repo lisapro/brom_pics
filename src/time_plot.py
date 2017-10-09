@@ -48,7 +48,7 @@ def time_profile(self,start,stop):
     data_units = self.fh.variables[index].units
     
     z = z[start:stop+1] 
-    ylen1 = len(self.depth) #95  
+    ylen1 = len(self.depth) 
 
     x = np.array(self.time[start:stop+1]) 
     xlen = len(x)     
@@ -90,10 +90,10 @@ def time_profile(self,start,stop):
     
     if 'V_air' in self.names_vars:
         air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
-        changing_depth = True
         v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
         v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,1]).T    
-        
+        changing_depth = True 
+               
         zz_sed = zz     
         zz =  ma.masked_where(air >= 90, zz)
         zz =  ma.masked_where(v_sed > 30, zz)   #_Change value  
@@ -136,7 +136,8 @@ def time_profile(self,start,stop):
         cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
         cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])     
         sedmin = readdata.varmin(self,zz_sed,'wattime',start,stop) 
-        sedmax = readdata.varmax(self,zz_sed,'wattime',start,stop)                        
+        sedmax = readdata.varmax(self,zz_sed,'wattime',start,stop)   
+                           
         '''X_sed,Y_sed = np.meshgrid(x,y)   
 
         ax2.set_ylabel('h, m',fontsize= self.font_txt) 
@@ -156,8 +157,10 @@ def time_profile(self,start,stop):
         ax2 = self.figure.add_subplot(gs[1])
 
               
-        if self.datescale_checkbox.isChecked() == True:  
-            pass   
+        if self.datescale_checkbox.isChecked() == True: 
+            #f self.datescale_checkbox.isChecked() == True: 
+            readdata.format_time_axis(self,ax2,xlen) 
+            #pass   
             #X_sed = readdata.format_time_axis(X_sed,self.time_units)  
                   
             #self.format_time = num2date(X_sed,
@@ -204,14 +207,15 @@ def time_profile(self,start,stop):
         ax2.set_xlim(np.min(X_sed),np.max(X_sed))
         
         if self.datescale_checkbox.isChecked() == True: 
-            if len(x) > 365:
+            readdata.format_time_axis(self,ax2,xlen) 
+            '''if len(x) > 365:
                 ax2.xaxis_date()
                 ax2.xaxis.set_major_formatter(
                     mdates.DateFormatter('%m/%Y'))  
             else : 
                 ax2.xaxis_date()
                 ax2.xaxis.set_major_formatter(
-                    mdates.DateFormatter('%b'))                                 
+                    mdates.DateFormatter('%b')) '''                                
         
         # Add an axes at position rect [left, bottom, width, height]                    
         cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
@@ -299,7 +303,10 @@ def time_profile(self,start,stop):
         CS1 = ax2.pcolormesh(X,Y, zz_sed, vmin = sedmin, vmax = sedmax,    
                     cmap= self.cmap1)        
         ax2.set_ylim(self.y1max,self.ny1min)   
-        ax2.set_ylabel('h, m',fontsize= self.font_txt)           
+        ax2.set_ylabel('h, m',fontsize= self.font_txt)    
+        if self.datescale_checkbox.isChecked() == True: 
+            #f self.datescale_checkbox.isChecked() == True: 
+            readdata.format_time_axis(self,ax2,xlen)                  
             #air_line = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
             #ax.contour(X, Y,air,levels = [100],
             #     colors=('k',),linestyles=('--',),linewidths=(3,))                
@@ -320,7 +327,8 @@ def time_profile(self,start,stop):
                 ax.axvline(n, color='white', linestyle = '--')     
                 
     if self.datescale_checkbox.isChecked() == True: 
-        
+        readdata.format_time_axis(self,ax,xlen)
+        '''
         if len(x) > 366:
             ax.xaxis_date()
             ax.xaxis.set_major_formatter(
@@ -329,7 +337,7 @@ def time_profile(self,start,stop):
         else : 
             ax.xaxis_date()
             ax.xaxis.set_major_formatter(
-                mdates.DateFormatter('%b'))     
+                mdates.DateFormatter('%b'))  '''   
                   
     cb = plt.colorbar(CS,cax = cax)   #, ticks = wat_ticks   
     #cb.set_ticks(wat_ticks)

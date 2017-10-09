@@ -22,6 +22,7 @@ from matplotlib import rc
 from PyQt5 import QtCore, QtGui
 from PyQt5 import QtWidgets
 import os, sys 
+import matplotlib.dates as mdates
 
 #getcontext().prec = 6 
 majorLocator = mtick.MultipleLocator(2.)
@@ -537,8 +538,18 @@ def cmap_list(self):
     return self.cmap_list    
 
 
-def format_time_axis(self, xaxis,time_units):   
-    self.format_time = num2date(xaxis,
+def format_time_axis(self, xaxis,xlen):   
+    '''self.format_time = num2date(xaxis,
                             units = time_units)  
     self.xaxis = self.format_time   
-    return self.xaxis
+    return self.xaxis'''
+
+    if self.datescale_checkbox.isChecked() == True: 
+        if xlen > 365:
+            xaxis.xaxis_date()
+            xaxis.xaxis.set_major_formatter(
+                mdates.DateFormatter('%m/%Y'))  
+        else : 
+            xaxis.xaxis_date()
+            xaxis.xaxis.set_major_formatter(
+                mdates.DateFormatter('%b'))   
