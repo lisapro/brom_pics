@@ -487,7 +487,7 @@ def set_widget_styles(self):
         'QPushButton {background-color: #c2b4ae; border-width: 5px;'
         '  padding: 2px; font: bold 15px; }')   
           
-    self.help_button.setIcon(QtGui.QIcon('hepl.png'))   
+    self.help_button.setIcon(QtGui.QIcon('help.png'))   
     self.help_button.setIconSize(QtCore.QSize(30,30))   
     # set zero border.
     self.help_button.setStyleSheet('QPushButton{border: 0px solid;}')
@@ -524,6 +524,7 @@ def widget_layout(self):
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
         self.grid.addWidget(self.all_year_button,1,1,1,1)    
+        self.grid.addWidget(self.dist_prof_button,1,3,1,1)         
 
         #self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)          
         #self.grid.addWidget(self.textbox2,1,6,1,1)  
@@ -555,21 +556,18 @@ def format_time_axis2(self, xaxis,xlen):
 def plot_inj_lines(self,numday,col,axis):
     axis.axvline(numday,color= col, linewidth = 2,
                    linestyle = '--',zorder = 10) 
-'''    
-def format_time_axis(self, xaxis,xlen,time_units,X_subplot):   
-    #self.format_time = num2date(X_subplot,
-    #                        units = time_units)  
-    X_subplot = num2date(X_subplot,
-                            units = time_units) 
-    # self.format_time       
+import matplotlib.gridspec as gridspec
 
-    #if self.datescale_checkbox.isChecked() == True: 
-    if xlen > 365:
-        xaxis.xaxis_date()
-        xaxis.xaxis.set_major_formatter(
-            mdates.DateFormatter('%m/%Y'))  
-    else : 
-        xaxis.xaxis_date()
-        xaxis.xaxis.set_major_formatter(
-            mdates.DateFormatter('%b'))   
-    return X_subplot'''
+def grid_2plot(self):
+    self.gs = gridspec.GridSpec(2, 1) 
+    self.gs.update(left = 0.07,right = 0.85 )
+    self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+    self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])    
+    '''self.ax = self.figure.add_subplot(gs[0])
+    self.ax2 = self.figure.add_subplot(gs[1])       
+    self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+    self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])'''
+    
+    
+    
+    

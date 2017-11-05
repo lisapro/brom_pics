@@ -203,10 +203,8 @@ class Window(QtWidgets.QDialog):
         
 def createDistGroup(self):  
         
-    self.dist_groupBox = QtWidgets.QGroupBox("Distance axis")  
-         
-    self.dist_grid = QtWidgets.QGridLayout(self.dist_groupBox)
-    
+    self.dist_groupBox = QtWidgets.QGroupBox("Distance axis")           
+    self.dist_grid = QtWidgets.QGridLayout(self.dist_groupBox)    
     self.col_label = QtWidgets.QLabel('Column: ')
     self.numcol_2d = QtWidgets.QSpinBox() 
     readdata.read_num_col(self,self.fname)
@@ -236,7 +234,8 @@ def createTimeGroup(self):
     self.numday_box = QtWidgets.QSpinBox()     #start
     self.numday_stop_box = QtWidgets.QSpinBox()  
     self.value_maxday = QtWidgets.QLabel(str(self.lentime-1))  
-          
+    
+    #color maps      
     self.cmap_water_box = QtWidgets.QComboBox() 
     self.cmap_water_label = QtWidgets.QLabel('cmap water: ') 
     self.cmap_water_box.addItems(readdata.cmap_list(self))  

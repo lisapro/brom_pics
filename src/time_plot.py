@@ -70,7 +70,7 @@ def time_profile(self,start,stop):
     ylen = len(y)           
     z2d = []
     
-    # check wich column to plot 
+    # check the column to plot 
     numcol = self.numcol_2d.value() # 
 
     if 'i' in self.names_vars:
@@ -80,7 +80,6 @@ def time_profile(self,start,stop):
                 for m in range(0,ylen):  
                     # take only n's column for brom             
                     z2d.append(z[n][m][numcol]) 
-  
             z = ma.array(z2d)
                             
     z = z.flatten()   
@@ -101,9 +100,7 @@ def time_profile(self,start,stop):
         
         zz_sed =  ma.masked_where(air >= 90, zz_sed) 
         zz_sed =  ma.masked_where(v_sed < 30, zz_sed)   
-            
-
-           
+                       
     if 'Kz' in self.names_vars and index != 'pH':
         watmin = readdata.varmin(self,zz,'wattime',start,stop) 
         watmax = readdata.varmax(self,zz,'wattime',start,stop)     
@@ -133,8 +130,10 @@ def time_profile(self,start,stop):
         gs = gridspec.GridSpec(2, 1) 
         gs.update(left = 0.07,right = 0.85 ) 
         ax2 = self.figure.add_subplot(gs[1])   
+        
         cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
-        cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])     
+        cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])  
+           
         sedmin = readdata.varmin(self,zz_sed,'wattime',start,stop) 
         sedmax = readdata.varmax(self,zz_sed,'wattime',start,stop)   
                            
@@ -149,19 +148,31 @@ def time_profile(self,start,stop):
         gs = gridspec.GridSpec(1, 1) 
         gs.update(left = 0.07,right = 0.85)
         cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])        
-         
-    elif self.sediment == True:                          
-        gs = gridspec.GridSpec(2, 1) 
-        gs.update(left = 0.07,right = 0.85 )
-        X_sed,Y_sed = np.meshgrid(x,y_sed)
-        ax2 = self.figure.add_subplot(gs[1])
-              
+        ax = self.figure.add_subplot(gs[0])
+        
+    elif self.sediment == True: 
+                                 
+        #gs = gridspec.GridSpec(2, 1) 
+        #gs.update(left = 0.07,right = 0.85 )
+        
+        readdata.grid_2plot(self)
+        ax2 = self.figure.add_subplot(self.gs[1])
+        ax = self.figure.add_subplot(self.gs[0])
+        
+        #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+        #cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])
+               
+        ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
+        ax2.set_xlabel('Number of day',fontsize= self.font_txt)
+        
+
+                
+        X_sed,Y_sed = np.meshgrid(x,y_sed)  
+                    
         if self.datescale_checkbox.isChecked() == True:  
-            
-            #X_sed = readdata.format_time_axis(self,ax2,xlen,
-            #                                  self.time_units,X_sed) 
             X_sed = readdata.use_num2date(self,self.time_units,X_sed)     
-            readdata.format_time_axis2(self,ax2,xlen)         
+            readdata.format_time_axis2(self,ax2,xlen)    
+                 
         if self.scale_all_axes.isChecked(): 
             sed_min  = round((
                 z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
@@ -181,8 +192,7 @@ def time_profile(self,start,stop):
             sed_ticks = (np.floor(sed_ticks*100)/100.)                
 
                
-        ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
-        ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
+  
                            
         ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
     
@@ -202,13 +212,14 @@ def time_profile(self,start,stop):
         ax2.set_xlim(np.min(X_sed),np.max(X_sed))
                                         
         # Add an axes at position rect [left, bottom, width, height]                    
-        cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-        
+        #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+        #cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35]) 
+                
         ax2.axhline(0, color='white', linestyle = '--',linewidth = 1)        
-        cb_sed = plt.colorbar(CS1,cax = cax1)
+        cb_sed = plt.colorbar(CS1,cax = self.cax1)
         cb_sed.set_ticks(sed_ticks)   
           
-        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])      
+     
              
         if self.yearlines_checkbox.isChecked()==True and \
            self.datescale_checkbox.isChecked()== False:
@@ -216,14 +227,14 @@ def time_profile(self,start,stop):
                 if n%365 == 0: 
                     ax2.axvline(n, color='white', linestyle = '--') 
         
-        if self.injlines_checkbox.isChecked()== True:       
-            readdata.plot_inj_lines(100,'r',ax2) #to change   
+        #if self.injlines_checkbox.isChecked()== True:       
+        #    readdata.plot_inj_lines(self,100,'r',ax2) #to change   
 
         #    ax2.axvline(730,color='red',linewidth = 2,
         #            linestyle = '--',zorder = 10)                       
                                                                
     X,Y = np.meshgrid(x,y)  
-    ax = self.figure.add_subplot(gs[0])
+
     
     if self.datescale_checkbox.isChecked() == True:          
         X = readdata.use_num2date(self,self.time_units,X)     
@@ -303,12 +314,12 @@ def time_profile(self,start,stop):
     ax.set_xlim(np.min(X),np.max(X))
        
     if self.yearlines_checkbox.isChecked()==True  and \
-       self._checkbox.isChecked()== False:
+       self.datescale_checkbox.isChecked()== False:
         for n in range(start,stop):
             if n%365 == 0: 
                 ax.axvline(n, color='white', linestyle = '--')     
                               
-    cb = plt.colorbar(CS,cax = cax)   #, ticks = wat_ticks   
+    cb = plt.colorbar(CS,cax = self.cax)   #, ticks = wat_ticks   
     #cb.set_ticks(wat_ticks)
 
 
