@@ -514,7 +514,7 @@ def widget_layout(self):
         self.grid.addWidget(self.toolbar,0,1,1,1) 
         self.grid.addWidget(self.fick_box,0,2,1,1)         
         self.grid.addWidget(self.time_prof_all,0,3,1,1)  
-        #self.grid.addWidget(self.cmap_groupBox,0,4,2,1) 
+        self.grid.addWidget(self.cmap_groupBox,0,4,2,1) 
         self.grid.addWidget(self.dist_groupBox,0,5,2,1)        
         self.grid.addWidget(self.time_groupBox,0,6,2,1)                      
         self.grid.addWidget(self.options_groupBox,0,7,2,1)  
@@ -537,19 +537,38 @@ def cmap_list(self):
     self.cmap_list = ['jet','inferno','rainbow','viridis','plasma','Paired']
     return self.cmap_list    
 
+def use_num2date(self, xaxis,xlen,time_units,X_subplot):   
+    X_subplot = num2date(X_subplot,
+                            units = time_units) 
 
-def format_time_axis(self, xaxis,xlen):   
-    '''self.format_time = num2date(xaxis,
-                            units = time_units)  
-    self.xaxis = self.format_time   
-    return self.xaxis'''
+    return X_subplot
 
-    if self.datescale_checkbox.isChecked() == True: 
-        if xlen > 365:
-            xaxis.xaxis_date()
-            xaxis.xaxis.set_major_formatter(
-                mdates.DateFormatter('%m/%Y'))  
-        else : 
-            xaxis.xaxis_date()
-            xaxis.xaxis.set_major_formatter(
-                mdates.DateFormatter('%b'))   
+def format_time_axis2(self, xaxis,xlen,time_units,X_subplot):   
+    if xlen > 365:
+        xaxis.xaxis_date()
+        xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter('%m/%Y'))  
+    else : 
+        xaxis.xaxis_date()
+        xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter('%b'))   
+
+
+
+def format_time_axis(self, xaxis,xlen,time_units,X_subplot):   
+    #self.format_time = num2date(X_subplot,
+    #                        units = time_units)  
+    X_subplot = num2date(X_subplot,
+                            units = time_units) 
+    # self.format_time       
+
+    #if self.datescale_checkbox.isChecked() == True: 
+    if xlen > 365:
+        xaxis.xaxis_date()
+        xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter('%m/%Y'))  
+    else : 
+        xaxis.xaxis_date()
+        xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter('%b'))   
+    return X_subplot
