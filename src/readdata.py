@@ -537,13 +537,12 @@ def cmap_list(self):
     self.cmap_list = ['jet','inferno','rainbow','viridis','plasma','Paired']
     return self.cmap_list    
 
-def use_num2date(self, xaxis,xlen,time_units,X_subplot):   
+def use_num2date(self,time_units,X_subplot):   
     X_subplot = num2date(X_subplot,
                             units = time_units) 
-
     return X_subplot
 
-def format_time_axis2(self, xaxis,xlen,time_units,X_subplot):   
+def format_time_axis2(self, xaxis,xlen):   
     if xlen > 365:
         xaxis.xaxis_date()
         xaxis.xaxis.set_major_formatter(
@@ -553,8 +552,10 @@ def format_time_axis2(self, xaxis,xlen,time_units,X_subplot):
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%b'))   
 
-
-
+def plot_inj_lines(self,numday,col,axis):
+    axis.axvline(numday,color= col, linewidth = 2,
+                   linestyle = '--',zorder = 10) 
+'''    
 def format_time_axis(self, xaxis,xlen,time_units,X_subplot):   
     #self.format_time = num2date(X_subplot,
     #                        units = time_units)  
@@ -571,4 +572,4 @@ def format_time_axis(self, xaxis,xlen,time_units,X_subplot):
         xaxis.xaxis_date()
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%b'))   
-    return X_subplot
+    return X_subplot'''

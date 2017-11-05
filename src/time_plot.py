@@ -157,9 +157,11 @@ def time_profile(self,start,stop):
         ax2 = self.figure.add_subplot(gs[1])
               
         if self.datescale_checkbox.isChecked() == True:  
-            X_sed = readdata.format_time_axis(self,ax2,xlen,
-                                              self.time_units,X_sed) 
-                    
+            
+            #X_sed = readdata.format_time_axis(self,ax2,xlen,
+            #                                  self.time_units,X_sed) 
+            X_sed = readdata.use_num2date(self,self.time_units,X_sed)     
+            readdata.format_time_axis2(self,ax2,xlen)         
         if self.scale_all_axes.isChecked(): 
             sed_min  = round((
                 z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
@@ -214,19 +216,19 @@ def time_profile(self,start,stop):
                 if n%365 == 0: 
                     ax2.axvline(n, color='white', linestyle = '--') 
         
-        #if self.injlines_checkbox.isChecked()== True:             
-        #    ax2.axvline(365,color='red', linewidth = 2,
-        #            linestyle = '--',zorder = 10) 
+        if self.injlines_checkbox.isChecked()== True:       
+            readdata.plot_inj_lines(100,'r',ax2) #to change   
+
         #    ax2.axvline(730,color='red',linewidth = 2,
         #            linestyle = '--',zorder = 10)                       
                                                                
     X,Y = np.meshgrid(x,y)  
     ax = self.figure.add_subplot(gs[0])
     
-    if self.datescale_checkbox.isChecked() == True:  
-        X = readdata.format_time_axis(self,ax,xlen,
-                                              self.time_units,X)     
-                      
+    if self.datescale_checkbox.isChecked() == True:          
+        X = readdata.use_num2date(self,self.time_units,X)     
+        readdata.format_time_axis2(self,ax,xlen)   
+                   
     if watmin == watmax :
         if watmax == 0: 
             watmax = 0.1
@@ -278,23 +280,15 @@ def time_profile(self,start,stop):
         #ax.pcolormesh(X,Y,mask_air,vmin=0,vmax=100,cmap = 'tab20_r')
         #ax2.pcolormesh(X,Y,mask_air,vmin=0,vmax=100,cmap = 'tab20_r') 
         if self.datescale_checkbox.isChecked() == True:  
-            readdata.use_num2date(self,ax2,xlen,self.time_units,X)
-            readdata.format_time_axis2(self,ax2,xlen,self.time_units,X)
-            #ax2.xaxis_date()
-            #ax2.xaxis.set_major_formatter(
-            #    mdates.DateFormatter('%m/%Y'))             
-            #X = readdata.format_time_axis(self,ax2,xlen,
-            #                                  self.time_units,X)        
+            readdata.format_time_axis2(self,ax2,xlen)
+       
         ax2.pcolormesh(X,Y,mask_wat,vmin=0,vmax=100,cmap = 'tab20_r') 
         CS1 = ax2.pcolormesh(X,Y, zz_sed, vmin = sedmin, vmax = sedmax,    
                     cmap= self.cmap1)        
         ax2.set_ylim(self.y1max,self.ny1min)   
         ax2.set_ylabel('h, m',fontsize= self.font_txt) 
            
-        #if self.datescale_checkbox.isChecked() == True: 
-            #f self.datescale_checkbox.isChecked() == True: 
-        #    pass
-            #readdata.format_time_axis(self,ax2,xlen)                  
+                 
             #air_line = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
             #ax.contour(X, Y,air,levels = [100],
             #     colors=('k',),linestyles=('--',),linewidths=(3,))                
