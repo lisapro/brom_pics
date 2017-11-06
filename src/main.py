@@ -37,7 +37,7 @@ params = {'legend.fontsize': 'x-large',
          'axes.titlesize':'x-large',
          'xtick.labelsize':'x-large',
          'ytick.labelsize':'x-large'}
-pylab.rcmParams.update(params)
+pylab.rcParams.update(params)
 class Window(QtWidgets.QDialog):
     
     def __init__(self, parent=None):
