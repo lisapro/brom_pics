@@ -144,29 +144,20 @@ def time_profile(self,start,stop):
         CS1 = ax2.contourf(X_sed,Y_sed, zz, #levels = sed_levs,        
                               extend="both", cmap= self.cmap1) '''                             
     elif self.sediment == False: 
-        #print()
-        gs = gridspec.GridSpec(1, 1) 
-        gs.update(left = 0.07,right = 0.85)
-        cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])        
-        ax = self.figure.add_subplot(gs[0])
+        readdata.grid_plot(self,1)     
+          
+        ax = self.figure.add_subplot(self.gs[0])
+
         
     elif self.sediment == True: 
                                  
-        #gs = gridspec.GridSpec(2, 1) 
-        #gs.update(left = 0.07,right = 0.85 )
+        readdata.grid_plot(self,2)
         
-        readdata.grid_2plot(self)
         ax2 = self.figure.add_subplot(self.gs[1])
-        ax = self.figure.add_subplot(self.gs[0])
-        
-        #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-        #cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])
-               
+        ax = self.figure.add_subplot(self.gs[0])               
         ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
         ax2.set_xlabel('Number of day',fontsize= self.font_txt)
-        
-
-                
+                        
         X_sed,Y_sed = np.meshgrid(x,y_sed)  
                     
         if self.datescale_checkbox.isChecked() == True:  
@@ -177,25 +168,20 @@ def time_profile(self,start,stop):
             sed_min  = round((
                 z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
             sed_max = round((
-                z_all_columns[start:stop,self.nysedmin-2:,:].max()),2) 
-            sed_ticks = readdata.ticks(sed_min,sed_max)
-            
-        else :
-            sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
-            sed_max = readdata.varmax(self,zz,'sedtime',start,stop)     
-            sed_ticks = readdata.ticks(sed_min,sed_max)
-                        
-        if index == 'pH': 
+                z_all_columns[start:stop,self.nysedmin-2:,:].max()),2)            
+        elif index == 'pH': 
             sed_min  = (zz[self.nysedmin-2:,:].min()) 
             sed_max  = (zz[self.nysedmin-2:,:].max())                 
             sed_ticks = readdata.ticks(sed_min,sed_max) 
-            sed_ticks = (np.floor(sed_ticks*100)/100.)                
-
+            sed_ticks = (np.floor(sed_ticks*100)/100.)  
+        else :
+            sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
+            sed_max = readdata.varmax(self,zz,'sedtime',start,stop) 
+                
+        sed_ticks = readdata.ticks(sed_min,sed_max)
+        #sed_ticks = readdata.ticks(sed_min,sed_max)                         
                
-  
-                           
-        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin
-    
+   
         if self.interpolate_checkbox.isChecked():
             sed_levs = np.linspace(sed_min,sed_max,
                             num = self.num) 
@@ -210,11 +196,7 @@ def time_profile(self,start,stop):
             #ax2.contour(X_sed,Y_sed,zz,levels = [1],
             #     colors=('k',),linestyles=('--',),linewidths=(3,))
         ax2.set_xlim(np.min(X_sed),np.max(X_sed))
-                                        
-        # Add an axes at position rect [left, bottom, width, height]                    
-        #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-        #cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35]) 
-                
+        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin                                                        
         ax2.axhline(0, color='white', linestyle = '--',linewidth = 1)        
         cb_sed = plt.colorbar(CS1,cax = self.cax1)
         cb_sed.set_ticks(sed_ticks)   

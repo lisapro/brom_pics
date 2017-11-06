@@ -23,6 +23,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5 import QtWidgets
 import os, sys 
 import matplotlib.dates as mdates
+import matplotlib.gridspec as gridspec
 
 #getcontext().prec = 6 
 majorLocator = mtick.MultipleLocator(2.)
@@ -131,19 +132,7 @@ def colors(self):
     self.wat_col1 = '#c9ecfd'  
     self.bbl_col1 = '#ccd6de'
     self.sed_col1 = '#a3abb1'
-    
-    '''    
-    #define color maps 
-    try:
-        cmap_name = self.cmap_water_box.currentText()
-        cmap1_name = self.cmap_water_box.currentText()
-        #plt.cm.varidis #jet #gnuplot#jet#gist_rainbow
-        self.cmap = plt.get_cmap(cmap_name) 
-        self.cmap1 = plt.get_cmap(cmap1_name) 
-    except ValueError:
-        self.cmap = plt.get_cmap('jet')
-        self.cmap1 = plt.get_cmap('gist_rainbow')'''
-        
+           
     self.font_txt = 15 #(height / 190.)
     # text on figure 2 (Water; BBL, Sed) 
     self.xlabel_fontsize = 10
@@ -329,27 +318,6 @@ def varmin(self,variable,vartype,start,stop):
         n = (ma.min(variable[0:self.ny1max,start:stop]))         
     elif vartype == 'sedtime'  : #time plot sediment
         n = np.floor(variable[self.nysedmin-2:,start:stop].min()) 
-    '''            
-    # make "beautiful"  values to show on ticks
-    ##print ('varmin', n)            
-    if n > 10000. and n <= 100000.:  
-        n = int(np.floor(n/ 1000.0)) * 1000 - 1000.
-    elif n > 1000. and n <= 10000.:  
-        n = int(np.floor(n / 100.0)) * 100  #- 20.                                 
-    elif n >= 100. and n < 1000.:
-        n = int(np.floor(float(n) / 10.0)) * 10 - 1.
-    elif n >= 1. and n < 100. :
-        n =  int(np.floor(float(n)))  - 1.  
-    elif n >= 0.1 and n < 1. :
-        n =  (np.floor(n*10.))/10. - 0.1  
-    elif n >= 0.01 and n < 0.1 :
-        n =  (np.floor(n*100.))/100. 
-    elif n >= 0.001 and n < 0.01 :
-        n =  (np.floor(n*1000.))/1000.
-    elif n >= 0.0001 and n < 0.001 :
-        n =  (np.floor(n*10000))/10000 -  0.0001   
-    elif n >= 0.00001 and n < 0.0001 :
-        n =  (np.floor(n*100000))/100000 '''
   
     self.watmin =  n  
                  
@@ -408,23 +376,7 @@ def ticks(minv,maxv):
 
     return ticks
     #print (ticks)
-#function to define y limits 
-# 
-'''
-def y_lim(self,axis): 
-    if axis in (self.ax00,self.ax10,self.ax20):   #water          
-        axis.fill_between(self.xticks, self.y1max, self.y1min,
-                          facecolor= self.wat_col, alpha=self.a_w)  
-    elif axis in (self.ax01,self.ax11,self.ax21):  #BBL
-        axis.fill_between(self.xticks, self.y2max, self.y2min_fill_bbl,
-                           facecolor= self.bbl_col, alpha=self.a_bbl)
-        #plt.setp(axis.get_xticklabels(), visible=False)                                           
-    elif axis in (self.ax02,self.ax12,self.ax22): #sediment 
-        axis.fill_between(self.xticks, self.ysedmax_fill_bbl,
-                           self.ysedmin, facecolor= self.bbl_col, alpha=self.a_bbl)  
-        axis.fill_between(self.xticks, self.ysedmax, self.ysedmin_fill_sed,
-                           facecolor= self.sed_col, alpha=self.a_sed)    
-'''
+
 
 #function to define y limits  
 def y_lim1(self,axis): 
@@ -556,13 +508,20 @@ def format_time_axis2(self, xaxis,xlen):
 def plot_inj_lines(self,numday,col,axis):
     axis.axvline(numday,color= col, linewidth = 2,
                    linestyle = '--',zorder = 10) 
-import matplotlib.gridspec as gridspec
 
-def grid_2plot(self):
-    self.gs = gridspec.GridSpec(2, 1) 
-    self.gs.update(left = 0.07,right = 0.85 )
-    self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-    self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])    
+
+def grid_plot(self,numplots):
+    if numplots == 1:
+        self.gs = gridspec.GridSpec(1, 1) 
+        self.gs.update(left = 0.07,right = 0.85)
+        self.cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])        
+        #ax = self.figure.add_subplot(gs[0])  
+             
+    if numplots == 2: 
+        self.gs = gridspec.GridSpec(2, 1) 
+        self.gs.update(left = 0.07,right = 0.85 )
+        self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+        self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])    
     '''self.ax = self.figure.add_subplot(gs[0])
     self.ax2 = self.figure.add_subplot(gs[1])       
     self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
