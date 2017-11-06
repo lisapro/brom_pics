@@ -278,7 +278,7 @@ def varmax(self,variable,vartype,start,stop):
         n = ma.max(variable[0:self.ny1max,:]) #.max()
       
     elif vartype == 'sedtime' : #time plot sediment
-        n = variable[self.nysedmin-2:,:].max()
+        n = ma.max(variable[self.nysedmin:,:]) #.max()
 
                                                                                          
     self.watmax =  n   
@@ -315,13 +315,26 @@ def varmin(self,variable,vartype,start,stop):
     elif vartype == 'seddist' :  #dist plot sediment
         n = np.floor(variable[start:stop,self.nysedmin:].min())        
     elif vartype == 'wattime' : #time plot water
-        n = (ma.min(variable[0:self.ny1max,start:stop]))         
+        # don't put start and stop here 
+        n = (ma.min(variable[0:self.ny1max,:]))  
+               
     elif vartype == 'sedtime'  : #time plot sediment
-        n = np.floor(variable[self.nysedmin-2:,start:stop].min()) 
+        n = np.floor(variable[self.nysedmin-2:,:].min()) 
   
     self.watmin =  n  
                  
     return self.watmin
+
+def check_minmax(self,call_min,call_max):
+    if call_min == call_max :
+        if call_max == 0: 
+            call_max = 0.1
+            call_min = 0
+        else:     
+            call_max = call_max + call_max/1000.
+            call_min = call_min - call_max/1000. 
+            
+    return call_min,call_max
 
 # make "beautiful"  values to show on ticks 
 def ticks(minv,maxv):    
@@ -370,10 +383,11 @@ def ticks(minv,maxv):
     elif (maxv - minv) > 0.02 and ( 
      maxv - minv) <= 0.2 : 
         ticks = np.arange((math.trunc(minv/10)*10),maxv,0.01) 
+    elif (maxv - minv) == 0:
+        ticks = np.arange(minv - minv/100.,maxv + minv/100.,minv/1000.)
     else : 
         ticks = [minv,maxv]    
         #+ (maxv - minv)/2.                  
-
     return ticks
     #print (ticks)
 
@@ -526,7 +540,14 @@ def grid_plot(self,numplots):
     self.ax2 = self.figure.add_subplot(gs[1])       
     self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
     self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])'''
-    
-    
-    
-    
+
+def get_cmap(self):    
+    try:
+        # take values of cmaps from comboboxes 
+        cmap_name = self.cmap_water_box.currentText()
+        cmap1_name = self.cmap_sed_box.currentText()
+        self.cmap = plt.get_cmap(cmap_name) 
+        self.cmap1 = plt.get_cmap(cmap1_name) 
+    except ValueError:
+        self.cmap = plt.get_cmap('jet')
+        self.cmap1 = plt.get_cmap('gist_rainbow')       

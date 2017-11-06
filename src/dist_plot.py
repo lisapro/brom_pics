@@ -21,7 +21,7 @@ def dist_profile(self):
         messagebox = QtWidgets.QMessageBox.about(
             self, "Retry", 'Choose variable,please') 
         return None            
-
+    readdata.get_cmap(self)
     numday = self.numday_box.value()  
     data = np.array(self.fh.variables[index])
     data_units = self.fh.variables[index].units
@@ -74,7 +74,7 @@ def dist_profile(self):
             gs = gridspec.GridSpec(1, 1)                        
             cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
                               
-        else :  
+        elif self.sediment == True :  
             gs = gridspec.GridSpec(2, 1)         
             
             X_sed,Y_sed = np.meshgrid(self.dist,y_sed)                       
@@ -97,12 +97,12 @@ def dist_profile(self):
             sed_ticks = readdata.ticks(sed_min,sed_max) 
             sed_levs = np.linspace(sed_min,sed_max,
                                  num = self.num)                                     
-           
             #int_wat_levs = []
             #int_sed_levs= []
-                                    
+                       
             CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,
-                                  extend="both", cmap=self.cmap1)      
+                                  extend="both", cmap=self.cmap)      
+            
             ax2.axhline(0, color='white', linestyle = '--',
                         linewidth = 1 )                   
 
@@ -134,7 +134,7 @@ def dist_profile(self):
 
               
         CS = ax.contourf(X,Y, zz, levels= wat_levs, 
-                             extend="both",  cmap=self.cmap)
+                             extend="both",  cmap=self.cmap1)
         
         cb = plt.colorbar(CS,cax = cax,ticks = wat_ticks)            
         cb.set_ticks(wat_ticks)   

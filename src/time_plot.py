@@ -29,18 +29,10 @@ def time_profile(self,start,stop):
     except AttributeError:   
         messagebox = QtWidgets.QMessageBox.about(self, "Retry",
                                              'Choose variable,please') 
-        return None           
-        
-    try:
-        # take values of cmaps from comboboxes 
-        cmap_name = self.cmap_water_box.currentText()
-        cmap1_name = self.cmap_sed_box.currentText()
-        self.cmap = plt.get_cmap(cmap_name) 
-        self.cmap1 = plt.get_cmap(cmap1_name) 
-    except ValueError:
-        self.cmap = plt.get_cmap('jet')
-        self.cmap1 = plt.get_cmap('gist_rainbow')
-        
+        return None     
+          
+    readdata.get_cmap(self)    
+       
     ## read chosen variable     
     z = np.array(self.fh.variables[index]) 
     
@@ -104,6 +96,7 @@ def time_profile(self,start,stop):
     if 'Kz' in self.names_vars and index != 'pH':
         watmin = readdata.varmin(self,zz,'wattime',start,stop) 
         watmax = readdata.varmax(self,zz,'wattime',start,stop)     
+        
     elif 'Kz'in self.names_vars and index == 'pH':       
         # take the value with two decimal places 
         watmin = round(zz[0:self.ny1max,:].min(),2) 
@@ -122,39 +115,47 @@ def time_profile(self,start,stop):
         z_all_columns = np.array(self.fh.variables[index])  
         watmin = round((z_all_columns[start:stop,0:self.ny1max,:].min()),0) 
         watmax = round((z_all_columns[start:stop,0:self.ny1max,:].max()),2) 
-                
+    
+    check_minmax = readdata.check_minmax(self,watmin,watmax)
+    watmin = check_minmax[0]
+    watmax = check_minmax[1]
+    
+           
     wat_ticks = readdata.ticks(watmin,watmax)   
     
     #Urmia or any other file with changing depth 
-    if changing_depth == True:     
-        gs = gridspec.GridSpec(2, 1) 
-        gs.update(left = 0.07,right = 0.85 ) 
-        ax2 = self.figure.add_subplot(gs[1])   
+                          
+    if self.sediment == False and changing_depth != True: 
+        readdata.grid_plot(self,1)              
+        ax = self.figure.add_subplot(self.gs[0])
         
-        cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
-        cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])  
-           
-        sedmin = readdata.varmin(self,zz_sed,'wattime',start,stop) 
-        sedmax = readdata.varmax(self,zz_sed,'wattime',start,stop)   
-                           
+    elif changing_depth == True:     
+
+        readdata.grid_plot(self,2) 
+               
+        ax = self.figure.add_subplot(self.gs[0])
+        ax2 = self.figure.add_subplot(self.gs[1])   
+                   
+        sed_min = readdata.varmin(self,zz_sed,'sedtime',start,stop) 
+        sed_max = readdata.varmax(self,zz_sed,'sedtime',start,stop)   
+        
+        check_minmax = readdata.check_minmax(self,sed_min,sed_max)
+        sed_min = check_minmax[0]
+        sed_max = check_minmax[1]                           
+        #
         '''X_sed,Y_sed = np.meshgrid(x,y)   
 
         ax2.set_ylabel('h, m',fontsize= self.font_txt) 
         ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
         CS1 = ax2.contourf(X_sed,Y_sed, zz, #levels = sed_levs,        
-                              extend="both", cmap= self.cmap1) '''                             
-    elif self.sediment == False: 
-        readdata.grid_plot(self,1)     
-          
-        ax = self.figure.add_subplot(self.gs[0])
-
-        
+                              extend="both", cmap= self.cmap1) '''           
     elif self.sediment == True: 
                                  
         readdata.grid_plot(self,2)
         
+        ax = self.figure.add_subplot(self.gs[0]) 
         ax2 = self.figure.add_subplot(self.gs[1])
-        ax = self.figure.add_subplot(self.gs[0])               
+                      
         ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
         ax2.set_xlabel('Number of day',fontsize= self.font_txt)
                         
@@ -177,14 +178,16 @@ def time_profile(self,start,stop):
         else :
             sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
             sed_max = readdata.varmax(self,zz,'sedtime',start,stop) 
+    
+        check_minmax = readdata.check_minmax(self,sed_min,sed_max)
+        sed_min = check_minmax[0]
+        sed_max = check_minmax[1]
                 
         sed_ticks = readdata.ticks(sed_min,sed_max)
-        #sed_ticks = readdata.ticks(sed_min,sed_max)                         
-               
-   
+        sed_levs = np.linspace(sed_min,sed_max,
+                            num = self.num)                        
+                 
         if self.interpolate_checkbox.isChecked():
-            sed_levs = np.linspace(sed_min,sed_max,
-                            num = self.num) 
             CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,        
                               extend="both", cmap= self.cmap1)                  
         else: 
@@ -196,8 +199,10 @@ def time_profile(self,start,stop):
             #ax2.contour(X_sed,Y_sed,zz,levels = [1],
             #     colors=('k',),linestyles=('--',),linewidths=(3,))
         ax2.set_xlim(np.min(X_sed),np.max(X_sed))
-        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin                                                        
-        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1)        
+        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin    
+                                                            
+        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1)     
+           
         cb_sed = plt.colorbar(CS1,cax = self.cax1)
         cb_sed.set_ticks(sed_ticks)   
           
@@ -221,23 +226,7 @@ def time_profile(self,start,stop):
     if self.datescale_checkbox.isChecked() == True:          
         X = readdata.use_num2date(self,self.time_units,X)     
         readdata.format_time_axis2(self,ax,xlen)   
-                   
-    if watmin == watmax :
-        if watmax == 0: 
-            watmax = 0.1
-            watmin = 0
-        else:     
-            watmax = watmax + watmax/1000.
-            watmin = watmin - watmax/1000. 
-            
-    if self.sediment != False:        
-        if sed_min == sed_max: 
-            if sed_max == 0: 
-                sed_max = 0.1
-                sed_min = 0
-            else:     
-                sed_max = sed_max + sed_max/10.   
-         
+                             
     self.ny1min = min(self.depth)
     #ax.set_title(index)
     
@@ -276,7 +265,8 @@ def time_profile(self,start,stop):
             readdata.format_time_axis2(self,ax2,xlen)
        
         ax2.pcolormesh(X,Y,mask_wat,vmin=0,vmax=100,cmap = 'tab20_r') 
-        CS1 = ax2.pcolormesh(X,Y, zz_sed, vmin = sedmin, vmax = sedmax,    
+        CS1 = ax2.pcolormesh(X,Y, zz_sed, vmin = sed_min,
+                              vmax = sed_max,    
                     cmap= self.cmap1)        
         ax2.set_ylim(self.y1max,self.ny1min)   
         ax2.set_ylabel('h, m',fontsize= self.font_txt) 
@@ -291,7 +281,7 @@ def time_profile(self,start,stop):
         #add contour to 1 om ar saturation
         #ax.contour(X, Y,zz,levels = [1],
         #         colors=('k',),linestyles=('--',),linewidths=(3,))
-        cb_sed = plt.colorbar(CS1,cax = cax1)
+        cb_sed = plt.colorbar(CS1,cax = self.cax1)
         
     ax.set_xlim(np.min(X),np.max(X))
        

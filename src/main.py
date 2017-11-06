@@ -37,7 +37,7 @@ params = {'legend.fontsize': 'x-large',
          'axes.titlesize':'x-large',
          'xtick.labelsize':'x-large',
          'ytick.labelsize':'x-large'}
-pylab.rcmParams.update(params)
+pylab.rcParams.update(params)
 class Window(QtWidgets.QDialog):
     
     def __init__(self, parent=None):
@@ -165,13 +165,15 @@ class Window(QtWidgets.QDialog):
         self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
               self.canvas.height())
         
-    def call_all_year(self):    
+    def call_all_year(self): 
+          
         all_year_1d.plot(self)
         
     def call_fluxes(self):    
         fluxes_plot.fluxes(self)
         
     def call_print_dist(self): 
+        
         dist_plot.dist_profile(self)
             
     def call_print_lyr(self): #last year
