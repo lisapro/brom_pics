@@ -23,7 +23,7 @@ import numpy.ma as ma
 def time_profile(self,start,stop):
     
     plt.clf()
-    changing_depth = False    
+    self.changing_depth = False    
     try:
         index = str(self.qlistwidget.currentItem().text())
     except AttributeError:   
@@ -35,7 +35,6 @@ def time_profile(self,start,stop):
        
     ## read chosen variable     
     z = np.array(self.fh.variables[index]) 
-    
     # take the value of data units for the title
     data_units = self.fh.variables[index].units
     
@@ -78,218 +77,148 @@ def time_profile(self,start,stop):
     z = z.reshape(xlen,ylen)       
     tomask_zz = z.T  
     zz = ma.masked_invalid(tomask_zz) #mask NaNs 
-    
-    if 'V_air' in self.names_vars:
-        air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
-        v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
-        v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,1]).T    
-        changing_depth = True 
-               
-        zz_sed = zz     
-        zz =  ma.masked_where(air >= 90, zz)
-        zz =  ma.masked_where(v_sed > 30, zz)   #_Change value  
-        zz =  ma.masked_where(v_wat < 40, zz )   
-        
-        zz_sed =  ma.masked_where(air >= 90, zz_sed) 
-        zz_sed =  ma.masked_where(v_sed < 30, zz_sed)   
-                       
-    if 'Kz' in self.names_vars and index != 'pH':
-        watmin = readdata.varmin(self,zz,'wattime',start,stop) 
-        watmax = readdata.varmax(self,zz,'wattime',start,stop)     
-        
-    elif 'Kz'in self.names_vars and index == 'pH':       
-        # take the value with two decimal places 
-        watmin = round(zz[0:self.ny1max,:].min(),2) 
-        watmax = round(zz[0:self.ny1max,:].max(),2) 
-        wat_ticks = np.linspace(watmin,watmax,5)    
-        wat_ticks = (np.floor(wat_ticks*100)/100.)   
-        
-    # if we do not have kz     
-    else:  
-        self.ny1max = len(self.depth-1)
-        self.y1max = max(self.depth)    
-        watmin = readdata.varmin(self,zz,'wattime',start,stop) 
-        watmax = readdata.varmax(self,zz,'wattime',start,stop)
-        
-    if self.scale_all_axes.isChecked(): 
-        z_all_columns = np.array(self.fh.variables[index])  
-        watmin = round((z_all_columns[start:stop,0:self.ny1max,:].min()),0) 
-        watmax = round((z_all_columns[start:stop,0:self.ny1max,:].max()),2) 
-    
-    check_minmax = readdata.check_minmax(self,watmin,watmax)
-    watmin = check_minmax[0]
-    watmax = check_minmax[1]
-    
-           
-    wat_ticks = readdata.ticks(watmin,watmax)   
-    
-    #Urmia or any other file with changing depth 
+                                                                  
+    X,Y = np.meshgrid(x,y)
+            
+    self.ny1min = min(self.depth)
                           
-    if self.sediment == False and changing_depth != True: 
+    if self.sediment == False and 'V_air' not in self.names_vars : 
         readdata.grid_plot(self,1)              
-        ax = self.figure.add_subplot(self.gs[0])
+ 
+    elif 'V_air' in self.names_vars:
+        #elif self.changing_depth == True:     
+        #Urmia or any other file with changing depth 
+        readdata.grid_plot(self,2)  
         
-    elif changing_depth == True:     
-
-        readdata.grid_plot(self,2) 
-               
-        ax = self.figure.add_subplot(self.gs[0])
-        ax2 = self.figure.add_subplot(self.gs[1])   
-                   
-        sed_min = readdata.varmin(self,zz_sed,'sedtime',start,stop) 
-        sed_max = readdata.varmax(self,zz_sed,'sedtime',start,stop)   
-        
-        check_minmax = readdata.check_minmax(self,sed_min,sed_max)
-        sed_min = check_minmax[0]
-        sed_max = check_minmax[1]                           
-        #
+        self.ax2.set_ylim(self.y1max,self.ny1min)   
+        self.ax2.set_ylabel('h, m',fontsize= self.font_txt) 
+                
         '''X_sed,Y_sed = np.meshgrid(x,y)   
 
         ax2.set_ylabel('h, m',fontsize= self.font_txt) 
         ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
         CS1 = ax2.contourf(X_sed,Y_sed, zz, #levels = sed_levs,        
-                              extend="both", cmap= self.cmap1) '''           
+                              extend="both", cmap= self.cmap1) '''         
+        
+        
+        air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
+        v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
+        v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,1]).T    
+        #self.changing_depth = True 
+               
+        zz_sed = zz     
+        zz =  ma.masked_where(air >= 90, zz)
+        zz =  ma.masked_where(v_sed > 30, zz)   #_Change value  
+        zz =  ma.masked_where(v_wat < 40, zz )   
+        zz_sed =  ma.masked_where(air >= 90, zz_sed) 
+        zz_sed =  ma.masked_where(v_sed < 30, zz_sed) 
+          
+    
+        #elif 'V_air' in self.names_vars:
+        mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
+        mask_wat = np.ma.masked_where(v_wat < 30 , v_wat)        
+        mask_sed_air = np.ma.masked_where(v_sed < 30, v_sed)
+       
+        sed_maxmin = readdata.make_maxmin(
+            self,zz_sed,start,stop,index,'sediment')    
+        sed_min = sed_maxmin[0]     
+        sed_max = sed_maxmin[1]     
+        
+        # add masks for sediment and water               
+        self.ax.pcolormesh(X,Y,mask_sed_air,vmin=0,vmax=100,
+                           cmap = 'copper')  
+        self.ax2.pcolormesh(X,Y,mask_wat,vmin=0,vmax=100,
+                            cmap = 'tab20_r') 
+ 
+        if self.datescale_checkbox.isChecked() == True:  
+            readdata.format_time_axis2(self,self.ax2,xlen)
+       
+
+        CS1 = self.ax2.pcolormesh(X,Y, zz_sed, vmin = sed_min,
+                              vmax = sed_max,    
+                    cmap= self.cmap1)        
+            
+        cb_sed = plt.colorbar(CS1,cax = self.cax1) 
+           
     elif self.sediment == True: 
                                  
         readdata.grid_plot(self,2)
-        
-        ax = self.figure.add_subplot(self.gs[0]) 
-        ax2 = self.figure.add_subplot(self.gs[1])
-                      
-        ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
-        ax2.set_xlabel('Number of day',fontsize= self.font_txt)
+                              
+        self.ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
+        self.ax2.set_xlabel('Number of day',fontsize= self.font_txt)
                         
         X_sed,Y_sed = np.meshgrid(x,y_sed)  
                     
-        if self.datescale_checkbox.isChecked() == True:  
-            X_sed = readdata.use_num2date(self,self.time_units,X_sed)     
-            readdata.format_time_axis2(self,ax2,xlen)    
-                 
-        if self.scale_all_axes.isChecked(): 
-            sed_min  = round((
-                z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
-            sed_max = round((
-                z_all_columns[start:stop,self.nysedmin-2:,:].max()),2)            
-        elif index == 'pH': 
-            sed_min  = (zz[self.nysedmin-2:,:].min()) 
-            sed_max  = (zz[self.nysedmin-2:,:].max())                 
-            sed_ticks = readdata.ticks(sed_min,sed_max) 
-            sed_ticks = (np.floor(sed_ticks*100)/100.)  
-        else :
-            sed_min = readdata.varmin(self,zz,'sedtime',start,stop)
-            sed_max = readdata.varmax(self,zz,'sedtime',start,stop) 
-    
-        check_minmax = readdata.check_minmax(self,sed_min,sed_max)
-        sed_min = check_minmax[0]
-        sed_max = check_minmax[1]
+        maxmin = readdata.make_maxmin(self,
+                    zz,start,stop,index,'sediment')    
+        sed_min = maxmin[0]     
+        sed_max = maxmin[1] 
                 
         sed_ticks = readdata.ticks(sed_min,sed_max)
         sed_levs = np.linspace(sed_min,sed_max,
-                            num = self.num)                        
-                 
+                            num = self.num)  
+                              
+        self.ax2.set_xlim(np.min(X_sed),np.max(X_sed))
+        self.ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin                                                                
+        self.ax2.axhline(0, color='white', linestyle = '--',
+                         linewidth = 1)       
+        
+        
+        if self.datescale_checkbox.isChecked() == True:  
+            X_sed = readdata.use_num2date(self,self.time_units,X_sed)     
+            readdata.format_time_axis2(self,self.ax2,xlen)        
+                  
         if self.interpolate_checkbox.isChecked():
-            CS1 = ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,        
+            CS1 = self.ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,        
                               extend="both", cmap= self.cmap1)                  
         else: 
-            CS1 = ax2.pcolor(X_sed,Y_sed, zz, #mesh
+            CS1 = self.ax2.pcolor(X_sed,Y_sed, zz, #mesh
                                  vmin = sed_min, vmax = sed_max,    
                              cmap= self.cmap1) 
-            
-            # here we can add contour of some level with interesting value 
-            #ax2.contour(X_sed,Y_sed,zz,levels = [1],
-            #     colors=('k',),linestyles=('--',),linewidths=(3,))
-        ax2.set_xlim(np.min(X_sed),np.max(X_sed))
-        ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin    
-                                                            
-        ax2.axhline(0, color='white', linestyle = '--',linewidth = 1)     
-           
-        cb_sed = plt.colorbar(CS1,cax = self.cax1)
-        cb_sed.set_ticks(sed_ticks)   
-          
-     
-             
+    
         if self.yearlines_checkbox.isChecked()==True and \
            self.datescale_checkbox.isChecked()== False:
             for n in range(start,stop):
                 if n%365 == 0: 
-                    ax2.axvline(n, color='white', linestyle = '--') 
-        
-        #if self.injlines_checkbox.isChecked()== True:       
-        #    readdata.plot_inj_lines(self,100,'r',ax2) #to change   
-
-        #    ax2.axvline(730,color='red',linewidth = 2,
-        #            linestyle = '--',zorder = 10)                       
-                                                               
-    X,Y = np.meshgrid(x,y)  
-
-    
+                    self.ax2.axvline(n, color='white',
+                                      linestyle = '--')      
+           
+        cb_sed = plt.colorbar(CS1,cax = self.cax1)
+        cb_sed.set_ticks(sed_ticks)   
+              
     if self.datescale_checkbox.isChecked() == True:          
         X = readdata.use_num2date(self,self.time_units,X)     
-        readdata.format_time_axis2(self,ax,xlen)   
+        readdata.format_time_axis2(self,self.ax,xlen)   
                              
-    self.ny1min = min(self.depth)
+    maxmin = readdata.make_maxmin(self,zz,start,stop,index,'water')    
+    watmin = maxmin[0]     
+    watmax = maxmin[1]
     #ax.set_title(index)
-    
-    ax.set_title(index + ', ' + data_units) 
-    ax.set_ylim(self.y1max,self.ny1min)   
-    ax.set_ylabel('h, m',fontsize= self.font_txt)
+    #wat_ticks = readdata.ticks(watmin,watmax)
+        
+    self.ax.set_title(index + ', ' + data_units) 
+    self.ax.set_ylim(self.y1max,self.ny1min)   
+    self.ax.set_ylabel('h, m',fontsize= self.font_txt)
      
     wat_levs = np.linspace(watmin,watmax,num = self.num)
                             
-    ## contourf() draws contour lines and filled contours
-    ## levels = A list of floating point numbers indicating 
-    ## the level curves to draw, in increasing order    
-    ## If None, the first value of Z will correspond to the lower
-    ## left corner, location (0,0).  
-    ## If â€˜imageâ€™, the rc value for image.origin will be used.
-      
-
     if self.interpolate_checkbox.isChecked():
-        CS = ax.contourf(X,Y, zz, 
+        CS = self.ax.contourf(X,Y, zz, 
                          levels = wat_levs, extend="both", 
                               cmap= self.cmap)        
     else:       
-        CS = ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
+        CS = self.ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
                         cmap= self.cmap) 
         
-    if 'V_air' in self.names_vars:
-        mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
-        mask_wat = np.ma.masked_where(v_wat < 30 , v_wat)        
-        mask_sed_air = np.ma.masked_where(v_sed < 30, v_sed)
-    
-        # add masks for sediment and water               
-        ax.pcolormesh(X,Y,mask_sed_air,vmin=0,vmax=100,cmap = 'copper')                    
-        #ax.pcolormesh(X,Y,mask_air,vmin=0,vmax=100,cmap = 'tab20_r')
-        #ax2.pcolormesh(X,Y,mask_air,vmin=0,vmax=100,cmap = 'tab20_r') 
-        if self.datescale_checkbox.isChecked() == True:  
-            readdata.format_time_axis2(self,ax2,xlen)
-       
-        ax2.pcolormesh(X,Y,mask_wat,vmin=0,vmax=100,cmap = 'tab20_r') 
-        CS1 = ax2.pcolormesh(X,Y, zz_sed, vmin = sed_min,
-                              vmax = sed_max,    
-                    cmap= self.cmap1)        
-        ax2.set_ylim(self.y1max,self.ny1min)   
-        ax2.set_ylabel('h, m',fontsize= self.font_txt) 
-           
-                 
-            #air_line = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
-            #ax.contour(X, Y,air,levels = [100],
-            #     colors=('k',),linestyles=('--',),linewidths=(3,))                
-                #zz =  ma.masked_where(air >= 100, zz)
-                
-        ## here we can add contour of some level with interesting value
-        #add contour to 1 om ar saturation
-        #ax.contour(X, Y,zz,levels = [1],
-        #         colors=('k',),linestyles=('--',),linewidths=(3,))
-        cb_sed = plt.colorbar(CS1,cax = self.cax1)
+
         
-    ax.set_xlim(np.min(X),np.max(X))
+    self.ax.set_xlim(np.min(X),np.max(X))
        
     if self.yearlines_checkbox.isChecked()==True  and \
        self.datescale_checkbox.isChecked()== False:
         for n in range(start,stop):
             if n%365 == 0: 
-                ax.axvline(n, color='white', linestyle = '--')     
+                self.ax.axvline(n, color='white', linestyle = '--')     
                               
     cb = plt.colorbar(CS,cax = self.cax)   #, ticks = wat_ticks   
     #cb.set_ticks(wat_ticks)

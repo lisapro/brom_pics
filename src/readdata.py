@@ -529,18 +529,22 @@ def grid_plot(self,numplots):
         self.gs = gridspec.GridSpec(1, 1) 
         self.gs.update(left = 0.07,right = 0.85)
         self.cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])        
-        #ax = self.figure.add_subplot(gs[0])  
+        self.ax = self.figure.add_subplot(self.gs[0])  
              
     if numplots == 2: 
         self.gs = gridspec.GridSpec(2, 1) 
         self.gs.update(left = 0.07,right = 0.85 )
         self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
         self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])    
-    '''self.ax = self.figure.add_subplot(gs[0])
-    self.ax2 = self.figure.add_subplot(gs[1])       
-    self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
+        self.ax = self.figure.add_subplot(self.gs[0])
+        self.ax2 = self.figure.add_subplot(self.gs[1])       
+    '''self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
     self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])'''
 
+        
+        
+        
+        
 def get_cmap(self):    
     try:
         # take values of cmaps from comboboxes 
@@ -550,4 +554,86 @@ def get_cmap(self):
         self.cmap1 = plt.get_cmap(cmap1_name) 
     except ValueError:
         self.cmap = plt.get_cmap('jet')
-        self.cmap1 = plt.get_cmap('gist_rainbow')       
+        self.cmap1 = plt.get_cmap('gist_rainbow')    
+        
+        
+def make_maxmin(self,var,start,stop,index,type):
+    if  self.change_limits_checkbox.isChecked():
+        # gat values of max and min 
+        pass
+    elif type == 'water': 
+        maxmin = calculate_wat_maxmin(
+            self,var,start,stop,index)
+    elif type == 'sediment': 
+        maxmin = calculate_sed_maxmin(
+            self,var,start,stop,index)        
+    return maxmin
+        
+def calculate_wat_maxmin(self,var,start,stop,index):        
+    zz = var
+    if self.scale_all_axes.isChecked(): 
+        z_all_columns = np.array(self.fh.variables[index])  
+        watmin = round((
+            z_all_columns[start:stop,0:self.ny1max,:].min()),0) 
+        watmax = round((
+            z_all_columns[start:stop,0:self.ny1max,:].max()),2)                         
+    elif 'Kz' in self.names_vars and index != 'pH':
+        watmin = varmin(self,zz,'wattime',start,stop) 
+        watmax = varmax(self,zz,'wattime',start,stop)     
+        
+    elif 'Kz'in self.names_vars and index == 'pH':       
+        # take the value with two decimal places 
+        watmin = round(zz[0:self.ny1max,:].min(),2) 
+        watmax = round(zz[0:self.ny1max,:].max(),2) 
+        #wat_ticks = np.linspace(watmin,watmax,5)    
+        #wat_ticks = (np.floor(wat_ticks*100)/100.)   
+        
+    # if we do not have kz     
+    else:  
+        self.ny1max = len(self.depth-1)
+        self.y1max = max(self.depth)    
+        watmin = varmin(self,zz,'wattime',start,stop) 
+        watmax = varmax(self,zz,'wattime',start,stop)
+    
+    check = check_minmax(self,watmin,watmax)
+    watmin = check[0]
+    watmax = check[1]   
+    
+    return watmin,watmax 
+
+def calculate_sed_maxmin(self,var,start,stop,index):     
+    zz = var  
+ 
+    if self.scale_all_axes.isChecked(): 
+        z_all_columns = np.array(self.fh.variables[index])  
+        sed_min  = round((
+                z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
+        sed_max = round((
+                z_all_columns[start:stop,self.nysedmin-2:,:].max()),2)                  
+    elif index == 'pH': 
+        sed_min  = (zz[self.nysedmin-2:,:].min()) 
+        sed_max  = (zz[self.nysedmin-2:,:].max())                 
+        #sed_ticks = readdata.ticks(sed_min,sed_max) 
+        #sed_ticks = (np.floor(sed_ticks*100)/100.)  
+    else :
+        sed_min = varmin(self,zz,'sedtime',start,stop)
+        sed_max = varmax(self,zz,'sedtime',start,stop) 
+        
+    check = check_minmax(self,sed_min,sed_max)
+    sedmin = check[0]
+    sedmax = check[1]   
+    
+    return sedmin,sedmax 
+
+## here we can add contour of some level with interesting value
+#add contour to 1 om ar saturation
+#ax.contour(X, Y,air,levels = [100],
+#     colors=('k',),linestyles=('--',),linewidths=(3,))        
+#ax.contour(X, Y,zz,levels = [1],
+#         colors=('k',),linestyles=('--',),linewidths=(3,))           #if self.injlines_checkbox.isChecked()== True:       
+#    readdata.plot_inj_lines(self,100,'r',ax2) #to change   
+
+#    ax2.axvline(730,color='red',linewidth = 2,
+#            linestyle = '--',zorder = 10)  
+
+             

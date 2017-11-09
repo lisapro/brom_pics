@@ -293,7 +293,9 @@ def createOptionsGroup(self):
         self.options_groupBox.setLayout(vbox)     
 
 def createCmapLimitsGroup(self):
+        
         self.cmap_groupBox = QtWidgets.QGroupBox("colour map limits ")  
+        self.change_limits_checkbox = QtWidgets.QCheckBox('Change limits')
         self.label_maxwater = QtWidgets.QLabel('cmap max water: ')
         self.label_minwater = QtWidgets.QLabel('min water: ')   
         self.label_maxsed = QtWidgets.QLabel('cmap max sediment: ')
@@ -304,15 +306,18 @@ def createCmapLimitsGroup(self):
         self.box_maxsed = QtWidgets.QSpinBox()        
                
         cmap_grid = QtWidgets.QGridLayout(self.cmap_groupBox) 
-         
-        cmap_grid.addWidget(self.label_minwater,0,0,1,1)
-        cmap_grid.addWidget(self.label_maxwater,0,1,1,1)
-        cmap_grid.addWidget(self.box_minwater,1,0,1,1)
-        cmap_grid.addWidget(self.box_maxwater,1,1,1,1)           
-        cmap_grid.addWidget(self.label_minsed,2,0,1,1)        
-        cmap_grid.addWidget(self.label_maxsed,2,1,1,1)
-        cmap_grid.addWidget(self.box_minsed,3,0,1,1)
-        cmap_grid.addWidget(self.box_maxsed,3,1,1,1)       
+        
+        cmap_grid.addWidget(self.change_limits_checkbox,0,0,1,1) 
+        
+        cmap_grid.addWidget(self.label_minwater,1,0,1,1)
+        cmap_grid.addWidget(self.label_maxwater,1,1,1,1)
+        cmap_grid.addWidget(self.box_minwater,2,0,1,1)
+        cmap_grid.addWidget(self.box_maxwater,2,1,1,1)  
+                 
+        cmap_grid.addWidget(self.label_minsed,3,0,1,1)        
+        cmap_grid.addWidget(self.label_maxsed,3,1,1,1)
+        cmap_grid.addWidget(self.box_minsed,4,0,1,1)
+        cmap_grid.addWidget(self.box_maxsed,4,1,1,1)       
                                 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
