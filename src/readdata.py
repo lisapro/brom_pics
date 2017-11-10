@@ -527,15 +527,15 @@ def plot_inj_lines(self,numday,col,axis):
 def grid_plot(self,numplots):
     if numplots == 1:
         self.gs = gridspec.GridSpec(1, 1) 
-        self.gs.update(left = 0.07,right = 0.85)
-        self.cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])        
+        self.gs.update(left = 0.05,right = 0.88)
+        self.cax = self.figure.add_axes([0.9, 0.1, 0.02, 0.8])        
         self.ax = self.figure.add_subplot(self.gs[0])  
              
     if numplots == 2: 
         self.gs = gridspec.GridSpec(2, 1) 
-        self.gs.update(left = 0.07,right = 0.85 )
-        self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-        self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])    
+        self.gs.update(left = 0.05,right = 0.88 )
+        self.cax1 = self.figure.add_axes([0.9, 0.1, 0.02, 0.35])
+        self.cax = self.figure.add_axes([0.9, 0.53, 0.02, 0.35])    
         self.ax = self.figure.add_subplot(self.gs[0])
         self.ax2 = self.figure.add_subplot(self.gs[1])       
     '''self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
