@@ -510,11 +510,15 @@ def use_num2date(self,time_units,X_subplot):
     return X_subplot
 
 def format_time_axis2(self, xaxis,xlen):   
-    if xlen > 365:
+    if xlen > 365 and xlen < 365*5 :
         xaxis.xaxis_date()
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%m/%Y'))  
-    else : 
+    elif xlen >= 365*5 :
+        xaxis.xaxis_date()
+        xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter('%Y'))          
+    elif xlen <= 365: 
         xaxis.xaxis_date()
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%b'))   

@@ -92,13 +92,13 @@ def time_profile(self,start,stop):
         
         self.ax2.set_ylim(self.y1max,self.ny1min)   
         self.ax2.set_ylabel('h, m',fontsize= self.font_txt) 
-                
-        '''X_sed,Y_sed = np.meshgrid(x,y)   
+               
+        #X_sed,Y_sed = np.meshgrid(x,y)   
 
-        ax2.set_ylabel('h, m',fontsize= self.font_txt) 
-        ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
-        CS1 = ax2.contourf(X_sed,Y_sed, zz, #levels = sed_levs,        
-                              extend="both", cmap= self.cmap1) '''         
+        #ax2.set_ylabel('h, m',fontsize= self.font_txt) 
+        #ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
+        #CS1 = ax2.contourf(X_sed,Y_sed, zz, #levels = sed_levs,        
+        #                      extend="both", cmap= self.cmap1)      
         
         
         air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
@@ -124,17 +124,20 @@ def time_profile(self,start,stop):
         sed_min = sed_maxmin[0]     
         sed_max = sed_maxmin[1]     
         
-        # add masks for sediment and water               
-        self.ax.pcolormesh(X,Y,mask_sed_air,vmin=0,vmax=100,
-                           cmap = 'copper')  
-        self.ax2.pcolormesh(X,Y,mask_wat,vmin=0,vmax=100,
-                            cmap = 'tab20_r') 
- 
+
+        X_urm,Y = np.meshgrid(x,y)
+        
         if self.datescale_checkbox.isChecked() == True:  
+            
+            X_urm = readdata.use_num2date(self,self.time_units,X) 
             readdata.format_time_axis2(self,self.ax2,xlen)
        
-
-        CS1 = self.ax2.pcolormesh(X,Y, zz_sed, vmin = sed_min,
+        # add masks for sediment and water               
+        self.ax.pcolormesh(X_urm,Y,mask_sed_air,vmin=0,vmax=100,
+                           cmap = 'copper')  
+        self.ax2.pcolormesh(X_urm,Y,mask_wat,vmin=0,vmax=100,
+                            cmap = 'tab20_r') 
+        CS1 = self.ax2.pcolormesh(X_urm,Y, zz_sed, vmin = sed_min,
                               vmax = sed_max,    
                     cmap= self.cmap1)        
             
