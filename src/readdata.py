@@ -84,12 +84,20 @@ def read_num_col(self,fname):
 def readdata2_brom(self,fname):  
     #print ('in readdata_brom')   
     self.fh = Dataset(fname)
-    self.depth = self.fh.variables['z'][:]  
-    
-    if 'kz' in self.names_vars or 'Kz' in self.names_vars:    
-        self.depth2 = self.fh.variables['z2'][:] 
+    try:
+        self.depth = self.fh.variables['z'][:]  
+    except KeyError : 
+        self.depth = self.fh.variables['depth'][:] 
+    if 'Kz_s' in self.names_vars or 'Kz' in self.names_vars:    
+        try: 
+            self.depth2 = self.fh.variables['z2'][:]    
+        except KeyError : 
+            self.depth2 = self.fh.variables['depth2'][:]          
         #middle points   
-        self.kz =  self.fh.variables['Kz'][:,:] 
+        try: 
+            self.kz =  self.fh.variables['Kz'][:,:] 
+        except KeyError : 
+            self.kz =  self.fh.variables['Kz_s'][:,:]                 
         self.lendepth2 = len(self.depth2)
         # bbl width depends on depth
         if self.lendepth2 < 50 :
@@ -185,17 +193,26 @@ def calculate_ywat(self):
   
 def calculate_ybbl(self):
     for n in range(0,(len(self.depth2)-1)):
-        
-        if self.kz[1,n,0] == 0:
-            self.y2max = self.depth2[n]         
-            self.ny2max = n  
-            #print ('y2max' ,self.y2max)      
-            break  
-        if self.kz[1,n,0] != 0 and n == (len(self.depth2)-2):       
-            self.y2max = self.depth2[n]         
-            self.ny2max = n  
-            #print ('no sediment' , self.kz[0,n,0],n)   
-            
+        try: 
+            if self.kz[1,n,0] == 0:
+                self.y2max = self.depth2[n]         
+                self.ny2max = n  
+                #print ('y2max' ,self.y2max)      
+                break  
+            if self.kz[1,n,0] != 0 and n == (len(self.depth2)-2):       
+                self.y2max = self.depth2[n]         
+                self.ny2max = n  
+                #print ('no sediment' , self.kz[0,n,0],n)   
+        except IndexError: 
+            if self.kz[1,n] == 0:
+                self.y2max = self.depth2[n]         
+                self.ny2max = n  
+                #print ('y2max' ,self.y2max)      
+                break  
+            if self.kz[1,n] != 0 and n == (len(self.depth2)-2):       
+                self.y2max = self.depth2[n]         
+                self.ny2max = n  
+                #print ('no sediment' , self.kz[0,n,0],n)                 
 def y2max_fill_water(self):
     
     for n in range(0,(len(self.depth2)-1)):
@@ -208,18 +225,28 @@ def y2max_fill_water(self):
          
 def calculate_ysed(self):
     for n in range(0,(len(self.depth_sed))):
-        if self.kz[1,n,0] == 0:
-            ysed = self.depth_sed[n] #0 cm depth             
-            self.ysedmin =  ysed - 10
-            self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
-            self.y3min = self.depth_sed[self.nbblmin+2]
-            #here we cach part of BBL to add to 
-            #the sediment image                
-            break  
-        else : 
-
-            self.ysedmax =  max(self.depth_sed) 
-           
+        try: 
+            if self.kz[1,n,0] == 0:
+                ysed = self.depth_sed[n] #0 cm depth             
+                self.ysedmin =  ysed - 10
+                self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
+                self.y3min = self.depth_sed[self.nbblmin+2]
+                #here we cach part of BBL to add to 
+                #the sediment image                
+                break  
+            else : 
+                self.ysedmax =  max(self.depth_sed) 
+        except IndexError:                
+            if self.kz[1,n] == 0:
+                ysed = self.depth_sed[n] #0 cm depth             
+                self.ysedmin =  ysed - 10
+                self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
+                self.y3min = self.depth_sed[self.nbblmin+2]                
+                break  
+            else : 
+                self.ysedmax =  max(self.depth_sed)                 
+                
+            
 def calc_nysedmin(self):
     m = 0      
     self.ysedmin = - 10           

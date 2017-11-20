@@ -100,10 +100,15 @@ def time_profile(self,start,stop):
         #CS1 = ax2.contourf(X_sed,Y_sed, zz, #levels = sed_levs,        
         #                      extend="both", cmap= self.cmap1)      
         
-        
+        '''
         air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
         v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
         v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,1]).T    
+        '''
+
+        air = np.array(self.fh.variables['V_air'][start:stop+1,:,0]).T
+        v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
+        v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,0]).T            
         #self.changing_depth = True 
                
         zz_sed = zz     
@@ -117,7 +122,7 @@ def time_profile(self,start,stop):
         #elif 'V_air' in self.names_vars:
         mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
         mask_wat = np.ma.masked_where(v_wat < 30 , v_wat)        
-        mask_sed_air = np.ma.masked_where(v_sed < 30, v_sed)
+        mask_sed_air = np.ma.masked_where(v_sed < 40, v_sed)
        
         sed_maxmin = readdata.make_maxmin(
             self,zz_sed,start,stop,index,'sediment')    
@@ -133,10 +138,10 @@ def time_profile(self,start,stop):
             readdata.format_time_axis2(self,self.ax2,xlen)
        
         # add masks for sediment and water               
-        self.ax.pcolormesh(X_urm,Y,mask_sed_air,vmin=0,vmax=100,
-                           cmap = 'copper')  
-        self.ax2.pcolormesh(X_urm,Y,mask_wat,vmin=0,vmax=100,
-                            cmap = 'tab20_r') 
+        self.ax.pcolormesh(X_urm,Y,mask_sed_air,vmin=50,vmax=1000000,
+                           cmap = 'copper_r')  
+        self.ax2.pcolormesh(X_urm,Y,mask_wat,vmin=0,vmax=10000000,
+                            cmap = 'tab10_r') 
         CS1 = self.ax2.pcolormesh(X_urm,Y, zz_sed, vmin = sed_min,
                               vmax = sed_max,    
                     cmap= self.cmap1)        

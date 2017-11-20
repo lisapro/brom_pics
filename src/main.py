@@ -212,17 +212,21 @@ def createDistGroup(self):
     self.col_label = QtWidgets.QLabel('Column: ')
     self.numcol_2d = QtWidgets.QSpinBox() 
     readdata.read_num_col(self,self.fname)
-    self.label_maxcol = QtWidgets.QLabel(
+    try:
+        self.label_maxcol = QtWidgets.QLabel(
         'max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
-
+    except AttributeError: 
+        pass
     #max_col = readdata.read_num_col(self,self.fname)
     #self.label_maxcol_n =
     # QtWidgets.QLabel('max\ncolumn: ') #+ str(testvar.shape[0]-1))      
     
     self.dist_grid.addWidget(self.col_label,0,0,1,1) 
     self.dist_grid.addWidget(self.numcol_2d,1,0,1,1) 
-    self.dist_grid.addWidget(self.label_maxcol,1,1,1,1) 
-    
+    try:
+        self.dist_grid.addWidget(self.label_maxcol,1,1,1,1) 
+    except AttributeError: 
+        pass    
        
 def createTimeGroup(self):  
      
