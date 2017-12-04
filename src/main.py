@@ -10,18 +10,12 @@ Created on 14. des. 2016
 import os,sys
 import numpy as np
 from netCDF4 import Dataset 
-from PyQt5 import QtGui, QtCore
-from PyQt5 import QtWidgets
-
+from PyQt5 import QtGui, QtCore,QtWidgets
 from matplotlib import rc
-
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas)
-
 from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT as NavigationToolbar)
-
-
 import matplotlib.pyplot as plt
 
 import readdata
@@ -62,8 +56,7 @@ class Window(QtWidgets.QDialog):
         'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))  #str
         
         totitle = os.path.split(self.fname)[1]
-        self.setWindowTitle("BROM Pictures ("+str(totitle)+')') 
-        #self.totitle = totitle[16:-3]           
+        self.setWindowTitle("BROM Pictures ("+str(totitle)+')')           
         readdata.readdata_brom(self,self.fname)    
          
         # Add group Boxes - boxes of widgets
@@ -165,8 +158,7 @@ class Window(QtWidgets.QDialog):
         self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
               self.canvas.height())
         
-    def call_all_year(self): 
-          
+    def call_all_year(self):   
         all_year_1d.plot(self)
         
     def call_fluxes(self):    
@@ -282,8 +274,6 @@ def createOptionsGroup(self):
             'Draw year lines')           
         self.datescale_checkbox = QtWidgets.QCheckBox(
             'Format time axis')         
-        self.fielddata_checkbox = QtWidgets.QCheckBox(
-            'Add field data (1D)') 
         self.interpolate_checkbox = QtWidgets.QCheckBox(
             'Interpolate')       
                      
@@ -291,7 +281,6 @@ def createOptionsGroup(self):
         vbox.addWidget(self.scale_all_axes)
         vbox.addWidget(self.yearlines_checkbox)
         vbox.addWidget(self.datescale_checkbox)
-        vbox.addWidget(self.fielddata_checkbox) 
         vbox.addWidget(self.interpolate_checkbox)       
         vbox.addStretch(1)
         self.options_groupBox.setLayout(vbox)     
@@ -305,11 +294,11 @@ def createCmapLimitsGroup(self):
         self.label_minwater = QtWidgets.QLabel('min water: ')   
         self.label_maxsed = QtWidgets.QLabel('cmap max sediment: ')
         self.label_minsed = QtWidgets.QLabel('min sediment: ')  
-        self.box_minwater = QtWidgets.QSpinBox()
-        self.box_maxwater = QtWidgets.QSpinBox()
+        self.box_minwater = QtWidgets.QDoubleSpinBox()
+        self.box_maxwater = QtWidgets.QDoubleSpinBox()
         
-        self.box_minsed = QtWidgets.QSpinBox()
-        self.box_maxsed = QtWidgets.QSpinBox()    
+        self.box_minsed = QtWidgets.QDoubleSpinBox()
+        self.box_maxsed = QtWidgets.QDoubleSpinBox()    
                 
         self.box_minwater.setMaximum(1000000000)   
         self.box_minsed.setMaximum(1000000000)           

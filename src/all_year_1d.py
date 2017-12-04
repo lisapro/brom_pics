@@ -17,10 +17,7 @@ from PyQt5 import QtGui,QtWidgets
 import numpy as np
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
-
 import readdata
-import read_field
-
 
 def plot(self): 
                
@@ -122,10 +119,7 @@ def plot(self):
               linewidth = self.linewidth, zorder = 8)                          
         #ax20.scatter(z[n][self.nysedmin-1:],
         #      self.depth_sed[self.nysedmin-1:]) 
-   
-    if self.fielddata_checkbox.isChecked():
-        #print ('is checked')
-        read_field.read(self) 
+
         
  
 
