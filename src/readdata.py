@@ -3,6 +3,7 @@
 # this ↑ comment is important to have 
 # at the very first line 
 # to define using unicode 
+import numpy.ma as ma
 '''
 Created on 14. des. 2016
 
@@ -14,7 +15,6 @@ from netCDF4 import Dataset,num2date
 
 import main
 import numpy as np
-import numpy.ma as ma
 import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
@@ -25,7 +25,6 @@ import os, sys
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 
-#getcontext().prec = 6 
 majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   
 #format y scales to be scalar 
@@ -44,7 +43,7 @@ def readdata_brom(self,fname): #,varname,fname
     self.time =  self.fh.variables['time'][:]
     self.time_units = self.fh.variables['time'].units
     self.lentime = len(self.time)  
-
+    self.right_gs = 0.8
     self.fh.close()
 def read_num_col(self,fname):
     # Read all variables name from the file 
@@ -310,7 +309,7 @@ def varmax(self,variable,vartype,start,stop):
                                                                                          
     self.watmax =  n   
     return self.watmax
-
+'''
 # make "beautiful"  values to show on ticks  
 def int_value(self,n,minv,maxv):
     num = self.num
@@ -334,6 +333,7 @@ def int_value(self,n,minv,maxv):
         m = n  
           
     return m    
+'''
 
 def varmin(self,variable,vartype,start,stop):
     
@@ -343,8 +343,7 @@ def varmin(self,variable,vartype,start,stop):
         n = np.floor(variable[start:stop,self.nysedmin:].min())        
     elif vartype == 'wattime' : #time plot water
         # don't put start and stop here 
-        n = (ma.min(variable[0:self.ny1max,:]))  
-               
+        n = (ma.min(variable[0:self.ny1max,:]))               
     elif vartype == 'sedtime'  : #time plot sediment
         n = np.floor(variable[self.nysedmin-2:,:].min()) 
   
@@ -362,7 +361,7 @@ def check_minmax(self,call_min,call_max):
             call_min = call_min - call_max/1000. 
             
     return call_min,call_max
-
+'''
 # make "beautiful"  values to show on ticks 
 def ticks(minv,maxv):    
         
@@ -417,8 +416,8 @@ def ticks(minv,maxv):
         #+ (maxv - minv)/2.                  
     return ticks
     #print (ticks)
-
-
+'''
+'''
 #function to define y limits  
 def y_lim1(self,axis): 
     self.xticks =(np.arange(0,100000))
@@ -461,12 +460,11 @@ def y_lim1(self,axis):
         axis.yaxis.grid(True,'minor')
         axis.yaxis.grid(True,'major')
         axis.xaxis.grid(True,'major')      
-                
+'''                
 def setmaxmin(self,axis,var,type):
     minv = varmin(self,var,type) #0 - water 
     maxv = varmax(self,var,type)
     axis.set_xlim([minv,maxv])  
-    #tick = ticks(watmin,watmax)
     axis.set_xticks(np.arange(minv,maxv+((maxv - minv)/2.),
             ((maxv - minv)/2.)))      
         
@@ -484,14 +482,7 @@ def set_widget_styles(self):
     self.help_button.setIconSize(QtCore.QSize(30,30))   
     # set zero border.
     self.help_button.setStyleSheet('QPushButton{border: 0px solid;}')
-    
-    
-    # Combo boxes style
-    #for axis in (self.time_prof_box): #,self.all_year_1d_box
-    #self.time_prof_box.setStyleSheet(
-    #    'QComboBox {background-color: #c2b4ae; border-width: 7px;'
-    #    '  padding: 7px; font: bold 14px; }')  
-        
+         
     self.qlistwidget.setStyleSheet(
     'QListWidget{font: 25 px; background-color: #eadfda;  }')
      
@@ -503,6 +494,7 @@ def set_widget_styles(self):
 def widget_layout(self): 
        
         #first line 
+        
         self.grid.addWidget(self.help_button,0,0,1,1) # help_dialog           
         self.grid.addWidget(self.toolbar,0,1,1,1) 
         self.grid.addWidget(self.fick_box,0,2,1,1)         
@@ -512,13 +504,11 @@ def widget_layout(self):
         self.grid.addWidget(self.time_groupBox,0,6,2,1)                      
         self.grid.addWidget(self.options_groupBox,0,7,2,1)  
         
-        #second line
-                                     
+        #second line                        
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
         #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
         self.grid.addWidget(self.all_year_button,1,1,1,1)    
         self.grid.addWidget(self.dist_prof_button,1,3,1,1)         
-
         #self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)          
         #self.grid.addWidget(self.textbox2,1,6,1,1)  
  
@@ -564,18 +554,12 @@ def grid_plot(self,numplots):
              
     if numplots == 2: 
         self.gs = gridspec.GridSpec(2, 1) 
-        self.gs.update(left = 0.05,right = 0.88 )
-        self.cax1 = self.figure.add_axes([0.9, 0.1, 0.02, 0.35])
-        self.cax = self.figure.add_axes([0.9, 0.53, 0.02, 0.35])    
+        self.gs.update(left = 0.05,right = 0.85 )
+        self.cax1 = self.figure.add_axes([0.86, 0.11, 0.02, 0.35])
+        self.cax = self.figure.add_axes([0.86, 0.53, 0.02, 0.35])    
         self.ax = self.figure.add_subplot(self.gs[0])
         self.ax2 = self.figure.add_subplot(self.gs[1])       
-    '''self.cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-    self.cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])'''
 
-        
-        
-        
-        
 def get_cmap(self):    
     try:
         # take values of cmaps from comboboxes 
@@ -622,9 +606,7 @@ def calculate_wat_maxmin(self,var,start,stop,index):
         # take the value with two decimal places 
         watmin = round(zz[0:self.ny1max,:].min(),2) 
         watmax = round(zz[0:self.ny1max,:].max(),2) 
-        #wat_ticks = np.linspace(watmin,watmax,5)    
-        #wat_ticks = (np.floor(wat_ticks*100)/100.)   
-        
+         
     # if we do not have kz     
     else:  
         self.ny1max = len(self.depth-1)
@@ -640,7 +622,6 @@ def calculate_wat_maxmin(self,var,start,stop,index):
 
 def calculate_sed_maxmin(self,var,start,stop,index):     
     zz = var  
- 
     if self.scale_all_axes.isChecked(): 
         z_all_columns = np.array(self.fh.variables[index])  
         sed_min  = round((

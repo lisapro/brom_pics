@@ -19,6 +19,7 @@ import matplotlib.gridspec as gridspec
 from netCDF4 import num2date 
 import matplotlib.dates as mdates
 import numpy.ma as ma
+import matplotlib.ticker as mtick 
 
 def time_profile(self,start,stop):
     
@@ -31,16 +32,13 @@ def time_profile(self,start,stop):
                                              'Choose variable,please') 
         return None     
           
-    readdata.get_cmap(self)    
-       
-    ## read chosen variable     
+    readdata.get_cmap(self)           
+    ## read chosen variable and data units     
     z = np.array(self.fh.variables[index]) 
-    # take the value of data units for the title
     data_units = self.fh.variables[index].units
-    
+    # read only part 
     z = z[start:stop+1] 
     ylen1 = len(self.depth) 
-
     x = np.array(self.time[start:stop+1]) 
     xlen = len(x)     
 
@@ -78,10 +76,14 @@ def time_profile(self,start,stop):
     tomask_zz = z.T  
     zz = ma.masked_invalid(tomask_zz) #mask NaNs 
                                                                   
-    X,Y = np.meshgrid(x,y)
-            
+    X,Y = np.meshgrid(x,y)        
     self.ny1min = min(self.depth)
-                          
+ 
+    def fmt(x, pos):
+        a, b = '{:.2e}'.format(x).split('e')
+        b = int(b)
+        return r'${} \times 10^{{{}}}$'.format(a, b)          
+                   
     if self.sediment == False and 'V_air' not in self.names_vars : 
         readdata.grid_plot(self,1)              
  
@@ -93,60 +95,50 @@ def time_profile(self,start,stop):
         self.ax2.set_ylim(self.y1max,self.ny1min)   
         self.ax2.set_ylabel('h, m',fontsize= self.font_txt) 
                
-        #X_sed,Y_sed = np.meshgrid(x,y)   
-
-        #ax2.set_ylabel('h, m',fontsize= self.font_txt) 
-        #ax2.set_xlabel('Number of day',fontsize= self.font_txt)  
-        #CS1 = ax2.contourf(X_sed,Y_sed, zz, #levels = sed_levs,        
-        #                      extend="both", cmap= self.cmap1)      
-        
-        '''
-        air = np.array(self.fh.variables['V_air'][start:stop+1,:,1]).T
-        v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
-        v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,1]).T    
-        '''
-
         air = np.array(self.fh.variables['V_air'][start:stop+1,:,0]).T
         v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
         v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,0]).T            
-        #self.changing_depth = True 
                
         zz_sed = zz     
         zz =  ma.masked_where(air >= 90, zz)
-        zz =  ma.masked_where(v_sed > 30, zz)   #_Change value  
+        zz =  ma.masked_where(v_sed > 30, zz)
         zz =  ma.masked_where(v_wat < 40, zz )   
         zz_sed =  ma.masked_where(air >= 90, zz_sed) 
         zz_sed =  ma.masked_where(v_sed < 30, zz_sed) 
           
-    
-        #elif 'V_air' in self.names_vars:
         mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
         mask_wat = np.ma.masked_where(v_wat < 30 , v_wat)        
         mask_sed_air = np.ma.masked_where(v_sed < 40, v_sed)
        
         sed_maxmin = readdata.make_maxmin(
             self,zz_sed,start,stop,index,'sediment')    
-        sed_min = sed_maxmin[0]     
-        sed_max = sed_maxmin[1]     
+        sedmin = sed_maxmin[0]     
+        sedmax = sed_maxmin[1]     
         
-
         X_urm,Y = np.meshgrid(x,y)
         
-        if self.datescale_checkbox.isChecked() == True:  
-            
+        if self.datescale_checkbox.isChecked() == True:             
             X_urm = readdata.use_num2date(self,self.time_units,X) 
             readdata.format_time_axis2(self,self.ax2,xlen)
        
-        # add masks for sediment and water               
-        self.ax.pcolormesh(X_urm,Y,mask_sed_air,vmin=50,vmax=1000000,
+        # plot masks for sediment and water               
+        self.ax.pcolormesh(X_urm,Y,mask_sed_air
+                           ,vmin = 50,vmax = 1000000,
                            cmap = 'copper_r')  
-        self.ax2.pcolormesh(X_urm,Y,mask_wat,vmin=0,vmax=10000000,
+        self.ax2.pcolormesh(X_urm,Y,mask_wat,
+                            vmin = 0,vmax = 10000000,
                             cmap = 'tab10_r') 
-        CS1 = self.ax2.pcolormesh(X_urm,Y, zz_sed, vmin = sed_min,
-                              vmax = sed_max,    
-                    cmap= self.cmap1)        
-            
-        cb_sed = plt.colorbar(CS1,cax = self.cax1) 
+        CS1 = self.ax2.pcolormesh(X_urm,Y, zz_sed,
+                            vmin = sedmin,vmax = sedmax,    
+                            cmap= self.cmap1)        
+        
+        if sedmax > 10000 or sedmax < 0.001:
+            format = mtick.FuncFormatter(fmt)
+            #self.gs.update(left = 0.05,right = self.right_gs)
+        else: 
+            format = None    
+        cb_sed = plt.colorbar(CS1,cax = self.cax1,format = format) 
+        #cb_sed = readdata.add_colorbar(CS1,self.ax2,self.cax1)         
            
     elif self.sediment == True: 
                                  
@@ -159,11 +151,11 @@ def time_profile(self,start,stop):
                     
         maxmin = readdata.make_maxmin(self,
                     zz,start,stop,index,'sediment')    
-        sed_min = maxmin[0]     
-        sed_max = maxmin[1] 
+        sedmin = maxmin[0]     
+        sedmax = maxmin[1] 
                 
-        sed_ticks = readdata.ticks(sed_min,sed_max)
-        sed_levs = np.linspace(sed_min,sed_max,
+        #sed_ticks = readdata.ticks(sedmin,sedmax)
+        sed_levs = np.linspace(sedmin,sedmax,
                             num = self.num)  
                               
         self.ax2.set_xlim(np.min(X_sed),np.max(X_sed))
@@ -181,7 +173,7 @@ def time_profile(self,start,stop):
                               extend="both", cmap= self.cmap1)                  
         else: 
             CS1 = self.ax2.pcolor(X_sed,Y_sed, zz, #mesh
-                                 vmin = sed_min, vmax = sed_max,    
+                                 vmin = sedmin, vmax = sedmax,    
                              cmap= self.cmap1) 
     
         if self.yearlines_checkbox.isChecked()==True and \
@@ -189,10 +181,15 @@ def time_profile(self,start,stop):
             for n in range(start,stop):
                 if n%365 == 0: 
                     self.ax2.axvline(n, color='white',
-                                      linestyle = '--')      
-           
-        cb_sed = plt.colorbar(CS1,cax = self.cax1)
-        cb_sed.set_ticks(sed_ticks)   
+                                      linestyle = '--') 
+                         
+        if sedmax > 10000 or sedmax < 0.001:
+            format = mtick.FuncFormatter(fmt)
+            #self.gs.update(left = 0.05,right = self.right_gs)
+        else: 
+            format = None               
+        cb_sed = plt.colorbar(CS1,cax = self.cax1,format = format)
+        #cb_sed.set_ticks(sed_ticks)   
               
     if self.datescale_checkbox.isChecked() == True:          
         X = readdata.use_num2date(self,self.time_units,X)     
@@ -219,7 +216,7 @@ def time_profile(self,start,stop):
                         cmap= self.cmap) 
         
 
-        
+      
     self.ax.set_xlim(np.min(X),np.max(X))
        
     if self.yearlines_checkbox.isChecked()==True  and \
@@ -227,8 +224,23 @@ def time_profile(self,start,stop):
         for n in range(start,stop):
             if n%365 == 0: 
                 self.ax.axvline(n, color='white', linestyle = '--')     
-                              
-    cb = plt.colorbar(CS,cax = self.cax)   #, ticks = wat_ticks   
+                
+
+                 
+    #cb = plt.colorbar(CS,self.ax,self.cax,
+    #                  pad=0.02,aspect = 4,
+    #         format=mtick.FuncFormatter(readdata.fmt)) 
+    
+    if watmax > 10000 or watmax < 0.001:
+        format = mtick.FuncFormatter(fmt)
+        #self.gs.update(left = 0.05,right = self.right_gs)        
+    else: 
+        format = None
+          
+    cb = plt.colorbar(CS, self.cax, 
+                          format = format)
+    
+    #plt.colorbar(CS,cax = self.cax)   #, ticks = wat_ticks   
     #cb.set_ticks(wat_ticks)
 
 
