@@ -295,17 +295,12 @@ def createCmapLimitsGroup(self):
         self.label_maxsed = QtWidgets.QLabel('cmap max sediment: ')
         self.label_minsed = QtWidgets.QLabel('min sediment: ')  
         #self.box_minwater = QtWidgets.QDoubleSpinBox()
+        
         self.box_minwater = QtWidgets.QLineEdit()     
         self.box_maxwater = QtWidgets.QLineEdit() #.QDoubleSpinBox()
-        
         self.box_minsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()
         self.box_maxsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()   
          
-        #self.box_minwater.setSingleStep(0.0000001)        
-        #self.box_minwater.setMaximum(1000000000)   
-        #self.box_minsed.setMaximum(1000000000)           
-        #self.box_maxwater.setMaximum(1000000000)   
-        #self.box_maxsed.setMaximum(1000000000)  
         cmap_grid = QtWidgets.QGridLayout(self.cmap_groupBox) 
         
         cmap_grid.addWidget(self.change_limits_checkbox,0,0,1,1) 
