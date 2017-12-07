@@ -109,7 +109,7 @@ class Window(QtWidgets.QDialog):
         self.fick_box.setText('Fluxes SWI')
         self.all_year_button.setText('1D plot')
         self.time_prof_last_year.setText('Time: last year')               
-        self.dist_prof_button.setText('Show Dist Profile')  
+        self.dist_prof_button.setText('Transect 1 day')  
            
         ### Define connection between clicking the button and 
         ### calling the function to plot figures         
@@ -294,16 +294,18 @@ def createCmapLimitsGroup(self):
         self.label_minwater = QtWidgets.QLabel('min water: ')   
         self.label_maxsed = QtWidgets.QLabel('cmap max sediment: ')
         self.label_minsed = QtWidgets.QLabel('min sediment: ')  
-        self.box_minwater = QtWidgets.QDoubleSpinBox()
-        self.box_maxwater = QtWidgets.QDoubleSpinBox()
+        #self.box_minwater = QtWidgets.QDoubleSpinBox()
+        self.box_minwater = QtWidgets.QLineEdit()     
+        self.box_maxwater = QtWidgets.QLineEdit() #.QDoubleSpinBox()
         
-        self.box_minsed = QtWidgets.QDoubleSpinBox()
-        self.box_maxsed = QtWidgets.QDoubleSpinBox()    
-                
-        self.box_minwater.setMaximum(1000000000)   
-        self.box_minsed.setMaximum(1000000000)           
-        self.box_maxwater.setMaximum(1000000000)   
-        self.box_maxsed.setMaximum(1000000000)  
+        self.box_minsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()
+        self.box_maxsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()   
+         
+        #self.box_minwater.setSingleStep(0.0000001)        
+        #self.box_minwater.setMaximum(1000000000)   
+        #self.box_minsed.setMaximum(1000000000)           
+        #self.box_maxwater.setMaximum(1000000000)   
+        #self.box_maxsed.setMaximum(1000000000)  
         cmap_grid = QtWidgets.QGridLayout(self.cmap_groupBox) 
         
         cmap_grid.addWidget(self.change_limits_checkbox,0,0,1,1) 

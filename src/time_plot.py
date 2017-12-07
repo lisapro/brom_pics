@@ -132,7 +132,7 @@ def time_profile(self,start,stop):
                             vmin = sedmin,vmax = sedmax,    
                             cmap= self.cmap1)        
         
-        if sedmax > 10000 or sedmax < 0.001:
+        if sedmax > self.e_crit_max or sedmax < self.e_crit_min :
             format = mtick.FuncFormatter(fmt)
             #self.gs.update(left = 0.05,right = self.right_gs)
         else: 
@@ -183,7 +183,7 @@ def time_profile(self,start,stop):
                     self.ax2.axvline(n, color='white',
                                       linestyle = '--') 
                          
-        if sedmax > 10000 or sedmax < 0.001:
+        if sedmax > self.e_crit_max or sedmax < self.e_crit_min:
             format = mtick.FuncFormatter(fmt)
             #self.gs.update(left = 0.05,right = self.right_gs)
         else: 

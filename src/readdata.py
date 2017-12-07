@@ -44,6 +44,8 @@ def readdata_brom(self,fname): #,varname,fname
     self.time_units = self.fh.variables['time'].units
     self.lentime = len(self.time)  
     self.right_gs = 0.8
+    self.e_crit_min = 0.02
+    self.e_crit_max = 10000 
     self.fh.close()
 def read_num_col(self,fname):
     # Read all variables name from the file 
@@ -575,12 +577,17 @@ def get_cmap(self):
 def make_maxmin(self,var,start,stop,index,type):
     if  self.change_limits_checkbox.isChecked():
         if type == 'water':
-            min = self.box_minwater.value() #
-            max = self.box_maxwater.value() 
+            #min = self.box_minwater.value() #
+            min = float(self.box_minwater.text())
+            # INPUT2 = float(INPUT)
+            #max = self.box_maxwater.value()
+            max= float(self.box_maxwater.text()) 
             maxmin = (min,max)
         if type == 'sediment':
-            min = self.box_minsed.value() #
-            max = self.box_maxsed.value() 
+            #min = self.box_minsed.value() #
+            min = float(self.box_minsed.text())
+            #max = self.box_maxsed.value() 
+            max = float(self.box_minsed.text())
             maxmin = (min,max)
     elif type == 'water': 
         maxmin = calculate_wat_maxmin(
