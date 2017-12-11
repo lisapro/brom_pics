@@ -587,8 +587,9 @@ def make_maxmin(self,var,start,stop,index,type):
             #min = self.box_minsed.value() #
             min = float(self.box_minsed.text())
             #max = self.box_maxsed.value() 
-            max = float(self.box_minsed.text())
+            max = float(self.box_maxsed.text())
             maxmin = (min,max)
+            
     elif type == 'water': 
         maxmin = calculate_wat_maxmin(
             self,var,start,stop,index)

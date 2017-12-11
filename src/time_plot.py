@@ -149,45 +149,48 @@ def time_profile(self,start,stop):
                         
         X_sed,Y_sed = np.meshgrid(x,y_sed)  
                     
-        maxmin = readdata.make_maxmin(self,
+        sed_maxmin = readdata.make_maxmin(self,
                     zz,start,stop,index,'sediment')    
-        sedmin = maxmin[0]     
-        sedmax = maxmin[1] 
+        sedmin = sed_maxmin[0]     
+        sedmax = sed_maxmin[1] 
                 
         #sed_ticks = readdata.ticks(sedmin,sedmax)
         sed_levs = np.linspace(sedmin,sedmax,
                             num = self.num)  
                               
-        self.ax2.set_xlim(np.min(X_sed),np.max(X_sed))
-        self.ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin                                                                
-        self.ax2.axhline(0, color='white', linestyle = '--',
-                         linewidth = 1)       
-        
-        
         if self.datescale_checkbox.isChecked() == True:  
             X_sed = readdata.use_num2date(self,self.time_units,X_sed)     
             readdata.format_time_axis2(self,self.ax2,xlen)        
+ 
+  
                   
         if self.interpolate_checkbox.isChecked():
             CS1 = self.ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,        
                               extend="both", cmap= self.cmap1)                  
         else: 
-            CS1 = self.ax2.pcolor(X_sed,Y_sed, zz, #mesh
+            CS1 = self.ax2.pcolormesh(X_sed,Y_sed, zz, #mesh
                                  vmin = sedmin, vmax = sedmax,    
                              cmap= self.cmap1) 
-    
+            
+        #self.ax.set_xlim(np.min(X_sed),np.max(X_sed))
+                         
         if self.yearlines_checkbox.isChecked()==True and \
            self.datescale_checkbox.isChecked()== False:
             for n in range(start,stop):
                 if n%365 == 0: 
                     self.ax2.axvline(n, color='white',
                                       linestyle = '--') 
-                         
+        self.ax2.set_xlim(np.min(X_sed),np.max(X_sed))
+        self.ax2.set_ylim(self.ysedmax,self.ysedmin) #ysedmin                                                                
+        self.ax2.axhline(0, color='white', linestyle = '--',
+                         linewidth = 1)                         
         if sedmax > self.e_crit_max or sedmax < self.e_crit_min:
             format = mtick.FuncFormatter(fmt)
             #self.gs.update(left = 0.05,right = self.right_gs)
         else: 
-            format = None               
+            format = None        
+            
+                   
         cb_sed = plt.colorbar(CS1,cax = self.cax1,format = format)
         #cb_sed.set_ticks(sed_ticks)   
               
@@ -214,9 +217,7 @@ def time_profile(self,start,stop):
     else:       
         CS = self.ax.pcolormesh(X,Y, zz, vmin = watmin, vmax = watmax,    
                         cmap= self.cmap) 
-        
-
-      
+         
     self.ax.set_xlim(np.min(X),np.max(X))
        
     if self.yearlines_checkbox.isChecked()==True  and \
@@ -224,12 +225,6 @@ def time_profile(self,start,stop):
         for n in range(start,stop):
             if n%365 == 0: 
                 self.ax.axvline(n, color='white', linestyle = '--')     
-                
-
-                 
-    #cb = plt.colorbar(CS,self.ax,self.cax,
-    #                  pad=0.02,aspect = 4,
-    #         format=mtick.FuncFormatter(readdata.fmt)) 
     
     if watmax > 10000 or watmax < 0.001:
         format = mtick.FuncFormatter(fmt)
