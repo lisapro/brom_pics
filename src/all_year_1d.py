@@ -69,7 +69,8 @@ def plot(self):
     self.ax00.axhspan(self.y1max,0,color='#dbf0fd',
                  alpha = 0.7,label = "water" )
      
-    self.ax10.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+    self.ax10.yaxis.set_major_formatter(
+        ScalarFormatter(useOffset=False))
     self.ax10.set_ylim(self.y2max, self.y1max)   
     self.ax10.axhspan(self.y2max, self.y1max,color='#c5d8e3',
                  alpha = 0.4, label = "bbl"  )                
