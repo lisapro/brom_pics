@@ -61,12 +61,19 @@ def dist_profile(self):
         else : 
             start = numday
             stop = numday+1 
-                        
+            
+            #(self,var,start,stop,index,type)
+        maxmin = readdata.make_maxmin(
+            self,data,start,stop,index,'water_dist')    
+        watmin = maxmin[0]     
+        watmax = maxmin[1]            
+            
+        '''                
         #if index == 'pH':
         watmin = round(
             data[start:stop,0:self.ny1max].min(),2)
         watmax = round(
-            data[start:stop,0:self.ny1max].max(),2) 
+            data[start:stop,0:self.ny1max].max(),2) '''
         #wat_ticks = np.linspace(watmin,watmax,5)
         #wat_ticks = (np.floor(wat_ticks*100)/100.)
         
@@ -74,14 +81,18 @@ def dist_profile(self):
             readdata.grid_plot(self,1)                              
             #gs = gridspec.GridSpec(1, 1)                        
             #cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
-                              
+                             
         elif self.sediment == True : 
             readdata.grid_plot(self,2)
             #gs = gridspec.GridSpec(2, 1)         
     
-            X_sed,Y_sed = np.meshgrid(self.dist,y_sed)                       
+            X_sed,Y_sed = np.meshgrid(self.dist,y_sed)
+                                   
             #ax2 = self.figure.add_subplot(gs[1])
-                           
+            '''
+            #if  self.change_limits_checkbox.isChecked():
+                #readdata.make_maxmin(
+                #    self,var,start,stop,index,type)                
             if index == 'pH':
                 sed_min = round(
                     data[start:stop,self.nysedmin:].min(),2)
@@ -94,8 +105,12 @@ def dist_profile(self):
                 sed_min = readdata.varmin(
                     self,data,'seddist',start,stop)
                 sed_max = readdata.varmax(
-                    self,data,'seddist',start,stop)
+                    self,data,'seddist',start,stop)'''
                 
+            sed_maxmin = readdata.make_maxmin(self,
+                    data,start,stop,index,'sed_dist')    
+            sed_min = sed_maxmin[0]     
+            sed_max = sed_maxmin[1]                 
             #sed_ticks = readdata.ticks(sed_min,sed_max) 
             sed_levs = np.linspace(sed_min,sed_max,
                                  num = self.num)                                     
@@ -128,7 +143,7 @@ def dist_profile(self):
         
         wat_levs = np.linspace(watmin,watmax, num = self.num)  
               
-        int_wat_levs = []
+        #int_wat_levs = []
                 
         #for n in wat_levs:
         #    n = readdata.int_value(self,n,watmin,watmax)

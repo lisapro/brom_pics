@@ -111,7 +111,7 @@ def time_profile(self,start,stop):
         mask_sed_air = np.ma.masked_where(v_sed < 40, v_sed)
        
         sed_maxmin = readdata.make_maxmin(
-            self,zz_sed,start,stop,index,'sediment')    
+            self,zz_sed,start,stop,index,'sed_time')    
         sedmin = sed_maxmin[0]     
         sedmax = sed_maxmin[1]     
         
@@ -150,7 +150,7 @@ def time_profile(self,start,stop):
         X_sed,Y_sed = np.meshgrid(x,y_sed)  
                     
         sed_maxmin = readdata.make_maxmin(self,
-                    zz,start,stop,index,'sediment')    
+                    zz,start,stop,index,'sed_time')    
         sedmin = sed_maxmin[0]     
         sedmax = sed_maxmin[1] 
                 
@@ -159,21 +159,21 @@ def time_profile(self,start,stop):
                             num = self.num)  
                               
         if self.datescale_checkbox.isChecked() == True:  
-            X_sed = readdata.use_num2date(self,self.time_units,X_sed)     
-            readdata.format_time_axis2(self,self.ax2,xlen)        
- 
-  
-                  
+            X_sed = readdata.use_num2date(
+                self,self.time_units,X_sed)     
+            readdata.format_time_axis2(
+                self,self.ax2,xlen)        
+   
         if self.interpolate_checkbox.isChecked():
-            CS1 = self.ax2.contourf(X_sed,Y_sed, zz, levels = sed_levs,        
-                              extend="both", cmap= self.cmap1)                  
+            CS1 = self.ax2.contourf(
+                X_sed,Y_sed, zz, levels = sed_levs,        
+                extend="both", cmap= self.cmap1)                  
         else: 
             CS1 = self.ax2.pcolormesh(X_sed,Y_sed, zz, #mesh
                                  vmin = sedmin, vmax = sedmax,    
                              cmap= self.cmap1) 
             
-        #self.ax.set_xlim(np.min(X_sed),np.max(X_sed))
-                         
+        #self.ax.set_xlim(np.min(X_sed),np.max(X_sed))                        
         if self.yearlines_checkbox.isChecked()==True and \
            self.datescale_checkbox.isChecked()== False:
             for n in range(start,stop):
@@ -198,7 +198,8 @@ def time_profile(self,start,stop):
         X = readdata.use_num2date(self,self.time_units,X)     
         readdata.format_time_axis2(self,self.ax,xlen)   
                              
-    maxmin = readdata.make_maxmin(self,zz,start,stop,index,'water')    
+    maxmin = readdata.make_maxmin(
+        self,zz,start,stop,index,'water_time')    
     watmin = maxmin[0]     
     watmax = maxmin[1]
     #ax.set_title(index)

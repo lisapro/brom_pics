@@ -340,14 +340,14 @@ def int_value(self,n,minv,maxv):
 def varmin(self,variable,vartype,start,stop):
     
     if vartype == 'watdist': #dist plot water
-        n = np.floor(variable[start:stop,0:self.ny1max].min())        
+        n = ma.min(variable[start:stop,0:self.ny1max])  #np.floor      
     elif vartype == 'seddist' :  #dist plot sediment
-        n = np.floor(variable[start:stop,self.nysedmin:].min())        
+        n = ma.min(variable[start:stop,self.nysedmin:]) #.min()) #np.floor       
     elif vartype == 'wattime' : #time plot water
         # don't put start and stop here 
         n = (ma.min(variable[0:self.ny1max,:]))               
     elif vartype == 'sedtime'  : #time plot sediment
-        n = np.floor(variable[self.nysedmin-2:,:].min()) 
+        n = ma.min(variable[self.nysedmin-2:,:]) #np.floor( .min()) 
   
     self.watmin =  n  
                  
@@ -576,26 +576,42 @@ def get_cmap(self):
         
 def make_maxmin(self,var,start,stop,index,type):
     if  self.change_limits_checkbox.isChecked():
-        if type == 'water':
-            #min = self.box_minwater.value() #
+        print(type)
+        if type == 'water_time' or type == 'water_dist':
             min = float(self.box_minwater.text())
-            # INPUT2 = float(INPUT)
-            #max = self.box_maxwater.value()
             max= float(self.box_maxwater.text()) 
             maxmin = (min,max)
-        if type == 'sediment':
-            #min = self.box_minsed.value() #
+        if type == 'sed_time' or type == 'sed_dist' :          
             min = float(self.box_minsed.text())
-            #max = self.box_maxsed.value() 
             max = float(self.box_maxsed.text())
             maxmin = (min,max)
             
-    elif type == 'water': 
+    elif type == 'water_time': 
         maxmin = calculate_wat_maxmin(
             self,var,start,stop,index)
-    elif type == 'sediment': 
+    elif type == 'water_dist': 
+        #round(data[start:stop,0:self.ny1max].min(),2) 
+        min = varmin(self,var,
+            'watdist',start,stop)
+        max = varmax(self,var,
+            'seddist',start,stop) 
+        check = check_minmax(self,min,max)
+        min = check[0]
+        max = check[1]
+        maxmin = (min,max)     
+               
+    elif type == 'sed_time': 
         maxmin = calculate_sed_maxmin(
-            self,var,start,stop,index)        
+            self,var,start,stop,index)  
+    elif type == 'sed_dist':
+        min = varmin(
+            self,var,'seddist',start,stop)
+        max = varmax(
+            self,var,'seddist',start,stop)
+        check = check_minmax(self,min,max)
+        min = check[0]
+        max = check[1]                
+        maxmin = (min,max)     
     return maxmin
         
 def calculate_wat_maxmin(self,var,start,stop,index):        
