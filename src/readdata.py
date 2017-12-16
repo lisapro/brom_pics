@@ -363,62 +363,59 @@ def check_minmax(self,call_min,call_max):
             call_min = call_min - call_max/1000. 
             
     return call_min,call_max
-'''
+
 # make "beautiful"  values to show on ticks 
 def ticks(minv,maxv):    
-        
-    if (maxv - minv) >= 50000. and (
-         maxv - minv) < 150000.  :
-        ticks = np.arange(minv,maxv,50000) #+10000.        
-    elif (maxv - minv) >= 10000. and (
-         maxv - minv) < 50000.  :
-        ticks = np.arange(minv,maxv,5000) #+5000.        
-    elif (maxv - minv) > 3000. and (
-       maxv - minv) < 10000.  : 
-        ticks = np.arange(minv,maxv,1000) #+1000.        
-    elif (maxv - minv) > 1500. and ( 
-     maxv - minv) <= 3000. :
-        #print('in 1500-3000')
-        ticks = np.arange(minv,maxv,500) #+500.                        
-    elif (maxv - minv) >= 1000. and ( 
-     maxv - minv) <= 1500. :
-        #print('in 1000-1500',maxv-minv)
-        ticks = np.arange((math.trunc(minv/10)*10),maxv,200)           
-    elif (maxv - minv) >= 300. and ( 
-     maxv - minv) <= 1000. :
-        #print('in 300-1000',maxv-minv)
-        ticks = np.arange((math.trunc(minv/10)*10),maxv,100)   
+    if maxv > 1 :
+        minv = np.floor(minv)
+        minv = (math.trunc(minv/10)*10)
+    dif = maxv - minv  
+    #maxv = maxv + 100 
+    if minv > 100 :
+        minv = (math.trunc(minv/100)*100) 
+         
+    if dif >= 50000. and dif < 150000.  :
+        ticks = np.arange(minv,maxv,50000)        
+    elif dif >= 10000. and dif < 50000. :
+        ticks = np.arange(minv,maxv,5000)        
+    elif dif > 3000. and dif < 10000.  : 
+        ticks = np.arange(minv,maxv,1000)       
+    elif dif > 1500. and dif <= 3000. :
+        ticks = np.arange(minv,maxv,500)                         
+    elif dif >= 1000. and dif <= 1500. :
+        ticks = np.arange(
+            (math.trunc(minv/100)*100),
+            maxv,200)           
+    elif dif >= 300. and dif <= 1000. :
+        ticks = np.arange((math.trunc(minv/100)*100),maxv,100)   
         if minv < 100 :
-            ticks = np.arange(0,maxv,100)   #+100.               
-    elif (maxv - minv) >= 100. and ( 
+            ticks = np.arange(0,maxv,100)                
+    elif dif >= 100. and ( 
      maxv - minv) < 300. :
-        ticks = np.arange(minv-10,maxv,50) #+50. 
-    elif (maxv - minv) > 50. and ( 
-     maxv - minv) < 100. :
+        ticks = np.arange(minv,maxv,20) #+50. 
+    elif dif > 50. and dif < 100. :
         ticks = np.arange(minv,maxv,10) #+10.        
-    elif (maxv - minv) > 20. and ( 
-     maxv - minv) <= 50. :
+    elif dif > 20. and dif <= 50. :
         ticks = np.arange(minv,maxv,5) #+5.
-    elif (maxv - minv) > 3. and ( 
-     maxv - minv) <= 20. :
+    elif dif > 10. and dif <= 20. :
+        ticks = np.arange(minv,maxv,2) #+1.        
+    elif dif > 3. and dif <= 10. :
         ticks = np.arange(minv,maxv,1) #+1.
-    elif (maxv - minv) >= 1. and ( 
-     maxv - minv) <= 3. :
+    elif dif >= 1. and dif <= 3. :
         ticks = np.arange(minv,maxv,0.5) #+1.         
-    elif (maxv - minv) > 0.2 and ( 
-     maxv - minv) <= 1. :
+    elif dif > 0.2 and dif <= 1. :
         ticks = np.arange(minv,maxv,0.1) #+1.                  
-    elif (maxv - minv) > 0.02 and ( 
-     maxv - minv) <= 0.2 : 
+    elif dif > 0.02 and dif <= 0.2 : 
         ticks = np.arange((math.trunc(minv/10)*10),maxv,0.01) 
-    elif (maxv - minv) == 0:
-        ticks = np.arange(minv - minv/100.,maxv + minv/100.,minv/1000.)
+    elif dif == 0:
+        ticks = np.arange(minv - minv/100.,
+                maxv + minv/100.,minv/1000.)
     else : 
         ticks = [minv,maxv]    
-        #+ (maxv - minv)/2.                  
+        #+ dif/2.                  
     return ticks
     #print (ticks)
-'''
+
 '''
 #function to define y limits  
 def y_lim1(self,axis): 
@@ -550,13 +547,13 @@ def plot_inj_lines(self,numday,col,axis):
 def grid_plot(self,numplots):
     if numplots == 1:
         self.gs = gridspec.GridSpec(1, 1) 
-        self.gs.update(left = 0.05,right = 0.88)
+        self.gs.update(left = 0.07,right = 0.85)
         self.cax = self.figure.add_axes([0.9, 0.1, 0.02, 0.8])        
         self.ax = self.figure.add_subplot(self.gs[0])  
              
     if numplots == 2: 
         self.gs = gridspec.GridSpec(2, 1) 
-        self.gs.update(left = 0.05,right = 0.85 )
+        self.gs.update(left = 0.07,right = 0.85 )
         self.cax1 = self.figure.add_axes([0.86, 0.11, 0.02, 0.35])
         self.cax = self.figure.add_axes([0.86, 0.53, 0.02, 0.35])    
         self.ax = self.figure.add_subplot(self.gs[0])
@@ -576,7 +573,6 @@ def get_cmap(self):
         
 def make_maxmin(self,var,start,stop,index,type):
     if  self.change_limits_checkbox.isChecked():
-        print(type)
         if type == 'water_time' or type == 'water_dist':
             min = float(self.box_minwater.text())
             max= float(self.box_maxwater.text()) 
@@ -591,10 +587,8 @@ def make_maxmin(self,var,start,stop,index,type):
             self,var,start,stop,index)
     elif type == 'water_dist': 
         #round(data[start:stop,0:self.ny1max].min(),2) 
-        min = varmin(self,var,
-            'watdist',start,stop)
-        max = varmax(self,var,
-            'seddist',start,stop) 
+        min = varmin(self,var,'watdist',start,stop)
+        max = varmax(self,var,'watdist',start,stop) 
         check = check_minmax(self,min,max)
         min = check[0]
         max = check[1]
@@ -604,10 +598,8 @@ def make_maxmin(self,var,start,stop,index,type):
         maxmin = calculate_sed_maxmin(
             self,var,start,stop,index)  
     elif type == 'sed_dist':
-        min = varmin(
-            self,var,'seddist',start,stop)
-        max = varmax(
-            self,var,'seddist',start,stop)
+        min = varmin(self,var,'seddist',start,stop)
+        max = varmax(self,var,'seddist',start,stop)
         check = check_minmax(self,min,max)
         min = check[0]
         max = check[1]                

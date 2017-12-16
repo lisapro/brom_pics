@@ -138,7 +138,7 @@ def time_profile(self,start,stop):
         else: 
             format = None    
         cb_sed = plt.colorbar(CS1,cax = self.cax1,format = format) 
-        #cb_sed = readdata.add_colorbar(CS1,self.ax2,self.cax1)         
+        
            
     elif self.sediment == True: 
                                  
@@ -154,7 +154,7 @@ def time_profile(self,start,stop):
         sedmin = sed_maxmin[0]     
         sedmax = sed_maxmin[1] 
                 
-        #sed_ticks = readdata.ticks(sedmin,sedmax)
+        sed_ticks = readdata.ticks(sedmin,sedmax)
         sed_levs = np.linspace(sedmin,sedmax,
                             num = self.num)  
                               
@@ -186,12 +186,12 @@ def time_profile(self,start,stop):
                          linewidth = 1)                         
         if sedmax > self.e_crit_max or sedmax < self.e_crit_min:
             format = mtick.FuncFormatter(fmt)
+            cb_sed = plt.colorbar(CS1,cax = self.cax1,format = format)            
             #self.gs.update(left = 0.05,right = self.right_gs)
         else: 
-            format = None        
-            
-                   
-        cb_sed = plt.colorbar(CS1,cax = self.cax1,format = format)
+            format = None                  
+            cb_sed = plt.colorbar(CS1,cax = self.cax1,
+                ticks = sed_ticks,format = format)
         #cb_sed.set_ticks(sed_ticks)   
               
     if self.datescale_checkbox.isChecked() == True:          
@@ -203,14 +203,15 @@ def time_profile(self,start,stop):
     watmin = maxmin[0]     
     watmax = maxmin[1]
     #ax.set_title(index)
-    #wat_ticks = readdata.ticks(watmin,watmax)
+
         
     self.ax.set_title(index + ', ' + data_units) 
     self.ax.set_ylim(self.y1max,self.ny1min)   
     self.ax.set_ylabel('h, m',fontsize= self.font_txt)
      
     wat_levs = np.linspace(watmin,watmax,num = self.num)
-                            
+    wat_ticks = readdata.ticks(watmin,watmax)
+                                
     if self.interpolate_checkbox.isChecked():
         CS = self.ax.contourf(X,Y, zz, 
                          levels = wat_levs, extend="both", 
@@ -226,18 +227,13 @@ def time_profile(self,start,stop):
         for n in range(start,stop):
             if n%365 == 0: 
                 self.ax.axvline(n, color='white', linestyle = '--')     
-    
-    if watmax > 10000 or watmax < 0.001:
+
+    if watmax > self.e_crit_max or sedmax < self.e_crit_min:
         format = mtick.FuncFormatter(fmt)
-        #self.gs.update(left = 0.05,right = self.right_gs)        
+        cb = plt.colorbar(CS1,cax = self.cax1,
+                format = format)               
     else: 
-        format = None
-          
-    cb = plt.colorbar(CS, self.cax, 
+        format = None  
+        cb = plt.colorbar(CS, self.cax,ticks = wat_ticks, 
                           format = format)
-    
-    #plt.colorbar(CS,cax = self.cax)   #, ticks = wat_ticks   
-    #cb.set_ticks(wat_ticks)
-
-
     self.canvas.draw()
