@@ -57,6 +57,7 @@ def read_num_col(self,fname):
     flux_list = []
     sink_list = []
     other_list = []
+   
     for name in self.names_vars: 
         if name[:4] == 'fick':
             flux_list.append(name) 
@@ -284,74 +285,44 @@ def depth_sed(self):
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed.append(v)
         self.depth_sed = depth_sed
+        
     to_float = []
     for item in self.depth2:
         to_float.append(float(item)) #make a list of floats from tuple 
     depth_sed2 = [] # list for storing final depth data for sediment 
-    v=0  
+    v=0 
+     
     for i in to_float:
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed2.append(v)
         self.depth_sed2 = depth_sed2  
-        #print ('in depth_sed2')         
-         
-def varmax(self,variable,vartype,start,stop): 
-    if vartype == 'watdist': #water
-        n = variable[start:stop,0:self.ny1max].max() 
-
-    elif vartype == 'seddist' :#sediment dist 
-        n = variable[start:stop,self.nysedmin:].max()
+        #print ('in depth_sed2') 
+                
+def MinMaxFunctions(self,start,stop):
+    """ dict values are limits for array """    
+    return dict(watdist = (start,stop,0,self.ny1max),
+                seddist = (start,stop,self.nysedmin,None),
+                wattime = (0,self.ny1max,None,None),
+                sedtime = (self.nysedmin,None,None,None))      
   
-    elif vartype == 'wattime': #time plot water
-        n = ma.max(variable[0:self.ny1max,:]) #.max()
-      
-    elif vartype == 'sedtime' : #time plot sediment
-        n = ma.max(variable[self.nysedmin:,:]) #.max()
-
-                                                                                         
-    self.watmax =  n   
-    return self.watmax
-'''
-# make "beautiful"  values to show on ticks  
-def int_value(self,n,minv,maxv):
-    num = self.num
-         
-    if (maxv - minv) >= num*10. and ( 
-     maxv - minv) < num*100. :
-        m = math.ceil(n/10)*10.
-    elif ( maxv -  minv) >= num and (
-         maxv -  minv) < 10.*num :
-        m = math.ceil(n)        
-    elif ( maxv -  minv) > num/10. and (
-         maxv -  minv) < num :
-        m = (math.ceil(n*10.))/10.        
-    elif ( maxv -  minv) > num/100. and (
-         maxv -  minv) < num/10. :
-        m = (math.ceil(n*100.))/100.          
-    elif ( maxv -  minv) > num/1000. and (
-         maxv -  minv) < num/100. :
-        m = (math.ceil(n*1000.))/1000.                      
-    else :
-        m = n  
-          
-    return m    
-'''
-
-def varmin(self,variable,vartype,start,stop):
-    
-    if vartype == 'watdist': #dist plot water
-        n = ma.min(variable[start:stop,0:self.ny1max])  #np.floor      
-    elif vartype == 'seddist' :  #dist plot sediment
-        n = ma.min(variable[start:stop,self.nysedmin:]) #.min()) #np.floor       
-    elif vartype == 'wattime' : #time plot water
-        # don't put start and stop here 
-        n = (ma.min(variable[0:self.ny1max,:]))               
-    elif vartype == 'sedtime'  : #time plot sediment
-        n = ma.min(variable[self.nysedmin-2:,:]) #np.floor( .min()) 
-  
-    self.watmin =  n  
-                 
-    return self.watmin
+def varmax(self,var,vartype,start,stop): 
+    """ dict values are limits for array """
+    functions = dict(watdist = (start,stop,0,self.ny1max),
+                     seddist = (start,stop,self.nysedmin,None),
+                     wattime = (0,self.ny1max,None,None),
+                     sedtime = (self.nysedmin,None,None,None))
+    #functions = self.MinMaxFunctions(start,stop)
+    lims = functions[vartype]
+    return ma.max(var[lims[0]:lims[1],lims[2]:lims[3]])     
+                                                                                  
+def varmin(self,var,vartype,start,stop):
+    functions = dict(watdist = (start,stop,0,self.ny1max),
+                     seddist = (start,stop,self.nysedmin,None),
+                     wattime = (0,self.ny1max,None,None),
+                     sedtime = (self.nysedmin,None,None,None))
+    #functions = self.MinMaxFunctions(start,stop)
+    lims = functions[vartype]            
+    return ma.min(var[lims[0]:lims[1],lims[2]:lims[3]]) 
 
 def check_minmax(self,call_min,call_max):
     if call_min == call_max :
@@ -414,52 +385,7 @@ def ticks(minv,maxv):
         ticks = [minv,maxv]    
         #+ dif/2.                  
     return ticks
-    #print (ticks)
 
-'''
-#function to define y limits  
-def y_lim1(self,axis): 
-    self.xticks =(np.arange(0,100000))
-    if axis in (self.ax00,self.ax10,self.ax20,
-                self.ax30,self.ax40,self.ax50): #water
-        axis.set_ylim([self.y2min, 0])
-        axis.yaxis.grid(True,'minor')
-        axis.xaxis.grid(True,'major')                
-        axis.yaxis.grid(True,'major') 
-
-    elif axis in (self.ax01,self.ax11,self.ax21,
-                  self.ax31,self.ax41,self.ax51): #BBL
-        axis.set_ylim([self.y2max, self.y2min])
-        axis.fill_between(self.xticks, self.y2max,
-            self.y2min_fill_bbl,facecolor= self.bbl_col, 
-            alpha=self.a_bbl)
-        axis.yaxis.grid(True,'minor')
-        axis.yaxis.grid(True,'major')   
-        axis.xaxis.grid(True,'major')  
-          
-        # Set a property to on an artist object.
-        # remove xticklabels          
-        plt.setp(axis.get_xticklabels(), visible=False) 
-        
-    elif axis in (self.ax02,self.ax12,
-            self.ax22,self.ax32,self.ax42,self.ax52): #sediment 
-        axis.set_ylim([self.ysedmax, self.ysedmin]) 
-        axis.fill_between(self.xticks, self.ysedmax_fill_bbl,
-                          self.ysedmin,facecolor= self.bbl_col,
-                          alpha=self.a_bbl)  
-        axis.fill_between(self.xticks, self.ysedmax,
-                          self.ysedmin_fill_sed,
-                          facecolor= self.sed_col,
-                          alpha=self.a_s)    
-        axis.yaxis.set_major_locator(majorLocator)
-        
-        #define yticks
-        axis.yaxis.set_major_formatter(majorFormatter)
-        axis.yaxis.set_minor_locator(minorLocator)
-        axis.yaxis.grid(True,'minor')
-        axis.yaxis.grid(True,'major')
-        axis.xaxis.grid(True,'major')      
-'''                
 def setmaxmin(self,axis,var,type):
     minv = varmin(self,var,type) #0 - water 
     maxv = varmax(self,var,type)
