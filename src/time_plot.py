@@ -57,12 +57,13 @@ def time_profile(self,start,stop):
         print ("wrong depth array size") 
 
     ylen = len(y)           
-    z2d = []
+
     
     # check the column to plot 
     numcol = self.numcol_2d.value() # 
 
     if 'i' in self.names_vars:
+        z2d = []        
         # check if we have 2D array 
         if z.shape[2] > 1:
             for n in range(0,xlen): #xlen
@@ -154,10 +155,10 @@ def time_profile(self,start,stop):
         sedmin = sed_maxmin[0]     
         sedmax = sed_maxmin[1] 
                 
-        sed_ticks = readdata.ticks(sedmin,sedmax)
+        sed_ticks = readdata.ticks_2(sedmin,sedmax)
         sed_levs = np.linspace(sedmin,sedmax,
-                            num = self.num)  
-                              
+                            num = self.num)
+                  
         if self.datescale_checkbox.isChecked() == True:  
             X_sed = readdata.use_num2date(
                 self,self.time_units,X_sed)     
@@ -169,11 +170,10 @@ def time_profile(self,start,stop):
                 X_sed,Y_sed, zz, levels = sed_levs,        
                 extend="both", cmap= self.cmap1)                  
         else: 
-            CS1 = self.ax2.pcolormesh(X_sed,Y_sed, zz, #mesh
+            CS1 = self.ax2.pcolormesh(X_sed,Y_sed, zz,                                      
                                  vmin = sedmin, vmax = sedmax,    
                              cmap= self.cmap1) 
-            
-        #self.ax.set_xlim(np.min(X_sed),np.max(X_sed))                        
+                                    
         if self.yearlines_checkbox.isChecked()==True and \
            self.datescale_checkbox.isChecked()== False:
             for n in range(start,stop):
@@ -192,7 +192,7 @@ def time_profile(self,start,stop):
             format = None                  
             cb_sed = plt.colorbar(CS1,cax = self.cax1,
                 ticks = sed_ticks,format = format)
-        #cb_sed.set_ticks(sed_ticks)   
+            
               
     if self.datescale_checkbox.isChecked() == True:          
         X = readdata.use_num2date(self,self.time_units,X)     
@@ -202,16 +202,15 @@ def time_profile(self,start,stop):
         self,zz,start,stop,index,'wat_time')    
     watmin = maxmin[0]     
     watmax = maxmin[1]
-    #ax.set_title(index)
-
         
     self.ax.set_title(index + ', ' + data_units) 
     self.ax.set_ylim(self.y1max,self.ny1min)   
     self.ax.set_ylabel('h, m',fontsize= self.font_txt)
      
+
+    wat_ticks = readdata.ticks_2(watmin,watmax)
     wat_levs = np.linspace(watmin,watmax,num = self.num)
-    wat_ticks = readdata.ticks(watmin,watmax)
-                                
+                                    
     if self.interpolate_checkbox.isChecked():
         CS = self.ax.contourf(X,Y, zz, 
                          levels = wat_levs, extend="both", 
@@ -228,9 +227,12 @@ def time_profile(self,start,stop):
             if n%365 == 0: 
                 self.ax.axvline(n, color='white', linestyle = '--')     
 
+ 
+
+
     if watmax > self.e_crit_max or sedmax < self.e_crit_min:
         format = mtick.FuncFormatter(fmt)
-        cb = plt.colorbar(CS1,cax = self.cax1,
+        cb = plt.colorbar(CS,cax = self.cax,
                 format = format)               
     else: 
         format = None  
