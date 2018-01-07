@@ -100,11 +100,16 @@ def time_profile(self,start,stop):
         v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,0]).T            
                
         zz_sed = zz     
-        zz =  ma.masked_where(air >= 90, zz)
-        zz =  ma.masked_where(v_sed > 30, zz)
-        zz =  ma.masked_where(v_wat < 40, zz )   
-        zz_sed =  ma.masked_where(air >= 90, zz_sed) 
-        zz_sed =  ma.masked_where(v_sed < 30, zz_sed) 
+        zz =  ma.masked_where(
+            ((air >= 90)|(v_sed > 30)|(v_wat < 40)) ,zz)
+        
+        #zz =  ma.masked_where(air >= 90, zz)
+        #zz =  ma.masked_where(v_sed > 30, zz)
+        #zz =  ma.masked_where(v_wat < 40, zz )  
+         
+        zz_sed =  ma.masked_where(
+            ((air >= 90)|(v_sed < 30)), zz_sed) 
+        #zz_sed =  ma.masked_where(v_sed < 30, zz_sed) 
           
         mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
         mask_wat = np.ma.masked_where(v_wat < 30 , v_wat)        
