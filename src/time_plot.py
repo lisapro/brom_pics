@@ -95,21 +95,16 @@ def time_profile(self,start,stop):
         self.ax2.set_ylim(self.y1max,self.ny1min)   
         self.ax2.set_ylabel('h, m',fontsize= self.font_txt) 
                
-        air = np.array(self.fh.variables['V_air'][start:stop+1,:,0]).T
+        v_air = np.array(self.fh.variables['V_air'][start:stop+1,:,0]).T
         v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
         v_wat = np.array(self.fh.variables['V_wat'][start:stop+1,:,0]).T            
                
         zz_sed = zz     
         zz =  ma.masked_where(
-            ((air >= 90)|(v_sed > 30)|(v_wat < 40)) ,zz)
-        
-        #zz =  ma.masked_where(air >= 90, zz)
-        #zz =  ma.masked_where(v_sed > 30, zz)
-        #zz =  ma.masked_where(v_wat < 40, zz )  
-         
+            ((v_air >= 90)|(v_sed > 30)|(v_wat < 40)) ,zz)         
         zz_sed =  ma.masked_where(
-            ((air >= 90)|(v_sed < 30)), zz_sed) 
-        #zz_sed =  ma.masked_where(v_sed < 30, zz_sed) 
+            ((v_air >= 90)|(v_sed < 30)), zz_sed) 
+
           
         mask_air = np.ma.masked_where(v_wat > 5 , v_wat)
         mask_wat = np.ma.masked_where(v_wat < 30 , v_wat)        
@@ -204,7 +199,7 @@ def time_profile(self,start,stop):
         readdata.format_time_axis2(self,self.ax,xlen)   
                              
     maxmin = readdata.make_maxmin(
-        self,zz,start,stop,index,'water_time')    
+        self,zz,start,stop,index,'wat_time')    
     watmin = maxmin[0]     
     watmax = maxmin[1]
     #ax.set_title(index)

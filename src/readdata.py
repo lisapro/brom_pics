@@ -297,43 +297,9 @@ def depth_sed(self):
         depth_sed2.append(v)
         self.depth_sed2 = depth_sed2  
         #print ('in depth_sed2') 
-                
-def MinMaxFunctions(self,start,stop):
-    """ dict values are limits for array """    
-    return dict(watdist = (start,stop,0,self.ny1max),
-                seddist = (start,stop,self.nysedmin,None),
-                wattime = (0,self.ny1max,None,None),
-                sedtime = (self.nysedmin,None,None,None))      
-  
-def varmax(self,var,vartype,start,stop): 
-    """ dict values are limits for array """
-    functions = dict(watdist = (start,stop,0,self.ny1max),
-                     seddist = (start,stop,self.nysedmin,None),
-                     wattime = (0,self.ny1max,None,None),
-                     sedtime = (self.nysedmin,None,None,None))
-    #functions = self.MinMaxFunctions(start,stop)
-    lims = functions[vartype]
-    return ma.max(var[lims[0]:lims[1],lims[2]:lims[3]])     
-                                                                                  
-def varmin(self,var,vartype,start,stop):
-    functions = dict(watdist = (start,stop,0,self.ny1max),
-                     seddist = (start,stop,self.nysedmin,None),
-                     wattime = (0,self.ny1max,None,None),
-                     sedtime = (self.nysedmin,None,None,None))
-    #functions = self.MinMaxFunctions(start,stop)
-    lims = functions[vartype]            
-    return ma.min(var[lims[0]:lims[1],lims[2]:lims[3]]) 
 
-def check_minmax(self,call_min,call_max):
-    if call_min == call_max :
-        if call_max == 0: 
-            call_max = 0.1
-            call_min = 0
-        else:     
-            call_max = call_max + call_max/1000.
-            call_min = call_min - call_max/1000. 
-            
-    return call_min,call_max
+
+
 
 # make "beautiful"  values to show on ticks 
 def ticks(minv,maxv):    
@@ -452,16 +418,14 @@ def use_num2date(self,time_units,X_subplot):
     return X_subplot
 
 def format_time_axis2(self, xaxis,xlen):   
-    if xlen > 365 and xlen < 365*5 :
-        xaxis.xaxis_date()
+    xaxis.xaxis_date()
+    if xlen > 365 and xlen < 365*5 : 
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%m/%Y'))  
     elif xlen >= 365*5 :
-        xaxis.xaxis_date()
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%Y'))          
     elif xlen <= 365: 
-        xaxis.xaxis_date()
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%b'))   
 
@@ -495,43 +459,56 @@ def get_cmap(self):
     except ValueError:
         self.cmap = plt.get_cmap('jet')
         self.cmap1 = plt.get_cmap('gist_rainbow')    
-        
+def varmax(self,var,lims):
+    return ma.max(var[lims[0]:lims[1],lims[2]:lims[3]]) 
+  
+def varmin(self,var,lims):
+    return ma.min(var[lims[0]:lims[1],lims[2]:lims[3]]) 
+
+def check_minmax(self,cmin,cmax,index):
+    if cmin is ma.masked or cmax is ma.masked: 
+        cmin = 0
+        cmax = 1
+    elif  cmin ==  cmax :
+        if cmax == 0: 
+            cmax = 0.1
+            cmin = 0
+        else:     
+            cmax = cmax + cmax/1000.
+            min = cmin - cmax/1000. 
+     
+    if index == 'pH': 
+        cmin = format(float(cmin), '.2f') #round(cmin,2)
+        cmax = format(float(cmax), '.2f') #round(cmax,2)           
+    return float(cmin),float(cmax)        
         
 def make_maxmin(self,var,start,stop,index,type):
+    
     if  self.change_limits_checkbox.isChecked():
-        if type == 'water_time' or type == 'water_dist':
-            min = float(self.box_minwater.text())
-            max= float(self.box_maxwater.text()) 
-            maxmin = (min,max)
-        if type == 'sed_time' or type == 'sed_dist' :          
-            min = float(self.box_minsed.text())
-            max = float(self.box_maxsed.text())
-            maxmin = (min,max)
-            
-    elif type == 'water_time': 
-        maxmin = calculate_wat_maxmin(
-            self,var,start,stop,index)
-    elif type == 'water_dist': 
-        #round(data[start:stop,0:self.ny1max].min(),2) 
-        min = varmin(self,var,'watdist',start,stop)
-        max = varmax(self,var,'watdist',start,stop) 
-        check = check_minmax(self,min,max)
-        min = check[0]
-        max = check[1]
-        maxmin = (min,max)     
-               
-    elif type == 'sed_time': 
-        maxmin = calculate_sed_maxmin(
-            self,var,start,stop,index)  
-    elif type == 'sed_dist':
-        min = varmin(self,var,'seddist',start,stop)
-        max = varmax(self,var,'seddist',start,stop)
-        check = check_minmax(self,min,max)
-        min = check[0]
-        max = check[1]                
-        maxmin = (min,max)     
-    return maxmin
+        ''' Get manually typed values '''
+        functions = dict(wat_time = (self.box_minwater,self.box_maxwater),
+                         wat_dist = (self.box_minwater,self.box_maxwater),
+                         sed_time = (self.box_minsed,self.box_maxsed),
+                         sed_dist = (self.box_minsed,self.box_maxsed))
+        min = float(functions[type][0].text())
+        max = float(functions[type][1].text())
         
+    else: 
+        lim_dict = dict(wat_dist = (start,stop,0,self.ny1max),
+                     sed_dist = (start,stop,self.nysedmin,None),
+                     wat_time = (0,self.ny1max,None,None),
+                     sed_time = (self.nysedmin,None,None,None))
+        lims = lim_dict[type]  
+        #self.scale_all_axes.isChecked(): 
+        #z_all_columns = np.array(self.fh.variables[index]) 
+       
+        min = varmin(self,var,lims)     
+        max = varmax(self,var,lims) 
+                
+    maxmin = check_minmax(self,min,max,index)            
+    return maxmin
+
+
 def calculate_wat_maxmin(self,var,start,stop,index):        
     zz = var
     if self.scale_all_axes.isChecked(): 
@@ -540,10 +517,7 @@ def calculate_wat_maxmin(self,var,start,stop,index):
             z_all_columns[start:stop,0:self.ny1max,:].min()),0) 
         watmax = round((
             z_all_columns[start:stop,0:self.ny1max,:].max()),2)                         
-    elif 'Kz' in self.names_vars and index != 'pH':
-        watmin = varmin(self,zz,'wattime',start,stop) 
-        watmax = varmax(self,zz,'wattime',start,stop)     
-        
+             
     elif 'Kz'in self.names_vars and index == 'pH':       
         # take the value with two decimal places 
         watmin = round(zz[0:self.ny1max,:].min(),2) 
@@ -555,10 +529,7 @@ def calculate_wat_maxmin(self,var,start,stop,index):
         self.y1max = max(self.depth)    
         watmin = varmin(self,zz,'wattime',start,stop) 
         watmax = varmax(self,zz,'wattime',start,stop)
-    
-    check = check_minmax(self,watmin,watmax)
-    watmin = check[0]
-    watmax = check[1]   
+      
     
     return watmin,watmax 
 
@@ -578,12 +549,8 @@ def calculate_sed_maxmin(self,var,start,stop,index):
     else :
         sed_min = varmin(self,zz,'sedtime',start,stop)
         sed_max = varmax(self,zz,'sedtime',start,stop) 
-        
-    check = check_minmax(self,sed_min,sed_max)
-    sedmin = check[0]
-    sedmax = check[1]   
-    
-    return sedmin,sedmax 
+              
+    return sed_min,sed_max 
 
 ## here we can add contour of some level with interesting value
 #add contour to 1 om ar saturation
