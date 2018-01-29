@@ -94,7 +94,7 @@ def time_profile(self,start,stop):
         readdata.grid_plot(self,2)  
         
         self.ax2.set_ylim(self.y1max,self.ny1min)   
-        self.ax2.set_ylabel('h, m',fontsize= self.font_txt) 
+        self.ax2.set_ylabel('Depth, m',fontsize= self.font_txt) 
                
         v_air = np.array(self.fh.variables['V_air'][start:stop+1,:,0]).T
         v_sed = np.array(self.fh.variables['V_sed'][start:stop+1,:,0]).T
@@ -145,7 +145,7 @@ def time_profile(self,start,stop):
                                  
         readdata.grid_plot(self,2)
                               
-        self.ax2.set_ylabel('h, cm',fontsize= self.font_txt) 
+        self.ax2.set_ylabel('Depth, cm',fontsize= self.font_txt) 
         self.ax2.set_xlabel('Number of day',fontsize= self.font_txt)
                         
         X_sed,Y_sed = np.meshgrid(x,y_sed)  
@@ -164,7 +164,7 @@ def time_profile(self,start,stop):
                 self,self.time_units,X_sed)     
             readdata.format_time_axis2(
                 self,self.ax2,xlen)        
-   
+            self.ax2.set_xlabel(' ',fontsize= self.font_txt)   
         if self.interpolate_checkbox.isChecked():
             CS1 = self.ax2.contourf(
                 X_sed,Y_sed, zz, levels = sed_levs,        
