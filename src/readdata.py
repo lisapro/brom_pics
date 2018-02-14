@@ -307,7 +307,7 @@ def ticks_2(minv,maxv):
     if dif >= 1000:
         #dif = dif/3 
         step = math.trunc((dif/4)/100)*100
-    elif dif >= 30:
+    elif dif > 30:
         step = math.trunc((dif/4)/10)*10
     elif dif >= 1: 
         step = float(round((dif/4),1))       
