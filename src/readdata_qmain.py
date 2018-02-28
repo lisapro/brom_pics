@@ -59,6 +59,18 @@ class ReadVar:
         except KeyError : 
             depth = self.fh.variables['depth'][:]  
     
+    def sed_depth(self,depth):
+        print (depth)
+        to_float = []
+        for item in self.depth:
+            to_float.append(float(item)) #make a list of floats from tuple 
+        depth_sed = [] # list for storing final depth data for sediment 
+        v=0  
+        for i in to_float:
+            v = (i- self.y2max)*100  #convert depth from m to cm
+            depth_sed.append(v)
+            self.depth_sed= depth_sed        
+        pass
         '''        
         def check_middlepoints(self),z:      
         # check if the variable is defined on
@@ -84,12 +96,12 @@ class ReadVar:
         self.fh.variables[self.index].units) 
     
     def variable(self):     
-        z =  np.array(self.fh.variables(
-            [self.index][self.start:self.stop])) 
+        z =  np.array(self.fh.variables[self.index][self.start:self.stop]) 
         xlen = self.lentime()
         ylen = self.leny()
-        # check the column to plot            
-        if 'i' in self.names_vars:
+        
+        # check the column to plot  
+        if z.ndim > 2:    
             numcol = 0 
             # self.numcol_2d.value() 
             # to change later  
@@ -109,7 +121,6 @@ class ReadVar:
         tomask_zz = z.T  
         #mask NaNs         
         zz = ma.masked_invalid(tomask_zz) 
-
         return zz
     
     def time(self):
@@ -118,7 +129,6 @@ class ReadVar:
         
     def lentime(self):
         time = self.time()
-        print (time)
         return len(time)   
     
     def leny(self):

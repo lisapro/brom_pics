@@ -294,7 +294,7 @@ class Window(QMainWindow):
     def plotTransect(self):
         pass
             
-    def plotTime(self,start,stop):       
+    def plotTime(self,start,stop):      
         plt.clf()
         try:
             index = str(
@@ -310,14 +310,20 @@ class Window(QMainWindow):
             self.filename,index,start,stop)
         z_units = array.units()
         z = array.variable()
-        ylen = array.leny()
-        xlen = array.lentime()
+        x = array.time()
+        y = array.depth()
+        y_sed = array.depth_sed(y)
+        #ylen = array.leny()
+        #xlen = array.lentime()
+        #ny1min = 0          
         
-        print (z,ylen,xlen)
-
-                  
+        X,Y = np.meshgrid(x,y) 
+        X_sed,Y_sed = np.meshgrid(x,y_sed)  
+        Z_wat = z
+        Z_sed = z
+           
         from matplotlib import gridspec
-        gs = gridspec.GridSpec(3, 1)
+        gs = gridspec.GridSpec(2, 1)
         gs.update(left=0.15, right= 0.95,
                   top = 0.95,bottom = 0.06,
                   wspace=0.2,hspace=0.2)
@@ -325,7 +331,9 @@ class Window(QMainWindow):
         #add subplots
         ax0 = self.figure.add_subplot(gs[0])
         ax1 = self.figure.add_subplot(gs[1]) 
-        ax2 = self.figure.add_subplot(gs[2]) 
+        
+        CS = ax0.pcolormesh(X,Y,z,    
+                        cmap= self.cmap) 
           
         self.canvas.draw() 
 

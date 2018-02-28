@@ -281,7 +281,7 @@ def depth_sed(self):
     for i in to_float:
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed.append(v)
-        self.depth_sed = depth_sed
+        self.depth_sed= depth_sed
         
     to_float = []
     for item in self.depth2:
