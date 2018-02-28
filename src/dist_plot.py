@@ -134,7 +134,7 @@ def dist_profile(self):
                         linewidth = 1 )                   
 
             self.ax2.set_ylim(self.ysedmax,self.ysedmin) 
-            self.ax2.set_ylabel('h, cm',fontsize= self.font_txt)  #Depth (cm)
+            self.ax2.set_ylabel('Depth, cm',fontsize= self.font_txt)  #Depth (cm)
             self.ax2.set_xlabel('distance, m',fontsize= self.font_txt)   #Distance (km)  
                          
             #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
@@ -152,7 +152,7 @@ def dist_profile(self):
         
         X,Y = np.meshgrid(self.dist,y)
         self.ax.set_title(index + ', ' + data_units) 
-        self.ax.set_ylabel('h, m',fontsize= self.font_txt) #Depth (m)
+        self.ax.set_ylabel('Depth, m',fontsize= self.font_txt) #Depth (m)
         
         wat_ticks = readdata.ticks(watmin,watmax)  
         wat_levs = np.linspace(watmin,watmax,
