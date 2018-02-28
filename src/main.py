@@ -32,16 +32,17 @@ params = {'legend.fontsize': 'x-large',
          'xtick.labelsize':'x-large',
          'ytick.labelsize':'x-large'}
 pylab.rcParams.update(params)
+
 class Window(QtWidgets.QDialog):
-    
+    # function to display the names of the window flags        
+    # Qt.Window Indicates that the widget is a window, 
+    # usually with a window system frame and a title bar
+    # ! it is not possible to unset this flag if the widget 
+    # does not have a parent.    
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
 
-        # function to display the names of the window flags        
-        # Qt.Window Indicates that the widget is a window, 
-        # usually with a window system frame and a title bar
-        # ! it is not possible to unset this flag if the widget 
-        # does not have a parent.
+
         
         self.setWindowFlags(QtCore.Qt.Window)   
         
