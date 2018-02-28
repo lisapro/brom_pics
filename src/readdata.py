@@ -84,7 +84,7 @@ def read_num_col(self,fname):
                 break  
        
 def readdata2_brom(self,fname):  
-    #print ('in readdata_brom')   
+  
     self.fh = Dataset(fname)
     try:
         self.depth = self.fh.variables['z'][:]  
@@ -109,12 +109,9 @@ def readdata2_brom(self,fname):
     self.time =  self.fh.variables['time'][:]
     self.time_units = self.fh.variables['time'].units
     #time_calendar = self.fh.variables['time'].calendar
-    #print (time_calendar)
     self.dates = num2date(self.time[:],
                           units= self.time_units)   
                  
-    #print (min(self.dates),max(self.dates))
-    #time = dates 
     if 'i' in self.names_vars: 
         self.dist = np.array(self.fh.variables['i']) 
 
@@ -284,7 +281,7 @@ def depth_sed(self):
     for i in to_float:
         v = (i- self.y2max)*100  #convert depth from m to cm
         depth_sed.append(v)
-        self.depth_sed = depth_sed
+        self.depth_sed= depth_sed
         
     to_float = []
     for item in self.depth2:
@@ -297,46 +294,33 @@ def depth_sed(self):
         depth_sed2.append(v)
         self.depth_sed2 = depth_sed2  
         #print ('in depth_sed2') 
-                
-def MinMaxFunctions(self,start,stop):
-    """ dict values are limits for array """    
-    return dict(watdist = (start,stop,0,self.ny1max),
-                seddist = (start,stop,self.nysedmin,None),
-                wattime = (0,self.ny1max,None,None),
-                sedtime = (self.nysedmin,None,None,None))      
-  
-def varmax(self,var,vartype,start,stop): 
-    """ dict values are limits for array """
-    functions = dict(watdist = (start,stop,0,self.ny1max),
-                     seddist = (start,stop,self.nysedmin,None),
-                     wattime = (0,self.ny1max,None,None),
-                     sedtime = (self.nysedmin,None,None,None))
-    #functions = self.MinMaxFunctions(start,stop)
-    lims = functions[vartype]
-    return ma.max(var[lims[0]:lims[1],lims[2]:lims[3]])     
-                                                                                  
-def varmin(self,var,vartype,start,stop):
-    functions = dict(watdist = (start,stop,0,self.ny1max),
-                     seddist = (start,stop,self.nysedmin,None),
-                     wattime = (0,self.ny1max,None,None),
-                     sedtime = (self.nysedmin,None,None,None))
-    #functions = self.MinMaxFunctions(start,stop)
-    lims = functions[vartype]            
-    return ma.min(var[lims[0]:lims[1],lims[2]:lims[3]]) 
 
-def check_minmax(self,call_min,call_max):
-    if call_min == call_max :
-        if call_max == 0: 
-            call_max = 0.1
-            call_min = 0
-        else:     
-            call_max = call_max + call_max/1000.
-            call_min = call_min - call_max/1000. 
-            
-    return call_min,call_max
 
-# make "beautiful"  values to show on ticks 
-def ticks(minv,maxv):    
+
+def ticks_2(minv,maxv):  
+    ''' make "beautiful"  values to show on ticks '''  
+    minv = float(minv)
+    maxv = float(maxv)
+    assert minv < maxv
+       
+    dif = maxv - minv 
+    if dif >= 1000:
+        #dif = dif/3 
+        step = math.trunc((dif/4)/100)*100
+    elif dif > 30:
+        step = math.trunc((dif/4)/10)*10
+    elif dif >= 1: 
+        step = float(round((dif/4),1))       
+    elif dif >= 0.03 and dif < 1:
+        step = float(format((dif/4),'.2f'))         
+    else : 
+        step = dif        
+    ticks = np.arange(minv-step,maxv+step,step)    
+                       
+    return ticks
+
+def ticks(minv,maxv):  
+ 
     if maxv > 1 :
         minv = np.floor(minv)
         minv = (math.trunc(minv/10)*10)
@@ -344,8 +328,9 @@ def ticks(minv,maxv):
     #maxv = maxv + 100 
     if minv > 100 :
         minv = (math.trunc(minv/100)*100) 
-         
+        
     if dif >= 50000. and dif < 150000.  :
+        step = 50000
         ticks = np.arange(minv,maxv,50000)        
     elif dif >= 10000. and dif < 50000. :
         ticks = np.arange(minv,maxv,5000)        
@@ -363,43 +348,41 @@ def ticks(minv,maxv):
             ticks = np.arange(0,maxv,100)                
     elif dif >= 100. and ( 
      maxv - minv) < 300. :
-        ticks = np.arange(minv,maxv,20) #+50. 
+        ticks = np.arange(minv,maxv,20)  
+        
+    if dif >= 100:
+        step = ((dif/3)/100)*100
+        ticks = np.arange(minv,maxv,step)    
+        
     elif dif > 50. and dif < 100. :
-        ticks = np.arange(minv,maxv,10) #+10.        
+        ticks = np.arange(minv,maxv,10)         
     elif dif > 20. and dif <= 50. :
-        ticks = np.arange(minv,maxv,5) #+5.
+        ticks = np.arange(minv,maxv,5) 
     elif dif > 10. and dif <= 20. :
-        ticks = np.arange(minv,maxv,2) #+1.        
+        ticks = np.arange(minv,maxv,2)        
     elif dif > 3. and dif <= 10. :
-        ticks = np.arange(minv,maxv,1) #+1.
+        ticks = np.arange(minv,maxv,1) 
     elif dif >= 1. and dif <= 3. :
-        ticks = np.arange(minv,maxv,0.5) #+1.         
+        ticks = np.arange(minv,maxv,0.5)      
     elif dif > 0.2 and dif <= 1. :
-        ticks = np.arange(minv,maxv,0.1) #+1.                  
+        ticks = np.arange(minv,maxv,0.1)                 
     elif dif > 0.02 and dif <= 0.2 : 
         ticks = np.arange((math.trunc(minv/10)*10),maxv,0.01) 
     elif dif == 0:
         ticks = np.arange(minv - minv/100.,
                 maxv + minv/100.,minv/1000.)
     else : 
-        ticks = [minv,maxv]    
-        #+ dif/2.                  
+        ticks = [minv,maxv]                     
     return ticks
-
-def setmaxmin(self,axis,var,type):
-    minv = varmin(self,var,type) #0 - water 
-    maxv = varmax(self,var,type)
-    axis.set_xlim([minv,maxv])  
-    axis.set_xticks(np.arange(minv,maxv+((maxv - minv)/2.),
-            ((maxv - minv)/2.)))      
+     
         
 def set_widget_styles(self):
     
     # Push buttons style
-    for axis in (self.time_prof_all,self.time_prof_last_year,
+    for button in (self.time_prof_all,self.time_prof_last_year,
                  self.dist_prof_button,self.fick_box, 
                  self.all_year_button,self.help_button):   
-        axis.setStyleSheet(
+        button.setStyleSheet(
         'QPushButton {background-color: #c2b4ae; border-width: 5px;'
         '  padding: 2px; font: bold 15px; }')   
           
@@ -452,16 +435,14 @@ def use_num2date(self,time_units,X_subplot):
     return X_subplot
 
 def format_time_axis2(self, xaxis,xlen):   
-    if xlen > 365 and xlen < 365*5 :
-        xaxis.xaxis_date()
+    xaxis.xaxis_date()
+    if xlen > 365 and xlen < 365*5 : 
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%m/%Y'))  
     elif xlen >= 365*5 :
-        xaxis.xaxis_date()
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%Y'))          
     elif xlen <= 365: 
-        xaxis.xaxis_date()
         xaxis.xaxis.set_major_formatter(
             mdates.DateFormatter('%b'))   
 
@@ -496,94 +477,71 @@ def get_cmap(self):
         self.cmap = plt.get_cmap('jet')
         self.cmap1 = plt.get_cmap('gist_rainbow')    
         
+def varmax(self,var,lims):
+    return ma.max(var[lims[0]:lims[1],lims[2]:lims[3]]) 
+  
+def varmin(self,var,lims):
+    return ma.min(var[lims[0]:lims[1],lims[2]:lims[3]]) 
+
+def check_minmax(self,cmin,cmax,index):
+    ''' Checks if values of max and min are the same or masked'''
+    if cmin is ma.masked or cmax is ma.masked: 
+        cmin = 0
+        cmax = 1
+    elif  cmin ==  cmax :
+        if cmax == 0: 
+            cmin = 0            
+            cmax = 0.1
+        else:     
+            cmax = cmax + cmax/1000.
+            cmin = cmin - cmax/1000.      
+    if index == 'pH': 
+        cmin = float(format(float(cmin), '.2f')) 
+        cmax = float(format(float(cmax), '.2f'))           
+    elif cmax > 100 :
+        cmax = math.trunc(cmax/100)*100
+        cmin = math.trunc(cmin/100)*100   
+    elif cmax > 10  :
+        cmax = math.trunc(cmax/10)*10
+        cmin = math.trunc(cmin/10)*10    
+    elif cmax > 1  :
+        cmax = math.trunc(cmax*10)/10
+        cmin = math.trunc(cmin*10)/10      
+    elif cmax > 0.1  :
+        cmax = math.trunc(cmax*100)/100
+        cmin = math.trunc(cmin*100)/100                   
+    return float(cmin),float(cmax)        
         
 def make_maxmin(self,var,start,stop,index,type):
+    
     if  self.change_limits_checkbox.isChecked():
-        if type == 'water_time' or type == 'water_dist':
-            min = float(self.box_minwater.text())
-            max= float(self.box_maxwater.text()) 
-            maxmin = (min,max)
-        if type == 'sed_time' or type == 'sed_dist' :          
-            min = float(self.box_minsed.text())
-            max = float(self.box_maxsed.text())
-            maxmin = (min,max)
-            
-    elif type == 'water_time': 
-        maxmin = calculate_wat_maxmin(
-            self,var,start,stop,index)
-    elif type == 'water_dist': 
-        #round(data[start:stop,0:self.ny1max].min(),2) 
-        min = varmin(self,var,'watdist',start,stop)
-        max = varmax(self,var,'watdist',start,stop) 
-        check = check_minmax(self,min,max)
-        min = check[0]
-        max = check[1]
-        maxmin = (min,max)     
-               
-    elif type == 'sed_time': 
-        maxmin = calculate_sed_maxmin(
-            self,var,start,stop,index)  
-    elif type == 'sed_dist':
-        min = varmin(self,var,'seddist',start,stop)
-        max = varmax(self,var,'seddist',start,stop)
-        check = check_minmax(self,min,max)
-        min = check[0]
-        max = check[1]                
-        maxmin = (min,max)     
-    return maxmin
+        ''' Get manually typed values '''
+        functions = dict(wat_time = (self.box_minwater,self.box_maxwater),
+                         wat_dist = (self.box_minwater,self.box_maxwater),
+                         sed_time = (self.box_minsed,self.box_maxsed),
+                         sed_dist = (self.box_minsed,self.box_maxsed))
         
-def calculate_wat_maxmin(self,var,start,stop,index):        
-    zz = var
-    if self.scale_all_axes.isChecked(): 
-        z_all_columns = np.array(self.fh.variables[index])  
-        watmin = round((
-            z_all_columns[start:stop,0:self.ny1max,:].min()),0) 
-        watmax = round((
-            z_all_columns[start:stop,0:self.ny1max,:].max()),2)                         
-    elif 'Kz' in self.names_vars and index != 'pH':
-        watmin = varmin(self,zz,'wattime',start,stop) 
-        watmax = varmax(self,zz,'wattime',start,stop)     
+        min = float(functions[type][0].text())
+        max = float(functions[type][1].text())
         
-    elif 'Kz'in self.names_vars and index == 'pH':       
-        # take the value with two decimal places 
-        watmin = round(zz[0:self.ny1max,:].min(),2) 
-        watmax = round(zz[0:self.ny1max,:].max(),2) 
-         
-    # if we do not have kz     
-    else:  
+    else: 
+        lim_dict = dict(wat_dist = (start,stop,0,self.ny1max),
+                     sed_dist = (start,stop,self.nysedmin,None),
+                     wat_time = (0,self.ny1max,None,None),
+                     sed_time = (self.nysedmin,None,None,None))
+        lims = lim_dict[type]  
+        
+        #self.scale_all_axes.isChecked(): 
+        #z_all_columns = np.array(self.fh.variables[index]) 
+        '''    # if we do not have kz     
+        else:  
         self.ny1max = len(self.depth-1)
-        self.y1max = max(self.depth)    
-        watmin = varmin(self,zz,'wattime',start,stop) 
-        watmax = varmax(self,zz,'wattime',start,stop)
-    
-    check = check_minmax(self,watmin,watmax)
-    watmin = check[0]
-    watmax = check[1]   
-    
-    return watmin,watmax 
-
-def calculate_sed_maxmin(self,var,start,stop,index):     
-    zz = var  
-    if self.scale_all_axes.isChecked(): 
-        z_all_columns = np.array(self.fh.variables[index])  
-        sed_min  = round((
-                z_all_columns[start:stop,self.nysedmin-2:,:].min()),2) 
-        sed_max = round((
-                z_all_columns[start:stop,self.nysedmin-2:,:].max()),2)                  
-    elif index == 'pH': 
-        sed_min  = (zz[self.nysedmin-2:,:].min()) 
-        sed_max  = (zz[self.nysedmin-2:,:].max())                 
-        #sed_ticks = readdata.ticks(sed_min,sed_max) 
-        #sed_ticks = (np.floor(sed_ticks*100)/100.)  
-    else :
-        sed_min = varmin(self,zz,'sedtime',start,stop)
-        sed_max = varmax(self,zz,'sedtime',start,stop) 
-        
-    check = check_minmax(self,sed_min,sed_max)
-    sedmin = check[0]
-    sedmax = check[1]   
-    
-    return sedmin,sedmax 
+        self.y1max = max(self.depth)'''
+        min = varmin(self,var,lims)     
+        max = varmax(self,var,lims) 
+                
+    maxmin = check_minmax(self,min,max,index)            
+    return maxmin
 
 ## here we can add contour of some level with interesting value
 #add contour to 1 om ar saturation

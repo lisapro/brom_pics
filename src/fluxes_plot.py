@@ -111,6 +111,8 @@ def fluxes(self):
         ax01.fill_between(self.time[start:stop],  fick2, 0 ,
                       where= fick2 < 0.,color = towater, label=u"up")            
         ax01.set_ylim(max(fick2),min(fick2)) 
+        m = np.mean(fick2)
+        ax01.axhline(m,c = 'r', linestyle = '--',label = 'mean')
     else : 
         messagebox = QtWidgets.QMessageBox.about(
             self, "Retry",'Choose 1 or 2 variables,please') 
@@ -143,6 +145,9 @@ def fluxes(self):
     ax00.fill_between(self.time[start:stop],  fick, 0 ,
                       where= fick < 0.,color = towater, label=u"up")
     ax00.set_ylim(max(fick),min(fick)) 
+    m = np.mean(fick)
+    ax00.axhline(m,c = 'r', linestyle = '--',label = 'mean', zorder = 10)
+    
     #                  where = fick > 0 ,
     #                  , interpolate=True) 
     
