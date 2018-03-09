@@ -58,10 +58,24 @@ class ReadVar:
             depth = self.fh.variables['z'][:]  
         except KeyError : 
             depth = self.fh.variables['depth'][:]
-        return depth       
+        return depth 
+          
+    def y_watmax(self):
+        depth2 = self.fh.variables['z2'][:]
+        kz = self.fh.variables['Kz'][:]
+        for n,item in enumerate(depth2):
+            if kz[1,n,0] == 0:
+                print ('in')
+                y2max = depth2[n] 
+                ny2max = n
+                break                    
+        return y2max,ny2max                 
     
-    def sed_depth(self,depth):
-        print (depth)
+    
+    def depth_sed(self,depth,y2max):
+        depth_sed = (depth - y2max)*100        
+        return depth_sed 
+        '''
         to_float = []
         for item in self.depth:
             to_float.append(float(item)) #make a list of floats from tuple 
@@ -72,8 +86,9 @@ class ReadVar:
             depth_sed.append(v)
             self.depth_sed= depth_sed        
         pass
-        '''        
-        def check_middlepoints(self),z:      
+              
+        
+        def check_middlepoints(self):      
         # check if the variable is defined on
         # middlepoints  
         
@@ -88,9 +103,9 @@ class ReadVar:
                 #print ('in sed1')                
                 y_sed = np.array(self.depth_sed) 
         else :
-            print ("wrong depth array size")'''            
+            print ("wrong depth array size")           
                           
-        return depth 
+        return depth '''
     
     def units(self):               
         return  np.array(

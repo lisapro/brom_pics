@@ -311,16 +311,23 @@ class Window(QMainWindow):
         z_units = array.units()
         z = array.variable()
         x = array.time()
+        
+        y2max,ny2max = array.y_watmax() 
         y = array.depth()
-        #y_sed = array.depth_sed(y)
-        ylen = array.leny()
-        xlen = array.lentime()
+        y_wat = y[:ny2max]
+        y_sed = (array.depth_sed(y,y2max))[ny2max:]
+        
+        array.close()
+        #ylen = array.leny()
+        #xlen = array.lentime()
+        
         #ny1min = 0          
         
-        X,Y = np.meshgrid(x,y) 
-        #X_sed,Y_sed = np.meshgrid(x,y_sed)  
-        Z_wat = z
-        #Z_sed = z
+        X,Y_wat = np.meshgrid(x,y_wat) 
+        X_sed,Y_sed = np.meshgrid(x,y_sed)  
+        
+        Z_wat = z[:ny2max,:]
+        Z_sed = z[ny2max:,:]
            
         from matplotlib import gridspec
         gs = gridspec.GridSpec(2, 1)
@@ -332,9 +339,11 @@ class Window(QMainWindow):
         ax0 = self.figure.add_subplot(gs[0])
         ax1 = self.figure.add_subplot(gs[1]) 
         
-        CS = ax0.pcolormesh(X,Y,z,    
+        CS = ax0.pcolormesh(X,Y_wat,Z_wat,    
                         cmap= self.cmap) 
-          
+        CS1 = ax1.pcolormesh(X_sed,Y_sed,Z_sed,    
+                        cmap= self.cmap)  
+                 
         self.canvas.draw() 
 
     
