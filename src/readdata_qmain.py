@@ -57,7 +57,8 @@ class ReadVar:
         try:
             depth = self.fh.variables['z'][:]  
         except KeyError : 
-            depth = self.fh.variables['depth'][:]  
+            depth = self.fh.variables['depth'][:]
+        return depth       
     
     def sed_depth(self,depth):
         print (depth)

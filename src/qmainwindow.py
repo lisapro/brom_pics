@@ -312,15 +312,15 @@ class Window(QMainWindow):
         z = array.variable()
         x = array.time()
         y = array.depth()
-        y_sed = array.depth_sed(y)
-        #ylen = array.leny()
-        #xlen = array.lentime()
+        #y_sed = array.depth_sed(y)
+        ylen = array.leny()
+        xlen = array.lentime()
         #ny1min = 0          
         
         X,Y = np.meshgrid(x,y) 
-        X_sed,Y_sed = np.meshgrid(x,y_sed)  
+        #X_sed,Y_sed = np.meshgrid(x,y_sed)  
         Z_wat = z
-        Z_sed = z
+        #Z_sed = z
            
         from matplotlib import gridspec
         gs = gridspec.GridSpec(2, 1)
