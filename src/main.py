@@ -290,6 +290,7 @@ def createCmapLimitsGroup(self):
         
         self.cmap_groupBox = QtWidgets.QGroupBox("colour map limits ")  
         self.change_limits_checkbox = QtWidgets.QCheckBox('Change limits')
+        self.exact_limits_checkbox = QtWidgets.QCheckBox('Exact limits')
         self.label_maxwater = QtWidgets.QLabel('cmap max water: ')
         
         self.label_minwater = QtWidgets.QLabel('min water: ')   
@@ -305,7 +306,7 @@ def createCmapLimitsGroup(self):
         cmap_grid = QtWidgets.QGridLayout(self.cmap_groupBox) 
         
         cmap_grid.addWidget(self.change_limits_checkbox,0,0,1,1) 
-        
+        cmap_grid.addWidget(self.exact_limits_checkbox,0,1,1,1)
         cmap_grid.addWidget(self.label_minwater,1,0,1,1)
         cmap_grid.addWidget(self.label_maxwater,1,1,1,1)
         cmap_grid.addWidget(self.box_minwater,2,0,1,1)

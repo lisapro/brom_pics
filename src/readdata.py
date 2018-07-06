@@ -485,31 +485,36 @@ def varmin(self,var,lims):
 
 def check_minmax(self,cmin,cmax,index):
     ''' Checks if values of max and min are the same or masked'''
-    if cmin is ma.masked or cmax is ma.masked: 
-        cmin = 0
-        cmax = 1
-    elif  cmin ==  cmax :
-        if cmax == 0: 
-            cmin = 0            
-            cmax = 0.1
-        else:     
-            cmax = cmax + cmax/1000.
-            cmin = cmin - cmax/1000.      
-    if index == 'pH': 
-        cmin = float(format(float(cmin), '.2f')) 
-        cmax = float(format(float(cmax), '.2f'))           
-    elif cmax > 100 :
-        cmax = math.trunc(cmax/100)*100
-        cmin = math.trunc(cmin/100)*100   
-    elif cmax > 10  :
-        cmax = math.trunc(cmax/10)*10
-        cmin = math.trunc(cmin/10)*10    
-    elif cmax > 1  :
-        cmax = math.trunc(cmax*10)/10
-        cmin = math.trunc(cmin*10)/10      
-    elif cmax > 0.1  :
-        cmax = math.trunc(cmax*100)/100
-        cmin = math.trunc(cmin*100)/100                   
+    if self.exact_limits_checkbox.isChecked():  
+        pass     
+    else:              
+        if cmin is ma.masked or cmax is ma.masked: 
+            cmin = 0
+            cmax = 1
+        elif  cmin ==  cmax :
+            if cmax == 0: 
+                cmin = 0            
+                cmax = 0.1
+            else:     
+                cmax = cmax + cmax/1000.
+                cmin = cmin - cmax/1000. 
+               
+        if index == 'pH': 
+            cmin = float(format(float(cmin), '.2f')) 
+            cmax = float(format(float(cmax), '.2f'))           
+        elif cmax > 100 :
+            cmax = math.trunc(cmax/100)*100
+            cmin = math.trunc(cmin/100)*100   
+        elif cmax > 10  :
+            cmax = math.trunc(cmax/10)*10
+            cmin = math.trunc(cmin/10)*10    
+        elif cmax > 1  :
+            cmax = math.trunc(cmax*10)/10
+            cmin = math.trunc(cmin*10)/10      
+        elif cmax > 0.1  :
+            cmax = math.trunc(cmax*100)/100
+            cmin = math.trunc(cmin*100)/100
+                      
     return float(cmin),float(cmax)        
         
 def make_maxmin(self,var,start,stop,index,type):
