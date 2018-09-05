@@ -43,9 +43,8 @@ class Window(QMainWindow):
                    
         self.filename = None
         
-        self.figure = plt.figure()
-        # this is the Canvas Widget that displays the `figure`
-        # it takes the `figure` instance as a parameter to __init__
+        self.figure = plt.figure(figsize=(7.69 , 5.27),
+                        facecolor='None',edgecolor='None')
         self.canvas = FigureCanvas(self.figure)  
         self.setCentralWidget(self.canvas)
         
@@ -56,7 +55,6 @@ class Window(QMainWindow):
         
         self.listWidget = QListWidget()
         self.listWidget.setFocusPolicy(Qt.ClickFocus)
-        #self.drop_button = CustomLabel('Drop here.', self)
         self.listWidget.setSelectionMode(
             QAbstractItemView.ExtendedSelection)        
         logDockWidget.setWidget(self.listWidget)
@@ -91,22 +89,23 @@ class Window(QMainWindow):
                     tip = "Click to Plot All time") 
 
         pltLastYearAct = self.createAction("Last Year",
-                    self.callLastYear,None,None,
-                    "Click to plot Last Year")
+                    self.callLastYear,
+                    tip = "Click to plot Last Year")
         PltTransectAct = self.createAction("Transect", 
-                    self.plotTransect,None,None,
-                    "Click to plot Transect 1day")        
+                    self.plotTransect,
+                    tip =  "Click to plot Transect 1day")        
         editZoomAct = self.createAction("&Zoom...",
                     self.editZoom,"Alt+Z","editzoom",
-                    "Zoom the image")
+                    tip = "Zoom the image")
         editCmapAct = self.createAction("Change Color map",
-                    self.changeCmap,None, None,
-                    "Change Color map")
+                    self.changeCmap,
+                    tip = "Change Colormap")
         
 
         self.SedInFileAct = self.createAction(
-            "Use sediment Subplot",None, None,
-            None,"Use sediment Subplot", True) 
+            "Use sediment Subplot", #slot = self.plotTime,
+            tip = "Use sediment Subplot", checkable= True) 
+        
         self.SedInFileAct.setChecked(True)     
                   
         self.editCmapLimsAct = self.createAction(
@@ -120,6 +119,11 @@ class Window(QMainWindow):
         self.limsAllCols = self.createAction(
             "All columns Cmap limits",None, None,
             None,"Scale: all columns, all time", True)  
+        
+        self.showIceAct = self.createAction(
+            "Show Ice Thickness",None, None,
+            None,"Scale: all columns, all time", True)   
+
         self.yearLinesAct = self.createAction(
             'Draw year lines',None, None, None,
             'Draw year lines', True)          
@@ -147,16 +151,10 @@ class Window(QMainWindow):
         proprtsMenu = self.addMultipleAction(
         'Properties',
         [self.editCmapLimsAct,self.SedInFileAct,self.interpCmapLimsAct,            
-        self.limsAllCols,self.formatTimeAct,self.intepolateAct],
+         self.limsAllCols,self.formatTimeAct,
+         self.intepolateAct,self.yearLinesAct],
         menubar.addMenu)
-        
-        self.toolbar1 = self.addMultipleAction(
-        'Plot',
-        [pltAllTimeAct,pltLastYearAct,
-        PltTransectAct],
-        self.addToolBar)
-        
-        
+            
         self.createCmapLimitsGroup()
         self.createDistGroup()
         self.createTimeGroup()
@@ -166,6 +164,12 @@ class Window(QMainWindow):
         self.toolbar2.addWidget(self.dist_groupBox)   
         self.toolbar2.addWidget(self.time_groupBox)
 
+        self.toolbar1 = self.addMultipleAction(
+        'Plot',
+        [pltAllTimeAct,pltLastYearAct,
+        PltTransectAct],
+        self.addToolBar)
+
         self.show()
         
     def updateToolbar(self):
@@ -173,8 +177,7 @@ class Window(QMainWindow):
     
         self.createCmapLimitsGroup()
         self.createDistGroup() 
-        self.createTimeGroup()
-        
+        self.createTimeGroup()        
         self.toolbar2.addWidget(self.cmap_groupBox)    
         self.toolbar2.addWidget(self.dist_groupBox)                
         self.toolbar2.addWidget(self.time_groupBox)
@@ -235,15 +238,21 @@ class Window(QMainWindow):
         self.time_groupBox = QGroupBox("Time axis")        
     
         self.numday_start_label = QLabel('Start: ') 
-        self.numday_stop_label = QLabel('Stop: ')          
-        self.maxday_label = QLabel('Maxday: ')
-
+        self.numday_stop_label = QLabel('Stop: ')      
+        self.maxday_label = QLabel('Maxday: ')  
+        try:
+            self.value_maxday_l = QLabel(str(self.lentime))
+        except AttributeError: 
+            self.value_maxday_l = QLabel(' ')           
+        
+       
+         
         self.numday_box = QSpinBox()     
         self.numday_stop_box = QSpinBox()
-        try:
-            self.value_maxday = QLabel(str(self.lentime)) 
-        except AttributeError: 
-            self.value_maxday = QLabel(' ')               
+        #try:
+        #    
+        #except AttributeError: 
+                      
         time_grid = QGridLayout(self.time_groupBox)   
     
         
@@ -254,8 +263,8 @@ class Window(QMainWindow):
                   
         #line 2             
         time_grid.addWidget(     self.numday_box,1,0,1,1) 
-        time_grid.addWidget(self.numday_stop_box,1,1,1,1)      
-        time_grid.addWidget(   self.value_maxday,1,2,1,1)  
+        time_grid.addWidget(self.numday_stop_box,1,1,1,1)             
+        time_grid.addWidget( self.value_maxday_l,1,2,1,1)  
           
     def addOneAction(self,text,action,target):
         item = target(text)
@@ -288,7 +297,8 @@ class Window(QMainWindow):
     
    
     #TODO: add Zoom            
-    def editZoom(self):            
+    def editZoom(self):    
+        
         pass
     
     #TODO: add changeCMAP
@@ -306,30 +316,31 @@ class Window(QMainWindow):
         var_list = self.array.get_variables_list()
         self.listWidget.addItems(var_list)
         colmax = self.array.max_numcol()  
-        print (colmax)
         self.max_num_col = colmax  
+        
         if colmax > 0:
             self.numcol_2d.setRange(0,colmax + 1)                
         self.lentime = self.array.lentime()  
         self.updateToolbar()      
         
-    def fileSave(self):
-        pass
+
             
     def fileSaveAs(self):
-        print('save file')
-        try:
-            formats = [r'bmp',r'png',r'pdf']
-            print (formats)
-            self.fname, _ = QFileDialog.getSaveFileName(self, "Save File", 
-            "Figure.png", "All Files (*);; png (*png) ;; pdf  (*pdf)")
-            plt.savefig(self.fname, dpi=150) 
-            
+        if not (self.filename == None):              
+            self.plotTime()         
+            try:
+                formats = [r'bmp',r'png',r'pdf']
+                self.fname, _ = QFileDialog.getSaveFileName(self, "Save File", 
+                "Figure.png", "All Files (*);; png (*png) ;; pdf  (*pdf)")
+                plt.savefig(self.fname, dpi=150) 
+            except:
+                pass 
+        else:
+            QMessageBox.about(self, "Retry",
+            'There is nothing to save yet')           
             #TODO: implement recent files 
             #sef.addRecentFile(fname)
-        except:
-            print('pass')
-            pass                 
+                
             
     def openFolder(self): 
         import tkinter as tk
@@ -340,7 +351,7 @@ class Window(QMainWindow):
     def plotTransect(self):
         pass
             
-    def plotTime(self,start,stop):      
+    def plotTime(self):      
         plt.clf()
         try:
             index = str(
@@ -349,7 +360,8 @@ class Window(QMainWindow):
             QMessageBox.about(self, "Retry",
             'Choose variable,please') 
             return None             
-        self.getCmap()         
+        self.getCmap()   
+
         array = readdata_qmain.ReadVar(
             self.filename,index,start,stop)
         z_units = array.units()
@@ -358,46 +370,54 @@ class Window(QMainWindow):
         x = array.time()
         xlen = len(x)
         y = array.depth()     
-                
+        from matplotlib.ticker import MaxNLocator       
         if  self.SedInFileAct.isChecked():  
             try: 
                 y2max,ny2max = array.y_watmax()   
-                y_wat = y[:ny2max]
-                y_sed = (array.depth_sed(y,y2max))[ny2max:] 
+                y_wat = y[:ny2max-1]
+                y_sed = (array.depth_sed(y,y2max))[ny2max-1:] 
                 array.close()
                   
                 X,Y_wat = np.meshgrid(x,y_wat) 
                 X_sed,Y_sed = np.meshgrid(x,y_sed)          
-                Z_wat = z[:ny2max,:]
-                Z_sed = z[ny2max:,:]
+                Z_wat = z[:ny2max-1,:]
+                Z_sed = z[ny2max-1:,:]
                           
                 gs = gridspec.GridSpec(2, 1)
                 gs.update(left = 0.07,right = 0.85 )
+                
                 self.cax1 = self.figure.add_axes([0.86, 0.11, 0.02, 0.35])
-                self.cax = self.figure.add_axes([0.86, 0.53, 0.02, 0.35])    
-                                
-                #add subplots
+                self.cax = self.figure.add_axes([0.86, 0.53, 0.02, 0.35])                                    
                 ax0 = self.figure.add_subplot(gs[0])
                 ax1 = self.figure.add_subplot(gs[1]) 
                 
                 if self.formatTimeAct.isChecked():
                     X = readdata_qmain.format_time_axis(self,ax0,xlen,X) 
                     X_sed = readdata_qmain.format_time_axis(self,ax1,xlen,X_sed)       
-                          
-                CS = ax0.pcolormesh(X,Y_wat,Z_wat,    
-                                cmap= self.cmap) 
-                CS1 = ax1.pcolormesh(X_sed,Y_sed,Z_sed,    
-                                cmap= self.cmap) 
                 
-                ax0.set_ylim(np.max(y),np.min(y))
+                if self.intepolateAct.isChecked():
+                    levels_wat = MaxNLocator(nbins=25).tick_values(Z_wat.min(), Z_wat.max())       
+                    levels_sed = MaxNLocator(nbins=25).tick_values(Z_wat.min(), Z_sed.max())                        
+                    CS = ax0.contourf(X,Y_wat,Z_wat, levels = levels_wat,    
+                                    cmap= self.cmap) 
+                    CS1 = ax1.contourf(X_sed,Y_sed,Z_sed, 
+                          levels = levels_sed, cmap= self.cmap) 
+                     
+                else:       
+                 
+                    CS = ax0.pcolormesh(X,Y_wat,Z_wat,   
+                                    cmap= self.cmap) 
+                    CS1 = ax1.pcolormesh(X_sed,Y_sed,Z_sed,       
+                                    cmap= self.cmap) 
+      
+                ax0.set_ylim(np.max(y_wat),np.min(y_wat))
                 ax1.set_ylim(np.max(y_sed),np.min(y_sed)) 
                 cb = plt.colorbar(CS,cax = self.cax)  
                 cb1 = plt.colorbar(CS1,cax = self.cax1)  
                  
             except: 
                 QMessageBox.about(self, "Unable to plot sediment",
-                        'Uncheck menu "Properties/Use sediment Subplot"')   
-                          
+                        'Uncheck menu "Properties/Use sediment Subplot"')                             
         else: 
              
             array.close()                        
@@ -406,16 +426,19 @@ class Window(QMainWindow):
                      
             gs = gridspec.GridSpec(1, 1)
             gs.update(left=0.15, right= 0.95,
-                      top = 0.95,bottom = 0.06,
+                      top = 0.75,bottom = 0.25,
                       wspace=0.2,hspace=0.2)                 
-            #add subplots
             ax0 = self.figure.add_subplot(gs[0])
             
             if self.formatTimeAct.isChecked():
-                X = readdata_qmain.format_time_axis(self,ax0,xlen,X)    
-                         
-            CS = ax0.pcolormesh(X,Y,Z_wat,    
-                            cmap= self.cmap) 
+                X = readdata_qmain.format_time_axis(self,ax0,xlen,X) 
+                   
+            if self.intepolateAct.isChecked():
+                levels = MaxNLocator(nbins=25).tick_values(Z.min(), Z.max()) 
+                CS = ax0.contourf(X,Y,Z, levels = levels,cmap= self.cmap)      
+            else:                               
+                CS = ax0.pcolormesh(X,Y,Z_wat, cmap= self.cmap) 
+                
             ax0.set_ylim(np.max(y),np.min(y))
             cb = plt.colorbar(CS)  
         self.canvas.draw() 
@@ -456,22 +479,13 @@ class Window(QMainWindow):
     def callAllTime(self):
         ''' calls the function to plot
         all time array or manually input start stop'''        
-        if not (self.filename == None):         
-            stop = self.lentime-1
-            start = 0         
-            self.plotTime(start,stop) 
+        if not (self.filename == None):              
+            self.plotTime() 
         else:
             QMessageBox.about(self, "Retry",
             'Open Netcdf File,please')  
             
     def getCmap(self):    
-        '''try:
-            # take values of cmaps from comboboxes 
-            cmap_name = self.cmap_water_box.currentText()
-            cmap1_name = self.cmap_sed_box.currentText()
-            self.cmap = plt.get_cmap(cmap_name) 
-            self.cmap1 = plt.get_cmap(cmap1_name) 
-        except ValueError:'''
         #TODO: make it changeable 
         try: 
             self.cmap = plt.get_cmap(self.cmap_box.currentText())
@@ -498,6 +512,9 @@ if __name__ == '__main__':
     app.setApplicationName("BROM NetCDF Viewer")
     app.setOrganizationName("test Ltd.")
     app.setStyle("plastique")
+    app_icon = QIcon()
+    app_icon.addFile('img/logo.png', QSize(16,16))
+    app.setWindowIcon(app_icon)
     ex = Window()
-    #ex.setStyleSheet("background-color:#dceaed;")
+    ex.setStyleSheet("background-color:#acc0c4;")
     sys.exit(app.exec_())
