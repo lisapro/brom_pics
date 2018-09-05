@@ -3,11 +3,11 @@ Created on 14. jan. 2018
 
 @author: ELP
 '''
-
+from netCDF4 import num2date 
 import numpy.ma as ma
 from netCDF4 import Dataset
 import numpy as np
-
+import matplotlib.dates as mdates
 class ReadVar:
     def __init__(self,filename,
                  index = None,start = None,
@@ -49,7 +49,7 @@ class ReadVar:
             testvar = np.array(self.fh['i'][:]) 
             max_num_col = testvar.shape[0]
         else :
-            max_num_col = None
+            max_num_col = 1
             
         return max_num_col  
            
@@ -61,15 +61,24 @@ class ReadVar:
         return depth 
           
     def y_watmax(self):
-        depth2 = self.fh.variables['z2'][:]
-        kz = self.fh.variables['Kz'][:]
+        try: 
+            depth2 = self.fh.variables['z2'][:]
+            kz = self.fh.variables['Kz'][:]
+        except:
+            return None,None     
+               
         for n,item in enumerate(depth2):
             if kz[1,n,0] == 0:
                 print ('in')
                 y2max = depth2[n] 
                 ny2max = n
-                break                    
-        return y2max,ny2max                 
+                break 
+                                                  
+        return y2max,ny2max      
+        
+     
+   
+                        
     
     
     def depth_sed(self,depth,y2max):
@@ -124,13 +133,15 @@ class ReadVar:
             z2d = []        
             # check if we have 2D array 
             if z.shape[2] > 1:  
-                for n in range(0,xlen): #xlen                    
-                    for m in range(0,ylen):  
-                        # take only n's
-                        # column for brom             
-                        z2d.append(
-                            z[n][m][numcol]) 
+                z2d = [z[n][m][numcol] for n in range(0,xlen) \
+                       for m in ranage(0,ylen)]
                 z = ma.array(z2d)
+                #for n in range(0,xlen): #xlen                    
+                #    for m in range(0,ylen):  
+                        # take only n's           
+                #        z2d.append(
+                #            z[n][m][numcol]) 
+                
                                 
         z = z.flatten()   
         z = z.reshape(xlen,ylen)       
@@ -142,7 +153,11 @@ class ReadVar:
     def time(self):
         t = self.fh.variables['time'][self.start:self.stop] 
         return t
-        
+    
+    def time_units(self):
+        t = self.fh.variables['time'].units
+        return t
+            
     def lentime(self):
         time = self.time()
         return len(time)   
@@ -154,12 +169,18 @@ class ReadVar:
     def close(self):
         self.fh.close()
         self.fh = None  
-              
-        '''## read chosen variable and data units     
         
-        data_units = self.fh.variables[index].units
-        # read only part 
-        
-        ylen1 = len(self.depth) 
-         
-        xlen = len(x) '''        
+def format_time_axis(self, xaxis,xlen,X_arr): 
+    print (self.time_units)
+    X = num2date(X_arr,units = self.time_units)   
+    xaxis.xaxis_date()
+    if xlen > 365 and xlen < 365*5 : 
+        xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter('%m/%Y'))  
+    elif xlen >= 365*5 :
+        xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter('%Y'))          
+    elif xlen <= 365: 
+        xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter('%b'))
+    return X                     

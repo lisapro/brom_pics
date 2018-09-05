@@ -66,10 +66,13 @@ def time_profile(self,start,stop):
         z2d = []        
         # check if we have 2D array 
         if z.shape[2] > 1:
-            for n in range(0,xlen): #xlen
-                for m in range(0,ylen):  
-                    # take only n's column for brom             
-                    z2d.append(z[n][m][numcol]) 
+            z2d = [z[n][m][numcol] for n in range(0,xlen) \
+                       for m in ranage(0,ylen)]     
+                   
+            #for n in range(0,xlen): #xlen
+            #    for m in range(0,ylen):  
+            #        # take only n's column for brom             
+            #        z2d.append(z[n][m][numcol]) 
             z = ma.array(z2d)
                             
     z = z.flatten()   
@@ -152,9 +155,8 @@ def time_profile(self,start,stop):
                     
         sed_maxmin = readdata.make_maxmin(self,
                     zz,start,stop,index,'sed_time')    
-        sedmin = sed_maxmin[0]     
-        sedmax = sed_maxmin[1] 
-                
+        sedmin,sedmax = sed_maxmin    
+                 
         sed_ticks = readdata.ticks_2(sedmin,sedmax)
         sed_levs = np.linspace(sedmin,sedmax,
                             num = self.num)

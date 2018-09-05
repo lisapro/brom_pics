@@ -25,9 +25,9 @@ import os, sys
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 
+#format scales to be scalar 
 majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   
-#format y scales to be scalar 
 minorLocator = mtick.MultipleLocator(1.)
 app1 = QtWidgets.QApplication(sys.argv)
 screen_rect = app1.desktop().screenGeometry()
@@ -301,8 +301,7 @@ def ticks_2(minv,maxv):
     ''' make "beautiful"  values to show on ticks '''  
     minv = float(minv)
     maxv = float(maxv)
-    assert minv < maxv
-       
+    assert minv < maxv       
     dif = maxv - minv 
     if dif >= 1000:
         #dif = dif/3 
@@ -325,11 +324,10 @@ def ticks(minv,maxv):
         minv = np.floor(minv)
         minv = (math.trunc(minv/10)*10)
     dif = maxv - minv  
-    #maxv = maxv + 100 
     if minv > 100 :
         minv = (math.trunc(minv/100)*100) 
         
-    if dif >= 50000. and dif < 150000.  :
+    if 50000. <= dif < 150000. :     
         step = 50000
         ticks = np.arange(minv,maxv,50000)        
     elif dif >= 10000. and dif < 50000. :
@@ -342,19 +340,19 @@ def ticks(minv,maxv):
         ticks = np.arange(
             (math.trunc(minv/100)*100),
             maxv,200)           
-    elif dif >= 300. and dif <= 1000. :
+    elif 300.<= dif <  1000. : 
         ticks = np.arange((math.trunc(minv/100)*100),maxv,100)   
         if minv < 100 :
             ticks = np.arange(0,maxv,100)                
-    elif dif >= 100. and ( 
-     maxv - minv) < 300. :
+    elif  100.  <= dif < 300. :
         ticks = np.arange(minv,maxv,20)  
         
     if dif >= 100:
         step = ((dif/3)/100)*100
         ticks = np.arange(minv,maxv,step)    
         
-    elif dif > 50. and dif < 100. :
+    elif 50. <= dif < 100. : 
+        #dif > 50. and dif < 100. :
         ticks = np.arange(minv,maxv,10)         
     elif dif > 20. and dif <= 50. :
         ticks = np.arange(minv,maxv,5) 
@@ -374,8 +372,7 @@ def ticks(minv,maxv):
     else : 
         ticks = [minv,maxv]                     
     return ticks
-     
-        
+             
 def set_widget_styles(self):
     
     # Push buttons style
@@ -401,8 +398,7 @@ def set_widget_styles(self):
 
 def widget_layout(self): 
        
-        #first line 
-        
+        #first line        
         self.grid.addWidget(self.help_button,0,0,1,1) # help_dialog           
         self.grid.addWidget(self.toolbar,0,1,1,1) 
         self.grid.addWidget(self.fick_box,0,2,1,1)         
