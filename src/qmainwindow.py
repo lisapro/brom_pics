@@ -11,7 +11,7 @@ import numpy as np
 from PyQt5.QtWidgets import (QMainWindow,QAction,qApp,QFileDialog,
                 QFrame,QSplitter,QLabel,QActionGroup,QSpinBox,QMessageBox,
                 QApplication,QTextEdit,QListWidget,QGroupBox,QAbstractItemView,
-                QLineEdit,QCheckBox,QGridLayout, QDockWidget,QComboBox)
+                QLineEdit,QCheckBox,QGridLayout, QDockWidget,QComboBox,QVBoxLayout,QRadioButton)
 from PyQt5.QtGui import QIcon,QKeySequence,QImageWriter,QPixmap
 from PyQt5.QtCore import QSettings,QVariant,QSize,QPoint,QTimer,Qt
 
@@ -24,6 +24,7 @@ from matplotlib import gridspec
 
 import os
 import readdata_qmain
+import path
 __version__ = "1.0.0"
 
 
@@ -83,17 +84,11 @@ class Window(QMainWindow):
                     self.close,"Ctrl+Q", "filequit",
                     "Close the application") 
         
-        alltimeicon = r'C:\Users\elp\OneDrive\Python_workspace\brom_pics2\src\img\icon.png'       
+        alltimeicon = r'img\icon.png'       
         pltAllTimeAct = self.createAction("All time",
                     self.callAllTime,icon = alltimeicon,
                     tip = "Click to Plot All time") 
-
-        pltLastYearAct = self.createAction("Last Year",
-                    self.callLastYear,
-                    tip = "Click to plot Last Year")
-        PltTransectAct = self.createAction("Transect", 
-                    self.plotTransect,
-                    tip =  "Click to plot Transect 1day")        
+             
         editZoomAct = self.createAction("&Zoom...",
                     self.editZoom,"Alt+Z","editzoom",
                     tip = "Zoom the image")
@@ -101,7 +96,6 @@ class Window(QMainWindow):
                     self.changeCmap,
                     tip = "Change Colormap")
         
-
         self.SedInFileAct = self.createAction(
             "Use sediment Subplot", #slot = self.plotTime,
             tip = "Use sediment Subplot", checkable= True) 
@@ -126,7 +120,8 @@ class Window(QMainWindow):
 
         self.yearLinesAct = self.createAction(
             'Draw year lines',None, None, None,
-            'Draw year lines', True)          
+            'Draw year lines', True)  
+                
         self.formatTimeAct = self.createAction(
             'Format time axis',None, None, None,
             'Format time axis', True)
@@ -154,21 +149,22 @@ class Window(QMainWindow):
          self.limsAllCols,self.formatTimeAct,
          self.intepolateAct,self.yearLinesAct],
         menubar.addMenu)
+ 
+        proprtsMenu = self.addMultipleAction(
+        'Plot type',[],menubar.addMenu)
+ 
             
         self.createCmapLimitsGroup()
         self.createDistGroup()
         self.createTimeGroup()
-        
+        self.createRadioButtonsGroup()
+        self.toolbar1= self.addOneAction('Plot',pltAllTimeAct,self.addToolBar)        
         self.toolbar2 = self.addToolBar('Properties') 
         self.toolbar2.addWidget(self.cmap_groupBox)    
         self.toolbar2.addWidget(self.dist_groupBox)   
         self.toolbar2.addWidget(self.time_groupBox)
+        self.toolbar2.addWidget(self.radio_groupBox)
 
-        self.toolbar1 = self.addMultipleAction(
-        'Plot',
-        [pltAllTimeAct,pltLastYearAct,
-        PltTransectAct],
-        self.addToolBar)
 
         self.show()
         
@@ -181,9 +177,10 @@ class Window(QMainWindow):
         self.toolbar2.addWidget(self.cmap_groupBox)    
         self.toolbar2.addWidget(self.dist_groupBox)                
         self.toolbar2.addWidget(self.time_groupBox)
-            
+        self.toolbar2.addWidget(self.radio_groupBox)   
+          
     def createCmapLimitsGroup(self):
-        
+       
         self.cmap_groupBox = QGroupBox("Colour map limits ")
           
         self.label_minwater = QLabel('min:')        
@@ -217,7 +214,7 @@ class Window(QMainWindow):
         
         self.col_label = QLabel('Column: ')
         self.numcol_2d = QSpinBox() 
-        self.maxcol_label = QLabel('Max: ')
+        self.maxcol_label = QLabel('Max (from 0): ')
 
         try:
             self.nmaxcol_label = QLabel(str(
@@ -265,7 +262,25 @@ class Window(QMainWindow):
         time_grid.addWidget(     self.numday_box,1,0,1,1) 
         time_grid.addWidget(self.numday_stop_box,1,1,1,1)             
         time_grid.addWidget( self.value_maxday_l,1,2,1,1)  
-          
+        
+    def createRadioButtonsGroup(self):
+        self.radio_groupBox = QGroupBox("Plot_type")
+
+        radio1 = QRadioButton("&All time")
+        radio2 = QRadioButton("&Last year")
+        radio3 = QRadioButton("&Distance plot")
+
+        radio1.setChecked(True)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(radio1)
+        vbox.addWidget(radio2)
+        vbox.addWidget(radio3)
+        vbox.addStretch(1)
+        
+        self.radio_groupBox.setLayout(vbox)
+
+       
     def addOneAction(self,text,action,target):
         item = target(text)
         item.addAction(action)
@@ -277,12 +292,12 @@ class Window(QMainWindow):
         return item  
          
     def createAction(self, text, slot=None, shortcut=None,
-
                     icon=None,tip=None, checkable=False): 
         action = QAction(text, self)
         if icon is not None:
             ic = QIcon()
-            ic.addPixmap(QPixmap(icon), QIcon.Normal, QIcon.Off)
+            pixmap1 = QPixmap(icon).scaled(164, 164)
+            ic.addPixmap(pixmap1, QIcon.Normal, QIcon.Off) 
             action.setIcon(ic)
         if shortcut is not None:
             action.setShortcut(shortcut)
@@ -311,20 +326,16 @@ class Window(QMainWindow):
             self,'Open netcdf ', os.getcwd(), 
             "netcdf (*.nc);; all (*)"))
         
-        #fh =  Dataset(self.filename) 
         self.array = readdata_qmain.ReadVar(self.filename)  
         var_list = self.array.get_variables_list()
         self.listWidget.addItems(var_list)
         colmax = self.array.max_numcol()  
-        self.max_num_col = colmax  
-        
+        self.max_num_col = colmax          
         if colmax > 0:
             self.numcol_2d.setRange(0,colmax + 1)                
         self.lentime = self.array.lentime()  
         self.updateToolbar()      
         
-
-            
     def fileSaveAs(self):
         if not (self.filename == None):              
             self.plotTime()         
@@ -336,8 +347,8 @@ class Window(QMainWindow):
             except:
                 pass 
         else:
-            QMessageBox.about(self, "Retry",
-            'There is nothing to save yet')           
+            Messages.Save()
+           
             #TODO: implement recent files 
             #sef.addRecentFile(fname)
                 
@@ -363,7 +374,7 @@ class Window(QMainWindow):
         self.getCmap()   
 
         array = readdata_qmain.ReadVar(
-            self.filename,index,start,stop)
+            self.filename,index)
         z_units = array.units()
         self.time_units = array.time_units()
         z = array.variable()
@@ -416,8 +427,8 @@ class Window(QMainWindow):
                 cb1 = plt.colorbar(CS1,cax = self.cax1)  
                  
             except: 
-                QMessageBox.about(self, "Unable to plot sediment",
-                        'Uncheck menu "Properties/Use sediment Subplot"')                             
+                Messages.no_sediment() 
+                   
         else: 
              
             array.close()                        
@@ -465,25 +476,15 @@ class Window(QMainWindow):
             event.ignore()  
             
             
-    def callLastYear(self):
-        ''' calls the function to plot
-        "last" year of time array'''
-        if not (self.filename == None):
-            stop = self.lentime
-            start = stop - 365
-            self.plotTime(start,stop) 
-        else: 
-            QMessageBox.about(self, "Retry",
-            'Open Netcdf File,please') 
-                    
+
     def callAllTime(self):
         ''' calls the function to plot
         all time array or manually input start stop'''        
         if not (self.filename == None):              
             self.plotTime() 
         else:
-            QMessageBox.about(self, "Retry",
-            'Open Netcdf File,please')  
+            Messages.open_file() 
+ 
             
     def getCmap(self):    
         #TODO: make it changeable 
@@ -503,9 +504,43 @@ class CustomLabel(QLabel):
     def dragEnterEvent(self, e):
         #if e.mimeData().hasFormat('.nc'):
         e.accept() 
- 
- 
-                         
+
+
+
+class Messages(): 
+    global capy_path
+    capy_path = 'img/capybara.png'
+    
+    def no_sediment():
+        
+        msg = QMessageBox() 
+        msg.setText("Uncheck menu Properties/Use sediment Subplot")    
+        pixmap = QPixmap(capy_path)
+        pixmap1 = pixmap.scaled(164, 164)
+        msg.setIconPixmap(pixmap1)
+        msg.exec_()  
+    def open_file():
+        
+        msg = QMessageBox()         
+        msg.setText("Open Netcdf File,please")    
+        pixmap = QPixmap(capy_path)
+        pixmap1 = pixmap.scaled(164, 164)
+        msg.setIconPixmap(pixmap1)      
+         
+        msg.exec_()   
+
+    def Save():
+        
+        msg = QMessageBox()         
+        msg.setText("Retry \nThere is nothing to save yet")    
+        pixmap = QPixmap(capy_path)
+        pixmap1 = pixmap.scaled(164, 164)
+        msg.setIconPixmap(pixmap1)      
+         
+        msg.exec_()          
+
+
+                          
 if __name__ == '__main__':
     
     app = QApplication(sys.argv)
