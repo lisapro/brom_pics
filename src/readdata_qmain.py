@@ -16,9 +16,7 @@ class ReadVar:
         self.index = index
         self.filename = filename   
         self.fh =  Dataset(filename)
-        self.start = start
-        self.stop = stop
-        #self.fh.close()
+
         
     def get_variables_list(self):             
         ''' Gets the list of variables,
@@ -47,9 +45,9 @@ class ReadVar:
     def max_numcol(self):
         if 'i' in self.fh.variables.keys() :
             testvar = np.array(self.fh['i'][:]) 
-            max_num_col = testvar.shape[0]
+            max_num_col = testvar.shape[0]-1
         else :
-            max_num_col = 1
+            max_num_col = 0
             
         return max_num_col  
            
@@ -69,7 +67,6 @@ class ReadVar:
                
         for n,item in enumerate(depth2):
             if kz[1,n,0] == 0:
-                print ('in')
                 y2max = depth2[n] 
                 ny2max = n
                 break 
@@ -85,9 +82,9 @@ class ReadVar:
         return  np.array(
         self.fh.variables[self.index].units) 
     
-    def variable(self):     
-        z =  np.array(self.fh.variables[self.index][self.start:self.stop]) 
-        xlen = self.lentime()
+    def variable(self,start,stop): 
+        z =  np.array(self.fh.variables[self.index][start:stop]) 
+        xlen = stop - start 
         ylen = self.leny()
         x_range = range(0,xlen) 
         y_range = range(0,ylen)
@@ -108,8 +105,8 @@ class ReadVar:
         return zz
     
         
-    def time(self):
-        t = self.fh.variables['time'][self.start:self.stop] 
+    def time(self,start,stop):
+        t = self.fh.variables['time'][start:stop] 
         return t
     
     def time_units(self):
@@ -117,7 +114,7 @@ class ReadVar:
         return t
             
     def lentime(self):
-        time = self.time()
+        time = self.fh.variables['time'][:] 
         return len(time)   
     
     def leny(self):
@@ -129,7 +126,6 @@ class ReadVar:
         self.fh = None  
         
 def format_time_axis(self, xaxis,xlen,X_arr): 
-    print (self.time_units)
     X = num2date(X_arr,units = self.time_units)   
     xaxis.xaxis_date()
     if xlen > 365 and xlen < 365*5 : 

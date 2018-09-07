@@ -152,33 +152,32 @@ class Window(QMainWindow):
  
         proprtsMenu = self.addMultipleAction(
         'Plot type',[],menubar.addMenu)
- 
-            
+        
+        self.toolbar1= self.addOneAction('Plot',pltAllTimeAct,self.addToolBar) 
+        self.toolbar2 = self.addToolBar('Properties')   
+        self.makeToolbar() 
+              
+
+     
+        self.show()
+    
+    
+    def makeToolbar(self):
+        
         self.createCmapLimitsGroup()
         self.createDistGroup()
         self.createTimeGroup()
         self.createRadioButtonsGroup()
-        self.toolbar1= self.addOneAction('Plot',pltAllTimeAct,self.addToolBar)        
-        self.toolbar2 = self.addToolBar('Properties') 
         self.toolbar2.addWidget(self.cmap_groupBox)    
         self.toolbar2.addWidget(self.dist_groupBox)   
         self.toolbar2.addWidget(self.time_groupBox)
         self.toolbar2.addWidget(self.radio_groupBox)
-
-
-        self.show()
+        
         
     def updateToolbar(self):
         self.toolbar2.clear()
-    
-        self.createCmapLimitsGroup()
-        self.createDistGroup() 
-        self.createTimeGroup()        
-        self.toolbar2.addWidget(self.cmap_groupBox)    
-        self.toolbar2.addWidget(self.dist_groupBox)                
-        self.toolbar2.addWidget(self.time_groupBox)
-        self.toolbar2.addWidget(self.radio_groupBox)   
-          
+        self.makeToolbar()
+         
     def createCmapLimitsGroup(self):
        
         self.cmap_groupBox = QGroupBox("Colour map limits ")
@@ -195,7 +194,7 @@ class Window(QMainWindow):
             
         grd = QGridLayout(self.cmap_groupBox) 
                 
-        grd.addWidget(self.label_minwater,1,0,1,1)#
+        grd.addWidget(self.label_minwater,1,0,1,1)
         grd.addWidget(self.box_minwater,1,1,1,1) 
         grd.addWidget(self.box_minsed,2,1,1,1)
                
@@ -218,10 +217,12 @@ class Window(QMainWindow):
 
         try:
             self.nmaxcol_label = QLabel(str(
-                        self.max_num_col-1)) 
+                        self.max_num_col)) 
+            if self.max_num_col > 0:
+                self.numcol_2d.setRange(0,self.max_num_col)  
         except AttributeError: 
             self.nmaxcol_label = QLabel(' ') 
-           
+                                
         dist_grid.addWidget(self.col_label,0,0,1,1) 
         dist_grid.addWidget(self.numcol_2d,1,0,1,1) 
         dist_grid.addWidget(self.maxcol_label,0,1,1,1)         
@@ -241,18 +242,19 @@ class Window(QMainWindow):
             self.value_maxday_l = QLabel(str(self.lentime))
         except AttributeError: 
             self.value_maxday_l = QLabel(' ')           
-        
-       
-         
-        self.numday_box = QSpinBox()     
+
+        self.numday_box = QSpinBox()   
         self.numday_stop_box = QSpinBox()
-        #try:
-        #    
-        #except AttributeError: 
+        try:  
+            self.numday_box.setRange(self.start,self.stop-1)   
+            self.numday_stop_box.setRange(self.start+1,self.stop)
+            self.numday_stop_box.setValue(self.stop)      
+        except AttributeError: 
+            pass
+            
                       
         time_grid = QGridLayout(self.time_groupBox)   
     
-        
         #line 1 
         time_grid.addWidget(self.numday_start_label,0,0,1,1)
         time_grid.addWidget( self.numday_stop_label,0,1,1,1) 
@@ -329,12 +331,12 @@ class Window(QMainWindow):
         self.array = readdata_qmain.ReadVar(self.filename)  
         var_list = self.array.get_variables_list()
         self.listWidget.addItems(var_list)
-        colmax = self.array.max_numcol()  
-        self.max_num_col = colmax          
-        if colmax > 0:
-            self.numcol_2d.setRange(0,colmax + 1)                
+        self.max_num_col = self.array.max_numcol()                               
         self.lentime = self.array.lentime()  
-        self.updateToolbar()      
+        self.start = 0        
+        self.stop = self.lentime 
+           
+        self.updateToolbar() 
         
     def fileSaveAs(self):
         if not (self.filename == None):              
@@ -377,8 +379,12 @@ class Window(QMainWindow):
             self.filename,index)
         z_units = array.units()
         self.time_units = array.time_units()
-        z = array.variable()
-        x = array.time()
+        
+        self.start = self.numday_box.value()
+        self.stop = self.numday_stop_box.value()  
+        if self.start >=       
+        z = array.variable(self.start,self.stop)
+        x = array.time(self.start,self.stop)
         xlen = len(x)
         y = array.depth()     
         from matplotlib.ticker import MaxNLocator       

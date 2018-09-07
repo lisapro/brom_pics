@@ -90,8 +90,7 @@ def time_profile(self,start,stop):
                    
     if self.sediment == False and 'V_air' not in self.names_vars : 
         readdata.grid_plot(self,1)              
- 
-       '''elif 'V_air' in self.names_vars:
+        '''elif 'V_air' in self.names_vars:
         #elif self.changing_depth == True:     
         #Urmia or any other file with changing depth 
         readdata.grid_plot(self,2)  
