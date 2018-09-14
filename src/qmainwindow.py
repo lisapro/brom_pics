@@ -150,8 +150,6 @@ class Window(QMainWindow):
          self.intepolateAct,self.yearLinesAct],
         menubar.addMenu)
  
-        proprtsMenu = self.addMultipleAction(
-        'Plot type',[],menubar.addMenu)
         
         self.toolbar1= self.addOneAction('Plot',pltAllTimeAct,self.addToolBar) 
         self.toolbar2 = self.addToolBar('Properties')   
@@ -268,16 +266,16 @@ class Window(QMainWindow):
     def createRadioButtonsGroup(self):
         self.radio_groupBox = QGroupBox("Plot_type")
 
-        radio1 = QRadioButton("&All time")
-        radio2 = QRadioButton("&Last year")
-        radio3 = QRadioButton("&Distance plot")
+        self.radio1 = QRadioButton("&All time")
+        self.radio2 = QRadioButton("&Last year")
+        self.radio3 = QRadioButton("&Distance plot")
 
-        radio1.setChecked(True)
+        self.radio1.setChecked(True)
 
         vbox = QVBoxLayout()
-        vbox.addWidget(radio1)
-        vbox.addWidget(radio2)
-        vbox.addWidget(radio3)
+        vbox.addWidget(self.radio1)
+        vbox.addWidget(self.radio2)
+        vbox.addWidget(self.radio3)
         vbox.addStretch(1)
         
         self.radio_groupBox.setLayout(vbox)
@@ -382,7 +380,16 @@ class Window(QMainWindow):
         
         self.start = self.numday_box.value()
         self.stop = self.numday_stop_box.value()  
-        if self.start >=       
+        if self.start >= self.stop: 
+            Messages.StartStop()  
+            self.start = 0 
+            self.stop = self.lentime      
+            self.updateToolbar()
+            
+        if self.radio2.isChecked() and self.lentime >=365 :
+            self.start = self.stop-365       
+            self.updateToolbar()
+             
         z = array.variable(self.start,self.stop)
         x = array.time(self.start,self.stop)
         xlen = len(x)
@@ -545,7 +552,15 @@ class Messages():
          
         msg.exec_()          
 
-
+    def StartStop():
+        
+        msg = QMessageBox()         
+        msg.setText("Retry \nWront start and stop values")    
+        pixmap = QPixmap(capy_path)
+        pixmap1 = pixmap.scaled(164, 164)
+        msg.setIconPixmap(pixmap1)      
+         
+        msg.exec_() 
                           
 if __name__ == '__main__':
     
