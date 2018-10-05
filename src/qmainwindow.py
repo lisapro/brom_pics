@@ -92,10 +92,10 @@ class Window(QMainWindow):
         editZoomAct = self.createAction("&Zoom...",
                     self.editZoom,"Alt+Z","editzoom",
                     tip = "Zoom the image")
-        editCmapAct = self.createAction("Change Color map",
-                    self.changeCmap,
-                    tip = "Change Colormap")
-        
+        #editCmapAct = self.createAction("Change Color map",
+        #            self.changeCmap,
+        #            tip = "Change Colormap")
+        #
         self.SedInFileAct = self.createAction(
             "Use sediment Subplot", #slot = self.plotTime,
             tip = "Use sediment Subplot", checkable= True) 
@@ -103,9 +103,10 @@ class Window(QMainWindow):
         self.SedInFileAct.setChecked(True)     
                   
         self.editCmapLimsAct = self.createAction(
-            "Manual Cmap limits",None, "Ctrl+M",
+            "Use Manual Cmap limits",None, "Ctrl+M",
             None,"Use manual cmap limits", True)  
-         
+        self.editCmapLimsAct.setChecked(True)
+        
         self.interpCmapLimsAct = self.createAction(
             "Dont Interploate Cmap limits",None, "Ctrl+I",
             None,"Don't Interpolate Cmap limits", True)  
@@ -130,7 +131,7 @@ class Window(QMainWindow):
         self.intepolateAct = self.createAction(
             'Interpolate data',None, None, None,
             'Interpolate data', True)  
-                        
+        self.intepolateAct.setChecked(True)                
         menubar = self.menuBar()
         
         filemenu = self.addMultipleAction(
@@ -140,7 +141,7 @@ class Window(QMainWindow):
         
         editMenu = self.addMultipleAction(
         'Edit',
-        [editCmapAct,editZoomAct],
+        [editZoomAct],
         menubar.addMenu)
 
         proprtsMenu = self.addMultipleAction(
@@ -171,7 +172,7 @@ class Window(QMainWindow):
         self.toolbar2.addWidget(self.time_groupBox)
         self.toolbar2.addWidget(self.radio_groupBox)
         
-        
+         
     def updateToolbar(self):
         self.toolbar2.clear()
         self.makeToolbar()
@@ -179,29 +180,40 @@ class Window(QMainWindow):
     def createCmapLimitsGroup(self):
        
         self.cmap_groupBox = QGroupBox("Colour map limits ")
-          
-        self.label_minwater = QLabel('min:')        
-        self.label_maxwater = QLabel('max:')                
+        self.wat_label = QLabel('Water')
+        self.sed_label = QLabel('Sediment')   
+                 
         self.box_minwater = QLineEdit()    
         self.box_maxwater = QLineEdit() 
         self.box_minsed = QLineEdit() 
         self.box_maxsed = QLineEdit() 
-        self.cmap_box = QComboBox()
-        self.cmap_box.addItems(sorted(m for m in plt.cm.datad ))    
-        self.cmap_box.setCurrentIndex(5)
-            
-        grd = QGridLayout(self.cmap_groupBox) 
-                
-        grd.addWidget(self.label_minwater,1,0,1,1)
-        grd.addWidget(self.box_minwater,1,1,1,1) 
-        grd.addWidget(self.box_minsed,2,1,1,1)
-               
-        grd.addWidget(self.label_maxwater,1,2,1,1)
-        grd.addWidget(self.box_maxwater,1,3,1,1)         
-        grd.addWidget(self.box_maxsed,2,3,1,1) 
-
-        grd.addWidget(self.cmap_box,1,4,1,1) 
         
+        self.cmap_box = QComboBox()
+        self.cmap_box.addItems(sorted(m for m in plt.cm.datad))    
+        self.cmap_box.setCurrentIndex(5)
+
+        self.cmap_sed_box = QComboBox()
+        self.cmap_sed_box.addItems(sorted(m for m in plt.cm.datad))    
+        self.cmap_sed_box.setCurrentIndex(7)
+
+        grd = QGridLayout(self.cmap_groupBox) 
+        grd.addWidget(self.wat_label,1,0,1,1)   
+        grd.addWidget(self.sed_label,2,0,1,1)
+                     
+        grd.addWidget(QLabel('min:'),1,1,1,1)
+        grd.addWidget(QLabel('min:'),2,1,1,1)
+                
+        grd.addWidget(self.box_minwater,1,2,1,1) 
+        grd.addWidget(self.box_minsed,2,2,1,1)
+               
+        grd.addWidget(QLabel('max:'),1,3,1,1)
+        grd.addWidget(QLabel('max:'),2,3,1,1)
+                
+        grd.addWidget(self.box_maxwater,1,4,1,1)         
+        grd.addWidget(self.box_maxsed,2,4,1,1) 
+
+        grd.addWidget(self.cmap_box,1,5,1,1) 
+        grd.addWidget(self.cmap_sed_box,2,5,1,1) 
         return self 
     
     def createDistGroup(self):  
@@ -351,8 +363,7 @@ class Window(QMainWindow):
            
             #TODO: implement recent files 
             #sef.addRecentFile(fname)
-                
-            
+                            
     def openFolder(self): 
         import tkinter as tk
         root = tk.Tk()
@@ -387,8 +398,15 @@ class Window(QMainWindow):
             self.updateToolbar()
             
         if self.radio2.isChecked() and self.lentime >=365 :
-            self.start = self.stop-365       
-            self.updateToolbar()
+            self.start = self.stop-365      
+            self.numday_box.setValue(self.start)   
+            #self.numday_stop_box.setRange(self.start+1,self.stop)
+            self.numday_stop_box.setValue(self.stop)      
+            
+            
+            
+             
+            #self.updateToolbar()
              
         z = array.variable(self.start,self.stop)
         x = array.time(self.start,self.stop)
@@ -419,20 +437,49 @@ class Window(QMainWindow):
                     X = readdata_qmain.format_time_axis(self,ax0,xlen,X) 
                     X_sed = readdata_qmain.format_time_axis(self,ax1,xlen,X_sed)       
                 
-                if self.intepolateAct.isChecked():
-                    levels_wat = MaxNLocator(nbins=25).tick_values(Z_wat.min(), Z_wat.max())       
-                    levels_sed = MaxNLocator(nbins=25).tick_values(Z_wat.min(), Z_sed.max())                        
+                if self.editCmapLimsAct.isChecked():
+                    #levels_wat = MaxNLocator(nbins=25).tick_values(0, 1000) 
+                    try:
+                        min = float(self.box_minwater.text())
+                        max = float(self.box_maxwater.text())
+                        levels_wat = np.linspace(min,max,num = 50)
+                    except:  
+                        Messages.no_limits("water column")   
+                        levels_wat = MaxNLocator(nbins=25).tick_values(
+                        Z_wat.min(), Z_wat.max()) 
+                    
+                else:              
+                    levels_wat = MaxNLocator(nbins=25).tick_values(
+                        Z_wat.min(), Z_wat.max())                   
+                
+                
+                if self.intepolateAct.isChecked():  
+                    
+                    if self.editCmapLimsAct.isChecked():
+                        #levels_wat = MaxNLocator(nbins=25).tick_values(0, 1000) 
+                        try:
+                            min = float(self.box_minsed.text())
+                            max = float(self.box_maxsed.text())
+                            levels_sed = np.linspace(min,max,num = 50)                            
+                        except:  
+                            Messages.no_limits("sediment")   
+                            levels_sed = MaxNLocator(nbins=25).tick_values(
+                            Z_wat.min(), Z_sed.max())                         
+                    else:                                                        
+                        levels_sed = MaxNLocator(nbins=25).tick_values(
+                            Z_wat.min(), Z_sed.max())    
+                                            
                     CS = ax0.contourf(X,Y_wat,Z_wat, levels = levels_wat,    
                                     cmap= self.cmap) 
                     CS1 = ax1.contourf(X_sed,Y_sed,Z_sed, 
-                          levels = levels_sed, cmap= self.cmap) 
+                          levels = levels_sed, cmap= self.cmap1) 
                      
                 else:       
                  
                     CS = ax0.pcolormesh(X,Y_wat,Z_wat,   
                                     cmap= self.cmap) 
                     CS1 = ax1.pcolormesh(X_sed,Y_sed,Z_sed,       
-                                    cmap= self.cmap) 
+                                    cmap= self.cmap1) 
       
                 ax0.set_ylim(np.max(y_wat),np.min(y_wat))
                 ax1.set_ylim(np.max(y_sed),np.min(y_sed)) 
@@ -503,7 +550,7 @@ class Window(QMainWindow):
         #TODO: make it changeable 
         try: 
             self.cmap = plt.get_cmap(self.cmap_box.currentText())
-            self.cmap1 = plt.get_cmap(self.cmap_box.currentText())    
+            self.cmap1 = plt.get_cmap(self.cmap_sed_box.currentText())    
         except:
             self.cmap  =  plt.get_cmap('gist' )  
             self.cmap1  =  plt.get_cmap('gist' ) 
@@ -532,6 +579,15 @@ class Messages():
         pixmap1 = pixmap.scaled(164, 164)
         msg.setIconPixmap(pixmap1)
         msg.exec_()  
+     
+    def no_limits(text): 
+        msg = QMessageBox() 
+        msg.setText("Manual limits for {} are not defined".format(text))    
+        pixmap = QPixmap(capy_path)
+        pixmap1 = pixmap.scaled(164, 164)
+        msg.setIconPixmap(pixmap1)
+        msg.exec_()            
+        
     def open_file():
         
         msg = QMessageBox()         
