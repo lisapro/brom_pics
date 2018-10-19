@@ -8,6 +8,9 @@ import numpy.ma as ma
 from netCDF4 import Dataset
 import numpy as np
 import matplotlib.dates as mdates
+from messages import Messages
+
+
 class ReadVar:
     def __init__(self,filename,
                  index = None,start = None,
@@ -22,13 +25,9 @@ class ReadVar:
         ''' Gets the list of variables,
         and sort it rewrite it with regular 
         expressions, use variables.keys()'''        
-        names_vars = [] 
-        for names,vars in self.fh.variables.items():
-            names_vars.append(names)  
-        flux_list = []
-        sink_list = []
-        other_list = []
-       
+        names_vars = [names for names,vars in self.fh.variables.items()] 
+            
+        flux_list,sink_list,other_list  = [],[],[]     
         for name in names_vars: 
             if name[:4] == 'fick':
                 flux_list.append(name) 
