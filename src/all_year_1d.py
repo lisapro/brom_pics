@@ -85,7 +85,18 @@ def plot(self):
                  color='#b08b52',alpha = 0.4,
                  label = "sediment"  )
     
-    
+    if  self.change_limits_checkbox.isChecked():
+        functions = dict(wat = (self.box_minwater,self.box_maxwater),
+                         sed = (self.box_minsed,self.box_maxsed))
+        
+        watmin = float(functions['wat'][0].text())
+        watmax = float(functions['wat'][1].text())               
+        sedmin = float(functions['sed'][0].text())
+        sedmax = float(functions['sed'][1].text())
+        self.ax00.set_xlim(watmin,watmax)      
+        self.ax10.set_xlim(watmin,watmax)       
+        self.ax20.set_xlim(sedmin,sedmax)   
+        
     for n in range(start,stop,10):#365
         """if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
         #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               

@@ -155,7 +155,10 @@ def fluxes(self):
         ax00.set_ylim(min_fick,max_fick)
     else:        
         ax00.set_ylim(max_fick,min_fick) 
-        
+
+
+  
+       
     #m = np.mean(fick)
     #ax00.axhline(m,c = 'r', linestyle = '--',label = 'mean', zorder = 10)
     
