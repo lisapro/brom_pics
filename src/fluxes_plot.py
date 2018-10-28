@@ -144,7 +144,10 @@ def fluxes(self):
                       where = fick >=0, color = tosed, label= u"down" )
     ax00.fill_between(self.time[start:stop],  fick, 0 ,
                       where= fick < 0.,color = towater, label=u"up")
-    ax00.set_ylim(max(fick),min(fick)) 
+    if self.reverse_flux_checkbox.isChecked() == True:
+        ax00.set_ylim(min(fick),max(fick))
+    else:        
+        ax00.set_ylim(max(fick),min(fick)) 
     m = np.mean(fick)
     ax00.axhline(m,c = 'r', linestyle = '--',label = 'mean', zorder = 10)
     

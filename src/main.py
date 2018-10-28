@@ -277,12 +277,14 @@ def createOptionsGroup(self):
             'Format time axis')         
         self.interpolate_checkbox = QtWidgets.QCheckBox(
             'Interpolate')       
-                     
+        self.reverse_flux_checkbox = QtWidgets.QCheckBox(
+            'Reverse flux axis')                      
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.scale_all_axes)
         vbox.addWidget(self.yearlines_checkbox)
         vbox.addWidget(self.datescale_checkbox)
-        vbox.addWidget(self.interpolate_checkbox)       
+        vbox.addWidget(self.interpolate_checkbox)    
+        vbox.addWidget(self.reverse_flux_checkbox)   
         vbox.addStretch(1)
         self.options_groupBox.setLayout(vbox)     
 
