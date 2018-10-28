@@ -66,8 +66,7 @@ def time_profile(self,start,stop):
         z2d = []        
         # check if we have 2D array 
         if z.shape[2] > 1:
-            z2d = [z[n][m][numcol] for n in range(0,xlen) \
-                       for m in ranage(0,ylen)]     
+            z2d = [z[n][m][numcol] for n in range(0,xlen) for m in range(0,ylen)]     
                    
             #for n in range(0,xlen): #xlen
             #    for m in range(0,ylen):  

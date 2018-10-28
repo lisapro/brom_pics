@@ -405,8 +405,9 @@ def widget_layout(self):
         self.grid.addWidget(self.time_prof_all,0,3,1,1)  
         self.grid.addWidget(self.cmap_groupBox,0,4,2,1) 
         self.grid.addWidget(self.dist_groupBox,0,5,2,1)        
-        self.grid.addWidget(self.time_groupBox,0,6,2,1)                      
-        self.grid.addWidget(self.options_groupBox,0,7,2,1)  
+        self.grid.addWidget(self.time_groupBox,0,6,2,1)  
+        self.grid.addWidget(self.flux_groupBox,0,7,2,1)                    
+        self.grid.addWidget(self.options_groupBox,0,8,2,1)  
         
         #second line                        
         self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 

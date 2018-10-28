@@ -95,7 +95,8 @@ class Window(QtWidgets.QDialog):
         createTimeGroup(self)
         createDistGroup(self)        
         createCmapLimitsGroup(self)
-                              
+        createFluxGroup(self) 
+                             
         if 'i' in self.names_vars:
             self.dist = np.array(self.fh.variables['i'])                          
             self.numcol_2d.setRange(0, int(self.testvar.shape[0]-1))               
@@ -195,7 +196,28 @@ class Window(QtWidgets.QDialog):
     def call_help(self):
         help_dialog.show(self) 
 
-        
+def createFluxGroup(self):
+    self.flux_groupBox = QtWidgets.QGroupBox("Fluxes properties")  
+    self.minflux_label = QtWidgets.QLabel('Min flux axis')
+    self.maxflux_label = QtWidgets.QLabel('Max flux axis')
+    self.flux_min_box =  QtWidgets.QLineEdit() 
+    self.flux_max_box = QtWidgets.QLineEdit()    
+    self.manual_limits_flux =  QtWidgets.QCheckBox(
+    'Use manual limits for flux axis')  
+    self.reverse_flux_checkbox = QtWidgets.QCheckBox(
+    'Reverse flux axis')  
+              
+    self.flux_grid = QtWidgets.QGridLayout(self.flux_groupBox)
+    
+    self.flux_grid.addWidget(self.reverse_flux_checkbox,0,0,1,2)
+    self.flux_grid.addWidget(self.manual_limits_flux,1,0,1,2) 
+    self.flux_grid.addWidget(self.minflux_label,2,0,1,1) 
+    self.flux_grid.addWidget(self.maxflux_label,2,1,1,1) 
+    
+    self.flux_grid.addWidget(self.flux_min_box,3,0,1,1) 
+    self.flux_grid.addWidget(self.flux_max_box,3,1,1,1) 
+
+    
 def createDistGroup(self):  
         
     self.dist_groupBox = QtWidgets.QGroupBox("Distance axis")  
@@ -277,14 +299,13 @@ def createOptionsGroup(self):
             'Format time axis')         
         self.interpolate_checkbox = QtWidgets.QCheckBox(
             'Interpolate')       
-        self.reverse_flux_checkbox = QtWidgets.QCheckBox(
-            'Reverse flux axis')                      
+                    
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.scale_all_axes)
         vbox.addWidget(self.yearlines_checkbox)
         vbox.addWidget(self.datescale_checkbox)
         vbox.addWidget(self.interpolate_checkbox)    
-        vbox.addWidget(self.reverse_flux_checkbox)   
+ 
         vbox.addStretch(1)
         self.options_groupBox.setLayout(vbox)     
 
