@@ -156,15 +156,10 @@ def fluxes(self):
     else:        
         ax00.set_ylim(max_fick,min_fick) 
         
-    m = np.mean(fick)
-    ax00.axhline(m,c = 'r', linestyle = '--',label = 'mean', zorder = 10)
+    #m = np.mean(fick)
+    #ax00.axhline(m,c = 'r', linestyle = '--',label = 'mean', zorder = 10)
     
-    #                  where = fick > 0 ,
-    #                  , interpolate=True) 
-    
-    #ax.fill_between(x, y1, y2, where=y2 >= y1,
-    # facecolor='green', interpolate=True)         
-    #rc({'savefig.transparent' : True})
+
     self.canvas.draw()
           
 
