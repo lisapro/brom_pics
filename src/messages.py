@@ -53,3 +53,23 @@ class Messages:
         msg.setIconPixmap(pixmap1)      
          
         msg.exec_() 
+        
+    def radio_button_not_implemented():
+        
+        msg = QMessageBox()         
+        msg.setText("Retry \nRadio button is not implemented yet")    
+        pixmap = QPixmap(capy_path)
+        pixmap1 = pixmap.scaled(124, 124)
+        msg.setIconPixmap(pixmap1)      
+         
+        msg.exec_()  
+             
+    def message_text(text = 'No text'):
+        msg = QMessageBox()         
+        msg.setText(text)    
+        pixmap = QPixmap(capy_path)
+        pixmap1 = pixmap.scaled(124, 124)
+        msg.setIconPixmap(pixmap1)      
+         
+        msg.exec_()          
+                    
