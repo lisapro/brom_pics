@@ -123,11 +123,9 @@ def fluxes(self):
     
     #self.figure.suptitle(str(self.totitle),fontsize=16)
     #                , fontweight='bold')
-    #print (z_units, var1)
     ax00.set_ylabel('Fluxes') #Label y axis
     
-    #ax00.text(0, 0, 'column{}'.format(numcol), style='italic')
-    #bbox={'facecolor':'red', 'alpha':0.5,'pad':10}
+
     
     fick = []
     for n in range(start,stop): 
