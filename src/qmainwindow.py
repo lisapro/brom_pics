@@ -6,9 +6,9 @@ Created on 8. jan. 2018
 @author: ELP
 '''
 
-import sys
+import sys,os,path
 import numpy as np
-from PyQt5.QtWidgets import (QMainWindow,QAction,qApp,QFileDialog,
+from PyQt5.QtWidgets import (QMainWindow,QAction,qApp,QFileDialog,QButtonGroup,
                 QFrame,QSplitter,QLabel,QActionGroup,QSpinBox,QMessageBox,
                 QApplication,QTextEdit,QListWidget,QGroupBox,QAbstractItemView,
                 QLineEdit,QCheckBox,QGridLayout, QDockWidget,QComboBox,QVBoxLayout,QRadioButton)
@@ -22,9 +22,7 @@ from netCDF4 import num2date
 from tkinter.filedialog import askopenfilename,askdirectory
 from matplotlib import gridspec
 from matplotlib.ticker import MaxNLocator
-import os
 import readdata_qmain
-import path
 from messages import Messages
 
 __version__ = "1.0.0"
@@ -83,15 +81,15 @@ class Window(QMainWindow):
                     "Save figure")
         
         fileQuitAct = self.createAction("&Quit",
-                    self.close,"Ctrl+Q", "filequit",
+                    self.close,"Ctrl+Q", "file quit",
                     "Close the application") 
         
         alltimeicon = r'img\icon.png'       
         pltAllTimeAct = self.createAction("Plot",
-                    self.callPlot,icon = alltimeicon,
+                    self.callPlot_Button,icon = alltimeicon,
                     tip = "Click to Plot") 
              
-        editZoomAct = self.createAction("&Zoom...",
+        editZoomAct = self.createAction("&Zoom...(deact.)",
                     self.editZoom,"Alt+Z","editzoom",
                     tip = "Zoom the image")
         #editCmapAct = self.createAction("Change Color map",
@@ -105,7 +103,7 @@ class Window(QMainWindow):
         self.SedInFileAct.setChecked(True)     
                   
         self.editCmapLimsAct = self.createAction(
-            "Use Manual Cmap limits",None, "Ctrl+M",
+            "Use Manual Cmap limits (not implemeted yet) ",None, "Ctrl+M",
             None,"Use manual cmap limits", True)  
         self.editCmapLimsAct.setChecked(False)
         
@@ -146,11 +144,9 @@ class Window(QMainWindow):
         [editZoomAct],
         menubar.addMenu)
 
-        proprtsMenu = self.addMultipleAction(
-        'Properties',
-        [self.editCmapLimsAct,self.SedInFileAct,self.interpCmapLimsAct,            
-         self.limsAllCols,self.formatTimeAct,
-         self.intepolateAct,self.yearLinesAct],
+        proprtsMenu = self.addMultipleAction( 'Properties',
+        [self.SedInFileAct,self.interpCmapLimsAct, self.editCmapLimsAct,        
+         self.limsAllCols,self.formatTimeAct, self.intepolateAct,self.yearLinesAct],
         menubar.addMenu)
         
         self.toolbar_plot = self.addOneAction('Plot',pltAllTimeAct,self.addToolBar) 
@@ -225,24 +221,30 @@ class Window(QMainWindow):
         
         grd = QGridLayout(self.cmap_groupBox) 
         grd.addWidget(self.wat_label,1,0,1,1)   
-        grd.addWidget(self.sed_label,2,0,1,1)
-                     
-        grd.addWidget(QLabel('min:'),1,1,1,1)
-        grd.addWidget(QLabel('min:'),2,1,1,1)
-                
-        grd.addWidget(self.box_minwater,1,2,1,1) 
-        grd.addWidget(self.box_minsed,2,2,1,1)
-               
-        grd.addWidget(QLabel('max:'),1,3,1,1)
-        grd.addWidget(QLabel('max:'),2,3,1,1)
-                
-        grd.addWidget(self.box_maxwater,1,4,1,1)         
-        grd.addWidget(self.box_maxsed,2,4,1,1) 
 
-        grd.addWidget(self.cmap_box,1,5,1,1) 
-        grd.addWidget(self.cmap_sed_box,2,5,1,1) 
+                     
+        grd.addWidget(QLabel('min:'),1,1,1,1) #y,x
+        grd.addWidget(self.box_minwater,1,2,1,1) 
+        
+        grd.addWidget(QLabel('max:'),2,1,1,1)                
+        grd.addWidget(self.box_maxwater,2,2,1,1)   
+        
+        grd.addWidget(self.cmap_box,2,0,1,1) 
+        
+        
+        grd.addWidget(self.sed_label,3,0,1,1)      
+         
+        grd.addWidget(self.cmap_sed_box,4,0,1,1)
+                
+        grd.addWidget(QLabel('min:'),3,1,1,1)
+        grd.addWidget(self.box_minsed,3,2,1,1)
+        
+        grd.addWidget(QLabel('max:'),4,1,1,1)      
+        grd.addWidget(self.box_maxsed,4,2,1,1)        
+ 
         return self 
-    def updateCmapLimitsGroup(self):
+    
+    '''def updateCmapLimitsGroup(self):
         
         self.cmap_groupBox = QGroupBox("Colour map limits ")
         self.wat_label = QLabel('Water')
@@ -253,31 +255,33 @@ class Window(QMainWindow):
         self.box_minsed = QLineEdit() 
         self.box_maxsed = QLineEdit() 
         
-        self.cmap_box = QComboBox()
-        self.cmap_box.addItems(sorted(m for m in plt.cm.datad))    
+        #self.cmap_box = QComboBox()
+        #self.cmap_box.addItems(sorted(m for m in plt.cm.datad))    
          
         
-        self.cmap_sed_box = QComboBox()
-        self.cmap_sed_box.addItems(sorted(m for m in plt.cm.datad))    
+        #self.cmap_sed_box = QComboBox()
+        #self.cmap_sed_box.addItems(sorted(m for m in plt.cm.datad))    
 
         grd = QGridLayout(self.cmap_groupBox) 
+        
+        
         grd.addWidget(self.wat_label,1,0,1,1)   
-        grd.addWidget(self.sed_label,2,0,1,1)
+        grd.addWidget(self.sed_label,3,0,1,1)
                      
-        grd.addWidget(QLabel('min:'),1,1,1,1)
-        grd.addWidget(QLabel('min:'),2,1,1,1)
+        grd.addWidget(QLabel('w_min:'),1,1,1,1)
+        grd.addWidget(QLabel('w_min:'),3,1,1,1)
                 
         grd.addWidget(self.box_minwater,1,2,1,1) 
-        grd.addWidget(self.box_minsed,2,2,1,1)
+        grd.addWidget(self.box_minsed,3,2,1,1)
                
-        grd.addWidget(QLabel('max:'),1,3,1,1)
-        grd.addWidget(QLabel('max:'),2,3,1,1)
+        grd.addWidget(QLabel('s_max:'),1,3,1,1)
+        grd.addWidget(QLabel('s_max:'),3,3,1,1)
                 
         grd.addWidget(self.box_maxwater,1,4,1,1)         
-        grd.addWidget(self.box_maxsed,2,4,1,1) 
+        grd.addWidget(self.box_maxsed,3,4,1,1) 
 
-        grd.addWidget(self.cmap_box,1,5,1,1) 
-        grd.addWidget(self.cmap_sed_box,2,5,1,1) 
+        grd.addWidget(self.cmap_box,2,0,1,1) 
+        grd.addWidget(self.cmap_sed_box,4,0,1,1) '''
         
                 
     def createDistGroup(self):  
@@ -378,25 +382,35 @@ class Window(QMainWindow):
         time_grid.addWidget(self.numday_stop_box,2,1,1,1)             
         time_grid.addWidget( self.value_maxday_l,2,2,1,1)          
     
-        
+            
     def RadioButtons_Plot_type(self):
         
         self.radio_groupBox = QGroupBox("Plot_type")
 
         self.radio_timeseries = QRadioButton("&Timeseries")
-        self.radio_dist = QRadioButton("&Distance transect")
-        self.radio_1d = QRadioButton("&1D plot")
+        self.radio_dist = QRadioButton("&Distance transect (deact.)")
+        self.radio_1d = QRadioButton("&1D vertical (deact.)")
+        self.radio_flux = QRadioButton("&SWI flux (deact.)")      
+        
+        self.radio_flux.setToolTip('This is a test tooltip message.')    
+        self.radio_flux.setStatusTip('This is a test tooltip message.')   
         #TODO: check if it is 2d or 1d        
         self.radio_timeseries.setChecked(True)
 
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.radio_timeseries)
-        vbox.addWidget(self.radio_dist)
-        vbox.addWidget(self.radio_1d)
-    
-        vbox.addStretch(1)
+        self.radio_group = QButtonGroup()
+        self.radio_group.addButton(self.radio_timeseries,0)
+        self.radio_group.addButton(self.radio_dist,1)
+        self.radio_group.addButton(self.radio_1d,2)
+        self.radio_group.addButton(self.radio_flux,3)     
         
-        self.radio_groupBox.setLayout(vbox)
+        layout = QVBoxLayout(self)        
+        layout.addWidget(self.radio_timeseries)
+        layout.addWidget(self.radio_dist)
+        layout.addWidget(self.radio_1d)
+        layout.addWidget(self.radio_flux)        
+        layout.addStretch(1)
+        
+        self.radio_groupBox.setLayout(layout)
 
        
     def addOneAction(self,text,action,target):
@@ -486,7 +500,6 @@ class Window(QMainWindow):
 
     def plotTransect(self):
         pass
-
 
     def add_sed_plot(self,array,z,x,xlen,y):
         try: 
@@ -608,9 +621,7 @@ class Window(QMainWindow):
             ax0.set_ylim(np.max(y),np.min(y))
             cb = plt.colorbar(CS)  
         self.canvas.draw() 
-
-    
-    
+   
     def closeEvent(self, event):
         if self.okToContinue():
             settings = QSettings()
@@ -629,33 +640,57 @@ class Window(QMainWindow):
             QVariant(self.saveState()))
         else:
             event.ignore()  
-                        
-    def callPlot(self):
+        
+    def callPlot_Button(self):
+        if not (self.filename == None):   # check time properties  
+            #plot_types = ['timeseries','distance','1d','flux']
+            # Plot_ID are set at:  radio_group.addButton(self.radio_timeseries,0)
+            plot_funcs = [self.callTimeSeriesPlot,self.callDistPlot,self.call_1D_Plot,self.callFluxPlot]
+            plot_ID = self.radio_group.checkedId()
+            #plot_type = plot_types[plot_ID]
+            plot_func = plot_funcs[plot_ID]
+
+            if not(plot_func == None):
+               plot_func()
+            else:
+                Messages.message_text(text = 'plot_func is None')   
+        else:
+            Messages.open_file()    
+                      
+    def callDistPlot(self):
+        Messages.radio_button_not_implemented()  
+        
+    def call_1D_Plot(self):
+        Messages.radio_button_not_implemented()
+                                    
+    def callTimeSeriesPlot(self):
+    
         ''' calls the function to plot
         all time array or manually input start stop'''        
-        if not (self.filename == None):   # check time properties 
-            time_prop = self.time_properties.currentText()     
-            if time_prop == 'All time':
-                self.start = 0
-                self.stop = self.lentime
-                #self.updateToolbar(time_prop)
-            elif time_prop == 'Last Year':
-                if self.lentime >=365: 
-                    self.stop = self.lentime  
-                    self.start = self.stop-365    
-                else: 
-                    self.start = 0    
-                    self.stop = self.lentime                         
-                #self.updateToolbar(time_prop)
-            elif time_prop == 'Manual time limits' :
-                self.start = self.numday_box.value()
-                self.stop  = self.numday_stop_box.value()   
-                #self.updateToolbar(time_prop)                            
-            self.plotTime() 
-        else:
-            Messages.open_file() 
+        #if not (self.filename == None):   # check time properties              
+        time_prop = self.time_properties.currentText()     
+        if time_prop == 'All time':
+            self.start = 0
+            self.stop = self.lentime
+            #self.updateToolbar(time_prop)
+        elif time_prop == 'Last Year':
+            if self.lentime >=365: 
+                self.stop = self.lentime  
+                self.start = self.stop-365    
+            else: 
+                self.start = 0    
+                self.stop = self.lentime                         
+            #self.updateToolbar(time_prop)
+        elif time_prop == 'Manual time limits' :
+            self.start = self.numday_box.value()
+            self.stop  = self.numday_stop_box.value()   
+                    
+        self.plotTime() 
+        #else:
+        #    Messages.open_file() 
              
-
+    def callFluxPlot(self):
+        Messages.radio_button_not_implemented()
             
 class CustomLabel(QLabel): 
     
@@ -667,20 +702,3 @@ class CustomLabel(QLabel):
         #if e.mimeData().hasFormat('.nc'):
         e.accept() 
 
-
-                          
-if __name__ == '__main__':
-    font = QFont() 
-    font.setFamily("Arial")
-    font.setPointSize(11) 
-    app = QApplication(sys.argv)
-    app.setApplicationName("BROM NetCDF Viewer")
-    app.setOrganizationName("test Ltd.")
-    app.setStyle("plastique")
-    app.setFont(font)
-    app_icon = QIcon()
-    app_icon.addFile('img/logo.png', QSize(16,16))
-    app.setWindowIcon(app_icon)
-    ex = Window()
-    ex.setStyleSheet("background-color:#acc0c4;")
-    sys.exit(app.exec_())
