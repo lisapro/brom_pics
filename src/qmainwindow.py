@@ -102,10 +102,10 @@ class Window(QMainWindow):
         
         self.SedInFileAct.setChecked(True)     
                   
-        #self.editCmapLimsAct = self.createAction(
-        #    "Use Manual Cmap limits",None, "Ctrl+M",
-        #    None,"Use manual cmap limits", True)  
-        #self.editCmapLimsAct.setChecked(False)
+        self.editCmapLimsAct = self.createAction(
+            "Use Manual Cmap limits (not implemeted yet) ",None, "Ctrl+M",
+            None,"Use manual cmap limits", True)  
+        self.editCmapLimsAct.setChecked(False)
         
         self.interpCmapLimsAct = self.createAction(
             "Dont Interploate Cmap limits",None, "Ctrl+I",
@@ -145,7 +145,7 @@ class Window(QMainWindow):
         menubar.addMenu)
 
         proprtsMenu = self.addMultipleAction( 'Properties',
-        [self.SedInFileAct,self.interpCmapLimsAct,     #self.editCmapLimsAct,        
+        [self.SedInFileAct,self.interpCmapLimsAct, self.editCmapLimsAct,        
          self.limsAllCols,self.formatTimeAct, self.intepolateAct,self.yearLinesAct],
         menubar.addMenu)
         
@@ -702,20 +702,3 @@ class CustomLabel(QLabel):
         #if e.mimeData().hasFormat('.nc'):
         e.accept() 
 
-
-                          
-if __name__ == '__main__':
-    font = QFont() 
-    font.setFamily("Arial")
-    font.setPointSize(11) 
-    app = QApplication(sys.argv)
-    app.setApplicationName("BROM NetCDF Viewer")
-    app.setOrganizationName("test Ltd.")
-    app.setStyle("plastique")
-    app.setFont(font)
-    app_icon = QIcon()
-    app_icon.addFile('img/logo.png', QSize(16,16))
-    app.setWindowIcon(app_icon)
-    ex = Window()
-    ex.setStyleSheet("background-color:#acc0c4;")
-    sys.exit(app.exec_())
