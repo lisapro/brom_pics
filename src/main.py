@@ -209,7 +209,7 @@ def createFluxGroup(self):
               
     self.flux_grid = QtWidgets.QGridLayout(self.flux_groupBox)
     
-    self.flux_grid.addWidget(self.reverse_flux_checkbox,0,0,1,2)
+    self.flux_grid.addWidget(self.reverse_flux_checkbox,0,0,1,1)
     self.flux_grid.addWidget(self.manual_limits_flux,1,0,1,2) 
     self.flux_grid.addWidget(self.minflux_label,2,0,1,1) 
     self.flux_grid.addWidget(self.maxflux_label,2,1,1,1) 

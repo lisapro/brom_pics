@@ -399,28 +399,34 @@ def set_widget_styles(self):
 def widget_layout(self): 
        
         #first line        
-        self.grid.addWidget(self.help_button,0,0,1,1) # help_dialog           
-        self.grid.addWidget(self.toolbar,0,1,1,1) 
-        self.grid.addWidget(self.fick_box,0,2,1,1)         
-        self.grid.addWidget(self.time_prof_all,0,3,1,1)  
-        self.grid.addWidget(self.cmap_groupBox,0,4,2,1) 
-        self.grid.addWidget(self.dist_groupBox,0,5,2,1)        
-        self.grid.addWidget(self.time_groupBox,0,6,2,1)  
-        self.grid.addWidget(self.flux_groupBox,0,7,2,1)                    
-        self.grid.addWidget(self.options_groupBox,0,8,2,1)  
+        #self.grid.addWidget(self.help_button,0,0,1,1) # help_dialog           
+        self.grid.addWidget(self.toolbar,0,0,1,5) 
         
-        #second line                        
-        self.grid.addWidget(self.time_prof_last_year,1,2,1,1) 
-        #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)         
-        self.grid.addWidget(self.all_year_button,1,1,1,1)    
-        self.grid.addWidget(self.dist_prof_button,1,3,1,1)         
+        self.grid.addWidget(self.time_prof_all,0,3,1,1)  
+        self.grid.addWidget(self.cmap_groupBox,0,4,3,1) 
+        self.grid.addWidget(self.dist_groupBox,0,5,3,1)        
+        self.grid.addWidget(self.time_groupBox,0,6,3,1)  
+        self.grid.addWidget(self.flux_groupBox,0,7,3,1)                    
+        self.grid.addWidget(self.options_groupBox,0,8,3,1)  
+        
+        #second line   
+        self.grid.addWidget(self.fick_box,            1,2,1,1)   
+                                
+        self.grid.addWidget(self.time_prof_last_year, 1,3,1,1)  
+        
+        
+        self.grid.addWidget(self.all_year_button,     2,2,1,1)                   
+        self.grid.addWidget(self.dist_prof_button,    2,3,1,1)         
         #self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)          
         #self.grid.addWidget(self.textbox2,1,6,1,1)  
- 
-        #third line              
-        self.grid.addWidget(self.canvas, 2, 1,1,8)     
+
+        #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)             
+        #third line      
+        self.grid.addWidget(self.label_choose_var,1,0,1,1)           
+    
         self.grid.addWidget(self.qlistwidget,2,0,2,1) 
-        self.grid.addWidget(self.label_choose_var,1,0,1,1)  
+        
+        self.grid.addWidget(self.canvas, 3, 1,1,8) 
   
 def cmap_list(self):
     self.cmap_list = ['jet','inferno','rainbow','viridis','plasma','Paired']
@@ -517,14 +523,38 @@ def check_minmax(self,cmin,cmax,index):
 def make_maxmin(self,var,start,stop,index,type):
     
     if  self.change_limits_checkbox.isChecked():
-        ''' Get manually typed values '''
-        functions = dict(wat_time = (self.box_minwater,self.box_maxwater),
-                         wat_dist = (self.box_minwater,self.box_maxwater),
-                         sed_time = (self.box_minsed,self.box_maxsed),
-                         sed_dist = (self.box_minsed,self.box_maxsed))
         
-        min = float(functions[type][0].text())
-        max = float(functions[type][1].text())
+        ''' Get manually typed values '''
+        if (len(self.box_minwater.text()) > 0  and 
+            len(self.box_maxwater.text()) > 0 and
+            len(self.box_maxsed.text()) > 0 and 
+            len(self.box_minsed.text()) > 0   ) :
+            
+            functions = dict(wat_time = (self.box_minwater,self.box_maxwater),
+                             wat_dist = (self.box_minwater,self.box_maxwater),
+                             sed_time = (self.box_minsed,self.box_maxsed),
+                             sed_dist = (self.box_minsed,self.box_maxsed))
+            
+            min = float(functions[type][0].text())
+            max = float(functions[type][1].text())
+        else:       
+            messagebox = QtWidgets.QMessageBox.about(
+            self, "Retry", 'Specify all limits ,please') 
+            lim_dict = dict(wat_dist = (start,stop,0,self.ny1max),
+                         sed_dist = (start,stop,self.nysedmin,None),
+                         wat_time = (0,self.ny1max,None,None),
+                         sed_time = (self.nysedmin,None,None,None))
+            lims = lim_dict[type]  
+            
+            #self.scale_all_axes.isChecked(): 
+            #z_all_columns = np.array(self.fh.variables[index]) 
+            '''    # if we do not have kz     
+            else:  
+            self.ny1max = len(self.depth-1)
+            self.y1max = max(self.depth)'''
+            min = varmin(self,var,lims)     
+            max = varmax(self,var,lims)         
+    
         
     else: 
         lim_dict = dict(wat_dist = (start,stop,0,self.ny1max),
