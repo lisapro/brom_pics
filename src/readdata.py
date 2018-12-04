@@ -146,7 +146,7 @@ def colors(self):
     self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
     self.linewidth = 0.7   
              
-def axis_pos(self): # for plot with all var in one page 
+'''def axis_pos(self): # for plot with all var in one page 
     # disctances between x axes
     dx = 0.1 #(height / 30000.) #0.1
     dy = 14 #height/96
@@ -164,7 +164,7 @@ def axis_pos(self): # for plot with all var in one page
     self.axis2 = 0 + dy 
     self.axis3 = 0 + dy * 2
     self.axis4 = 0 + dy * 3
-    self.axis5 = 0 + dy * 4  
+    self.axis5 = 0 + dy * 4 ''' 
   
 def calculate_ywat(self):
     for n in range(0,(len(self.depth2))):
@@ -264,33 +264,11 @@ def y_coords(self):
     self.y2min = self.y2max - 2*(self.y2max - self.y1max)   
 
 
-# calc depth in cm from sed/wat interface 
+
 def depth_sed(self):
-    to_float = []
-    for item in self.depth:
-        #make a list of floats from tuple 
-        to_float.append(float(item)) 
-    # list for storing final depth data for sediment    
-    depth_sed = []  
-    v=0  
-    for i in to_float:
-        v = (i- self.y2max)*100  #convert depth from m to cm
-        depth_sed.append(v)
-        self.depth_sed= depth_sed
-        
-    to_float = []
-    for item in self.depth2:
-        to_float.append(float(item)) #make a list of floats from tuple 
-    depth_sed2 = [] # list for storing final depth data for sediment 
-    v=0 
-     
-    for i in to_float:
-        v = (i- self.y2max)*100  #convert depth from m to cm
-        depth_sed2.append(v)
-        self.depth_sed2 = depth_sed2  
-        #print ('in depth_sed2') 
-
-
+    # calc depth in cm from sed/wat interface 
+    self.depth_sed =  [(float(i) - self.y2max)*100 for i in self.depth] 
+    self.depth_sed2 = [(float(i) - self.y2max)*100 for i in self.depth2] 
 
 def ticks_2(minv,maxv):  
     ''' make "beautiful"  values to show on ticks '''  
@@ -394,12 +372,12 @@ def widget_layout(self):
        
         #first line        
         #self.grid.addWidget(self.help_button,0,0,1,1) # help_dialog           
-        self.grid.addWidget(self.toolbar,0,0,1,4)         
-        self.grid.addWidget(self.time_prof_all,0,3,1,1)  
-        self.grid.addWidget(self.cmap_groupBox,0,4,3,1) 
-        self.grid.addWidget(self.dist_groupBox,0,5,3,1)        
-        self.grid.addWidget(self.time_groupBox,0,6,3,1)  
-        self.grid.addWidget(self.flux_groupBox,0,7,3,1)                    
+        self.grid.addWidget(self.toolbar,         0,0,1,4)         
+        self.grid.addWidget(self.time_prof_all,   0,3,1,1)  
+        self.grid.addWidget(self.cmap_groupBox,   0,4,3,1) 
+        self.grid.addWidget(self.dist_groupBox,   0,5,3,1)        
+        self.grid.addWidget(self.time_groupBox,   0,6,3,1)  
+        self.grid.addWidget(self.flux_groupBox,   0,7,3,1)                    
         self.grid.addWidget(self.options_groupBox,0,8,3,1)  
         
         #second line   
@@ -408,8 +386,7 @@ def widget_layout(self):
         self.grid.addWidget(self.time_prof_last_year, 1,3,1,1)  
         
         #third line      
-          
-        self.grid.addWidget(self.qlistwidget,2,0,2,2)         
+        self.grid.addWidget(self.qlistwidget,         2,0,2,2)         
         self.grid.addWidget(self.all_year_button,     2,2,1,1)                   
         self.grid.addWidget(self.dist_prof_button,    2,3,1,1)         
  
@@ -417,7 +394,8 @@ def widget_layout(self):
         self.grid.addWidget(self.canvas, 3, 1,1,8) 
   
 def cmap_list(self):
-    self.cmap_list = ['jet','inferno','rainbow','viridis','plasma','Paired']
+    self.cmap_list = ['jet','inferno','rainbow',
+                      'viridis','plasma','Paired']
     return self.cmap_list    
 
 def use_num2date(self,time_units,X_subplot):   
@@ -480,7 +458,7 @@ def check_minmax(self,cmin,cmax,index):
         pass     
     else:              
         if cmin is ma.masked or cmax is ma.masked: 
-            cmin = 0
+            cmin = 0,
             cmax = 1
         elif  cmin ==  cmax :
             if cmax == 0: 
@@ -525,10 +503,12 @@ def make_maxmin(self,var,start,stop,index,type):
             
             min = float(functions[type][0].text())
             max = float(functions[type][1].text())
-        else:       
-            messagebox = QtWidgets.QMessageBox.about(
-            self, "Retry", 'Specify all limits ,please') 
-            lim_dict = dict(wat_dist = (start,stop,0,self.ny1max),
+        else: 
+            from messages import Messages
+            Messages.no_limits('sediment or water')
+            
+            lim_dict = dict(
+                         wat_dist = (start,stop,0,self.ny1max),
                          sed_dist = (start,stop,self.nysedmin,None),
                          wat_time = (0,self.ny1max,None,None),
                          sed_time = (self.nysedmin,None,None,None))

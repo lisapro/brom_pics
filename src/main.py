@@ -180,19 +180,7 @@ class Window(QtWidgets.QDialog):
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()  
         time_plot.time_profile(self,start,stop)  
-                       
-    '''def save_figure(self): 
-        #does not work 
-        printer = QtWidgets.QPrinter(QtWidgets.QPrinter.HighResolution)
-        printer.setPageSize(QtWidgets.QPrinter.A9)
-        printer.setColorMode(QtWidgets.QPrinter.Color)
-        printer.setOutputFormat(QtWidgets.QPrinter.PdfFormat)
-        printer.setOutputFileName(self.edit.text())
-        self.render(printer)
-        #plt.savefig('pdf_fig.pdf',format = 'pdf')    
-        #self.figure.savefig('pic.png', format='png')'''
-   
-   
+                          
     def call_help(self):
         help_dialog.show(self) 
 
@@ -322,8 +310,8 @@ def createCmapLimitsGroup(self):
         #self.box_minwater = QtWidgets.QDoubleSpinBox()
         
         self.box_minwater = QtWidgets.QLineEdit()     
-        self.box_maxwater = QtWidgets.QLineEdit() #.QDoubleSpinBox()
-        self.box_minsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()
+        self.box_maxwater = QtWidgets.QLineEdit() 
+        self.box_minsed = QtWidgets.QLineEdit()
         self.box_maxsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()   
          
         cmap_grid = QtWidgets.QGridLayout(self.cmap_groupBox) 
