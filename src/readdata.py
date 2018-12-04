@@ -13,9 +13,8 @@ Created on 14. des. 2016
 
 from netCDF4 import Dataset,num2date
 
-import main
+import main,math
 import numpy as np
-import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 from matplotlib import rc
@@ -195,25 +194,21 @@ def calculate_ybbl(self):
         try: 
             if self.kz[1,n,0] == 0:
                 self.y2max = self.depth2[n]         
-                self.ny2max = n  
-                #print ('y2max' ,self.y2max)      
+                self.ny2max = n       
                 break  
             if self.kz[1,n,0] != 0 and n == (len(self.depth2)-2):       
                 self.y2max = self.depth2[n]         
-                self.ny2max = n  
-                #print ('no sediment' , self.kz[0,n,0],n)   
+                self.ny2max = n    
         except IndexError: 
             if self.kz[1,n] == 0:
                 self.y2max = self.depth2[n]         
-                self.ny2max = n  
-                #print ('y2max' ,self.y2max)      
+                self.ny2max = n      
                 break  
             if self.kz[1,n] != 0 and n == (len(self.depth2)-2):       
                 self.y2max = self.depth2[n]         
                 self.ny2max = n  
-                #print ('no sediment' , self.kz[0,n,0],n)                 
-def y2max_fill_water(self):
-    
+                                
+def y2max_fill_water(self):    
     for n in range(0,(len(self.depth2)-1)):
         if self.depth2[n+1] - self.depth2[n] >= self.bbl:
             pass
@@ -230,7 +225,7 @@ def calculate_ysed(self):
                 self.ysedmin =  ysed - 10
                 self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
                 self.y3min = self.depth_sed[self.nbblmin+2]
-                #here we cach part of BBL to add to 
+                #here we catch part of BBL to add to 
                 #the sediment image                
                 break  
             else : 
@@ -262,21 +257,21 @@ def y_coords(self):
 
     #calculate the position of y2min, for catching part of BBL 
     self.ny2min = self.ny2max - 2*(self.ny2max - self.ny1max) 
-    self.y2min_fill_bbl = self.y2max_fill_water = self.y1max #y2max_fill_water()
-    #109.5 #BBL-water interface
+    self.y2min_fill_bbl = self.y2max_fill_water = self.y1max
     self.ysedmax_fill_bbl = 0
     self.ysedmin_fill_sed = 0
-    self.y1min = 0
+    self.y1min = 0 
     self.y2min = self.y2max - 2*(self.y2max - self.y1max)   
-          
-    #calculate the position of y2min, for catching part of BBL 
+
 
 # calc depth in cm from sed/wat interface 
 def depth_sed(self):
     to_float = []
     for item in self.depth:
-        to_float.append(float(item)) #make a list of floats from tuple 
-    depth_sed = [] # list for storing final depth data for sediment 
+        #make a list of floats from tuple 
+        to_float.append(float(item)) 
+    # list for storing final depth data for sediment    
+    depth_sed = []  
     v=0  
     for i in to_float:
         v = (i- self.y2max)*100  #convert depth from m to cm
@@ -314,8 +309,7 @@ def ticks_2(minv,maxv):
         step = float(format((dif/4),'.2f'))         
     else : 
         step = dif        
-    ticks = np.arange(minv-step,maxv+step,step)    
-                       
+    ticks = np.arange(minv-step,maxv+step,step)                           
     return ticks
 
 def ticks(minv,maxv):  
@@ -400,8 +394,7 @@ def widget_layout(self):
        
         #first line        
         #self.grid.addWidget(self.help_button,0,0,1,1) # help_dialog           
-        self.grid.addWidget(self.toolbar,0,0,1,5) 
-        
+        self.grid.addWidget(self.toolbar,0,0,1,4)         
         self.grid.addWidget(self.time_prof_all,0,3,1,1)  
         self.grid.addWidget(self.cmap_groupBox,0,4,3,1) 
         self.grid.addWidget(self.dist_groupBox,0,5,3,1)        
@@ -410,22 +403,17 @@ def widget_layout(self):
         self.grid.addWidget(self.options_groupBox,0,8,3,1)  
         
         #second line   
-        self.grid.addWidget(self.fick_box,            1,2,1,1)   
-                                
+        self.grid.addWidget(self.label_choose_var,    1,0,1,1)             
+        self.grid.addWidget(self.fick_box,            1,2,1,1)                                   
         self.grid.addWidget(self.time_prof_last_year, 1,3,1,1)  
         
-        
+        #third line      
+          
+        self.grid.addWidget(self.qlistwidget,2,0,2,2)         
         self.grid.addWidget(self.all_year_button,     2,2,1,1)                   
         self.grid.addWidget(self.dist_prof_button,    2,3,1,1)         
-        #self.grid.addWidget(self.yearlines_checkbox,1,7,1,1)          
-        #self.grid.addWidget(self.textbox2,1,6,1,1)  
-
-        #self.grid.addWidget(self.all_year_1d_box,1,2,1,1)             
-        #third line      
-        self.grid.addWidget(self.label_choose_var,1,0,1,1)           
-    
-        self.grid.addWidget(self.qlistwidget,2,0,2,1) 
-        
+ 
+        #4th line        
         self.grid.addWidget(self.canvas, 3, 1,1,8) 
   
 def cmap_list(self):
