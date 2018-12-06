@@ -9,15 +9,11 @@ Created on 30. jun. 2017
 
 @author: ELP
 '''
-
-
 import matplotlib.pyplot as plt
 from PyQt5 import QtGui,QtWidgets
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
-
-
 
 def fluxes(self): 
     plt.clf()     
@@ -116,8 +112,7 @@ def fluxes(self):
         ax00.set_ylabel('Fluxes') #Label y axis
         
         # take values for fluxes at sed-vat interf        
-        fick = np.array([zz[n][self.nysedmin] for n in range(start,stop)])            
-        #ax00.set_xlim(start,stop)           
+        fick = np.array([zz[n][self.nysedmin] for n in range(start,stop)])                 
         ax00.axhline(0, color='black', linestyle = '--') #Line at SWI
     
         if self.datescale_checkbox.isChecked() == True:          

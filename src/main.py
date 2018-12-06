@@ -41,20 +41,16 @@ class Window(QtWidgets.QDialog):
     # does not have a parent.    
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
-
-
         
-        self.setWindowFlags(QtCore.Qt.Window)   
-        
-        self.setWindowIcon(QtGui.QIcon('bromlogo2.png'))       
+        self.setWindowFlags(QtCore.Qt.Window)          
+        self.setWindowIcon(QtGui.QIcon('img/logo.png'))       
         self.figure = plt.figure(figsize=(5.69 , 6.27),
                         facecolor='None',edgecolor='None') 
         self.figure.patch.set_alpha(0)    
             
-        # open file system to choose needed nc file 
-        
+        # open file system to choose needed nc file        
         self.fname ,_  = (QtWidgets.QFileDialog.getOpenFileName(self,
-        'Open netcdf ', os.getcwd(), "netcdf (*.nc);; all (*)"))  #str
+        'Open netcdf ', os.getcwd(), "netcdf (*.nc) "))  
         
         totitle = os.path.split(self.fname)[1]
         self.setWindowTitle("BROM Pictures ("+str(totitle)+')')           
@@ -113,9 +109,7 @@ class Window(QtWidgets.QDialog):
         self.time_prof_last_year.setText('Time: last year')               
         self.dist_prof_button.setText('Transect 1 day')  
            
-        ### Define connection between clicking the button and 
-        ### calling the function to plot figures         
-                                 
+        ### Define connection                                   
         self.time_prof_last_year.released.connect(self.call_print_lyr)
         self.all_year_button.released.connect(self.call_all_year)
         self.time_prof_all.released.connect(self.call_print_allyr)        
@@ -175,7 +169,6 @@ class Window(QtWidgets.QDialog):
         stop = len(self.time)
         start = stop - 365
         time_plot.time_profile(self,start,stop)
-        #self.time_profile(start,stop) 
             
     def call_print_allyr(self):  
         start = self.numday_box.value() 
@@ -214,10 +207,8 @@ def createFluxGroup(self):
     
 def createDistGroup(self):  
         
-    self.dist_groupBox = QtWidgets.QGroupBox("Distance axis")  
-         
-    self.dist_grid = QtWidgets.QGridLayout(self.dist_groupBox)
-    
+    self.dist_groupBox = QtWidgets.QGroupBox("Distance axis")           
+    self.dist_grid = QtWidgets.QGridLayout(self.dist_groupBox)   
     self.col_label = QtWidgets.QLabel('Column: ')
     self.numcol_2d = QtWidgets.QSpinBox() 
     readdata.read_num_col(self,self.fname)
@@ -226,10 +217,7 @@ def createDistGroup(self):
         'max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
     except AttributeError: 
         pass
-    #max_col = readdata.read_num_col(self,self.fname)
-    #self.label_maxcol_n =
-    # QtWidgets.QLabel('max\ncolumn: ') #+ str(testvar.shape[0]-1))      
-    
+      
     self.dist_grid.addWidget(self.col_label,0,0,1,1) 
     self.dist_grid.addWidget(self.numcol_2d,1,0,1,1) 
     try:
@@ -240,15 +228,13 @@ def createDistGroup(self):
 def createTimeGroup(self):  
      
     self.last_year_button = QtWidgets.QPushButton('last year')    
-    self.time_groupBox = QtWidgets.QGroupBox(" Time axis")        
+    self.time_groupBox = QtWidgets.QGroupBox("Time axis")        
 
     self.numday_start_label = QtWidgets.QLabel('start: ') 
     self.numday_stop_label = QtWidgets.QLabel('stop: ')  
     self.maxday_label = QtWidgets.QLabel('max day: ')
-           
-
-         
-    self.numday_box = QtWidgets.QSpinBox()     #start
+                    
+    self.numday_box = QtWidgets.QSpinBox()   
     self.numday_stop_box = QtWidgets.QSpinBox()  
     self.value_maxday = QtWidgets.QLabel(str(self.lentime-1))  
           
@@ -258,10 +244,9 @@ def createTimeGroup(self):
     self.cmap_sed_box = QtWidgets.QComboBox()
     self.cmap_sed_box.addItems(readdata.cmap_list(self))
     self.cmap_sed_label = QtWidgets.QLabel('cmap sed: ')
-    
-         
-    self.time_grid = QtWidgets.QGridLayout(self.time_groupBox)   
 
+             
+    self.time_grid = QtWidgets.QGridLayout(self.time_groupBox)   
     #line 0
     self.time_grid.addWidget(self.cmap_water_label,0,0,1,1)
     self.time_grid.addWidget( self.cmap_sed_label,0,1,1,1) 

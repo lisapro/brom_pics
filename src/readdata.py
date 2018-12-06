@@ -3,26 +3,23 @@
 # this ↑ comment is important to have 
 # at the very first line 
 # to define using unicode 
-import numpy.ma as ma
+
 '''
 Created on 14. des. 2016
 
 @author: E.Protsenko
 '''
-
-
 from netCDF4 import Dataset,num2date
-
-import main,math
+import main,math, os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 from matplotlib import rc
 from PyQt5 import QtCore, QtGui
-from PyQt5 import QtWidgets
-import os, sys 
+from PyQt5 import QtWidgets 
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
+import numpy.ma as ma
 
 #format scales to be scalar 
 majorLocator = mtick.MultipleLocator(2.)
@@ -37,8 +34,7 @@ rc('font', **{'sans-serif' : 'Arial', #for unicode text
       
 def readdata_brom(self,fname): #,varname,fname
     
-    self.fh = Dataset(fname)
-    
+    self.fh = Dataset(fname)    
     self.time =  self.fh.variables['time'][:]
     self.time_units = self.fh.variables['time'].units
     self.lentime = len(self.time)  
@@ -46,6 +42,7 @@ def readdata_brom(self,fname): #,varname,fname
     self.e_crit_min = 0.02
     self.e_crit_max = 10000 
     self.fh.close()
+    
 def read_num_col(self,fname):
     # Read all variables name from the file 
     # And add them to the qlistwidget        
@@ -81,7 +78,8 @@ def read_num_col(self,fname):
                 self.testvar = np.array(self.fh['i'][:]) 
                 self.max_num_col = self.testvar.shape[0]     
                 break  
-       
+    #self.fh.close()  
+    
 def readdata2_brom(self,fname):  
   
     self.fh = Dataset(fname)
@@ -113,7 +111,7 @@ def readdata2_brom(self,fname):
                  
     if 'i' in self.names_vars: 
         self.dist = np.array(self.fh.variables['i']) 
-
+    #self.fh.close()
  
 def read_all_year_var(self,fname,varname1,varname2,varname3): 
     self.fh = Dataset(fname)  
@@ -542,6 +540,7 @@ def make_maxmin(self,var,start,stop,index,type):
                 
     maxmin = check_minmax(self,min,max,index)            
     return maxmin
+
 
 ## here we can add contour of some level with interesting value
 #add contour to 1 om ar saturation
