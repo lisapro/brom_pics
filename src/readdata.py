@@ -413,7 +413,7 @@ def format_time_axis2(self, xaxis,xlen):
             mdates.DateFormatter('%Y'))          
     elif xlen <= 365: 
         xaxis.xaxis.set_major_formatter(
-            mdates.DateFormatter('%b'))   
+            mdates.DateFormatter('%d %b'))   
 
 def plot_inj_lines(self,numday,col,axis):
     axis.axvline(numday,color= col, linewidth = 2,

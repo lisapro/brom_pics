@@ -163,7 +163,8 @@ class Window(QtWidgets.QDialog):
     def call_all_year(self):   
         all_year_1d.plot(self)
         
-    def call_fluxes(self):    
+    def call_fluxes(self): 
+           
         fluxes_plot.fluxes(self)
         
     def call_print_dist(self): 
@@ -179,7 +180,12 @@ class Window(QtWidgets.QDialog):
     def call_print_allyr(self):  
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()  
-        time_plot.time_profile(self,start,stop)  
+        if stop <= start :
+            messagebox = QtWidgets.QMessageBox.about(
+            self, "Retry",'Wrong Start and Stop Values') 
+            return None  
+        else: 
+            time_plot.time_profile(self,start,stop)  
                           
     def call_help(self):
         help_dialog.show(self) 
@@ -302,10 +308,10 @@ def createCmapLimitsGroup(self):
         self.cmap_groupBox = QtWidgets.QGroupBox("colour map limits ")  
         self.change_limits_checkbox = QtWidgets.QCheckBox('Change limits')
         self.exact_limits_checkbox = QtWidgets.QCheckBox('Exact limits')
-        self.label_maxwater = QtWidgets.QLabel('cmap max water: ')
+        self.label_maxwater = QtWidgets.QLabel('max water: ')
         
         self.label_minwater = QtWidgets.QLabel('min water: ')   
-        self.label_maxsed = QtWidgets.QLabel('cmap max sediment: ')
+        self.label_maxsed = QtWidgets.QLabel('max sediment: ')
         self.label_minsed = QtWidgets.QLabel('min sediment: ')  
         #self.box_minwater = QtWidgets.QDoubleSpinBox()
         
