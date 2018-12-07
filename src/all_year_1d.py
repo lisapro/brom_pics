@@ -1,14 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# this ↑ comment is important to have 
-# at the very first line 
-# to define using unicode 
-
 
 '''
 Created on 30. jun. 2017
 
-@author: ELP
+@author: Elizaveta Protsenko
 '''
 
 from netCDF4 import Dataset 
@@ -45,9 +41,7 @@ def plot(self,start,stop):
         axis.yaxis.grid(True,'minor')
         axis.xaxis.grid(True,'major')                
         axis.yaxis.grid(True,'major')    
-                     
-    
-    
+                         
     # read chosen variable 
     numcol = self.numcol_2d.value()
     z = np.array(self.fh.variables[index][:,:,numcol])
@@ -75,8 +69,10 @@ def plot(self,start,stop):
          
     
     if  self.change_limits_checkbox.isChecked():
-        functions = dict(wat = (self.box_minwater,self.box_maxwater),
-                         sed = (self.box_minsed,self.box_maxsed))
+        functions = dict(wat = (self.box_minwater,
+                                self.box_maxwater),
+                         sed = (self.box_minsed,
+                                self.box_maxsed))
         
         watmin = float(functions['wat'][0].text())
         watmax = float(functions['wat'][1].text())               
@@ -85,6 +81,7 @@ def plot(self,start,stop):
         self.ax00.set_xlim(watmin,watmax)      
         self.ax10.set_xlim(watmin,watmax)       
         self.ax20.set_xlim(sedmin,sedmax)   
+        
     if (stop - start) > 365:
         step  = 10 
     else: 
@@ -108,24 +105,3 @@ def plot(self,start,stop):
 
     self.fh.close()                  
     self.canvas.draw()     
-
-''' different colors during the year
-        """if (n>0 and n <60) or (n>=335 and n<365) : #"winter"
-        #if n >= 0 and n<=60 or n >= 335 and n <365 : #"winter"                               
-            ax00.plot(z[n][0:self.ny2max],
-                  self.depth[0:self.ny2max],
-                  self.wint,alpha = self.a_w, 
-                  linewidth = self.linewidth , zorder = 10) 
-         
-            ax10.plot(z[n][0:self.ny2max],
-                  self.depth[0:self.ny2max],
-                  self.wint,alpha = self.a_w, 
-                  linewidth = self.linewidth , zorder = 10) 
-        
-            ax20.plot(z[n][self.nysedmin-1:],
-                  self.depth_sed[self.nysedmin-1:],
-                  self.wint, alpha = self.a_w,
-                  linewidth = self.linewidth, zorder = 10) """  
-        #else: 
-
-'''

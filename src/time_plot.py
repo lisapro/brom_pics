@@ -4,7 +4,7 @@
 '''
 Created on 29. jun. 2017
 
-@author: ELP
+@author: Elizaveta Protsenko
 '''
 import numpy as np
 import readdata
@@ -14,8 +14,9 @@ import matplotlib.ticker as mtick
 import matplotlib.gridspec as gridspec
 import numpy.ma as ma
 from PyQt5 import QtGui,QtWidgets
-from netCDF4 import num2date 
-from netCDF4 import Dataset 
+from netCDF4 import num2date, Dataset
+
+
 def time_profile(self,start,stop):    
     plt.clf()
     self.changing_depth = False    
@@ -69,11 +70,11 @@ def time_profile(self,start,stop):
         b = int(b)
         return r'${} \times 10^{{{}}}$'.format(a, b)          
                    
-    if self.sediment == False and 'V_air' not in self.names_vars : 
+    if (self.sediment == False and 
+        'V_air' not in self.names_vars) : 
         readdata.grid_plot(self,1)              
            
-    elif self.sediment == True: 
-                                 
+    elif self.sediment == True:                                  
         readdata.grid_plot(self,2)
                               
         self.ax2.set_ylabel('Depth, cm',    

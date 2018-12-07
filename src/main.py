@@ -4,7 +4,7 @@
 '''
 Created on 14. des. 2016
 
-@author: E.Protsenko
+@author: Elizaveta Protsenko
 '''
 
 import os,sys

@@ -1,15 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# this ↑ comment is important to have 
-# at the very first line 
-# to define using unicode 
-from datrie import itertools
 
 '''
 Created on 14. des. 2016
 
-@author: E.Protsenko
+@author: Elizaveta Protsenko
 '''
+
 from netCDF4 import Dataset,num2date
 import main,math, os, sys
 import numpy as np
@@ -21,7 +18,7 @@ from PyQt5 import QtWidgets
 import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import numpy.ma as ma
-
+import itertools
 #format scales to be scalar 
 majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   
@@ -58,8 +55,8 @@ def read_num_col(self,fname):
             sink_l.append(name)
         elif name not in ['z','z2','kz','time','i']:    
             other_l.append(name) 
-    import itertools        
-     
+           
+    
     # sort variables alphabetically non-case sensitive            
     self.sorted_names =  sorted(other_l, key=lambda s: s.lower()) 
     self.sorted_names  = list(itertools.chain(self.sorted_names,
@@ -98,7 +95,6 @@ def readdata2_brom(self,fname):
             self.bbl = 0.5         
     self.time =  fh.variables['time'][:]
     self.time_units = fh.variables['time'].units
-    #time_calendar = self.fh.variables['time'].calendar
     self.dates = num2date(self.time[:],
                           units= self.time_units)   
                  
@@ -110,9 +106,10 @@ def read_all_year_var(self,fname,varname1,varname2,varname3):
     self.fh = Dataset(fname)  
     self.var1 = self.fh.variables[varname1][:]
     self.var2 = self.fh.variables[varname2][:]
-    self.var3 = self.fh.variables[varname3][:]  
+    self.var3 = self.fh.variables[varname3][:] 
+    self.fh.close()     
     return  self.var1,self.var2, self.var3      
-    self.fh.close()
+
          
 def colors(self):
     self.spr_aut ='#998970'
@@ -121,8 +118,7 @@ def colors(self):
     self.a_w = 0.7 #alpha_wat alpha (transparency) for winter
     self.a_bbl = 0.3     
     self.a_s = 0.4 #alpha (transparency) for summer
-    self.a_aut = 0.4 #alpha (transparency) for autumn and spring  
-      
+    self.a_aut = 0.4 #alpha (transparency) for autumn and spring        
     self.wat_col = '#eef9fe' #c5d8e3' #'#d9e4e9' #
     self.bbl_col = '#2873b8'  
     self.sed_col=  '#CFB997' #'#916012'
@@ -137,36 +133,16 @@ def colors(self):
     self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
     self.linewidth = 0.7   
              
-'''def axis_pos(self): # for plot with all var in one page 
-    # disctances between x axes
-    dx = 0.1 #(height / 30000.) #0.1
-    dy = 14 #height/96
-    
-    #x and y positions of axes labels 
-    self.labelaxis_x =  1.10     
-    self.labelaxis1_y = 1.02    
-    self.labelaxis2_y = 1.02 + dx
-    self.labelaxis3_y = 1.02 + dx * 2.
-    self.labelaxis4_y = 1.02 + dx * 3.
-    self.labelaxis5_y = 1.02 + dx * 4.
-
-    # positions of xaxes
-    self.axis1 = 0
-    self.axis2 = 0 + dy 
-    self.axis3 = 0 + dy * 2
-    self.axis4 = 0 + dy * 3
-    self.axis5 = 0 + dy * 4 ''' 
-  
+ 
 def calculate_ywat(self):
     for n in range(0,(len(self.depth2))):
         if self.depth2[n+1] - self.depth2[n] >= self.bbl:
-            if n == self.lendepth2-2: # len(self.depth2):
+            if n == self.lendepth2-2: 
                 y1max = (self.depth2[n]-1)
                 self.ny1min = (self.depth[0])
                 self.y1max = y1max                                                     
                 self.ny1max = n-1
-                self.sediment = False
-                #print ('no sediment y wat', self.y1max)        
+                self.sediment = False    
                 break  
         elif self.depth2[n+1] - self.depth2[n] < self.bbl:   
             self.y1max = (self.depth[n])                               
@@ -176,7 +152,6 @@ def calculate_ywat(self):
                 self.y1max = (self.depth[len(self.depth2)-2])
                 self.ny1max = len(self.depth2)
                 self.sediment = False            
-            #print ('calc_y_wat_y1max', self.y1max,self.ny1max)
             break
         
   
@@ -268,7 +243,6 @@ def ticks_2(minv,maxv):
     assert minv < maxv       
     dif = maxv - minv 
     if dif >= 1000:
-        #dif = dif/3 
         step = math.trunc((dif/4)/100)*100
     elif dif > 30:
         step = math.trunc((dif/4)/10)*10
@@ -282,7 +256,7 @@ def ticks_2(minv,maxv):
     return ticks
 
 def ticks(minv,maxv):  
- 
+    #TODO: Rewrite it 
     if maxv > 1 :
         minv = np.floor(minv)
         minv = (math.trunc(minv/10)*10)
@@ -348,7 +322,7 @@ def set_widget_styles(self):
           
     self.help_button.setIcon(QtGui.QIcon('help.png'))   
     self.help_button.setIconSize(QtCore.QSize(30,30))   
-    # set zero border.
+
     self.help_button.setStyleSheet('QPushButton{border: 0px solid;}')
          
     self.qlistwidget.setStyleSheet(
@@ -487,10 +461,14 @@ def make_maxmin(self,var,start,stop,index,type):
             len(self.box_maxsed.text()) > 0 and 
             len(self.box_minsed.text()) > 0   ) :
             
-            functions = dict(wat_time = (self.box_minwater,self.box_maxwater),
-                             wat_dist = (self.box_minwater,self.box_maxwater),
-                             sed_time = (self.box_minsed,self.box_maxsed),
-                             sed_dist = (self.box_minsed,self.box_maxsed))
+            functions = dict(wat_time = (self.box_minwater,
+                                         self.box_maxwater),
+                             wat_dist = (self.box_minwater,
+                                         self.box_maxwater),
+                             sed_time = (self.box_minsed,
+                                         self.box_maxsed),
+                             sed_dist = (self.box_minsed,
+                                         self.box_maxsed))
             
             min = float(functions[type][0].text())
             max = float(functions[type][1].text())
@@ -499,10 +477,14 @@ def make_maxmin(self,var,start,stop,index,type):
             Messages.no_limits('sediment or water')
             
             lim_dict = dict(
-                         wat_dist = (start,stop,0,self.ny1max),
-                         sed_dist = (start,stop,self.nysedmin,None),
-                         wat_time = (0,self.ny1max,None,None),
-                         sed_time = (self.nysedmin,None,None,None))
+                         wat_dist = (start,stop,0,
+                                     self.ny1max),
+                         sed_dist = (start,stop,
+                                     self.nysedmin,None),
+                         wat_time = (0,self.ny1max,
+                                     None,None),
+                         sed_time = (self.nysedmin,None,
+                                     None,None))
             lims = lim_dict[type]  
             
             #self.scale_all_axes.isChecked(): 
@@ -516,14 +498,17 @@ def make_maxmin(self,var,start,stop,index,type):
     
         
     else: 
-        lim_dict = dict(wat_dist = (start,stop,0,self.ny1max),
-                     sed_dist = (start,stop,self.nysedmin,None),
-                     wat_time = (0,self.ny1max,None,None),
-                     sed_time = (self.nysedmin,None,None,None))
+        lim_dict = dict(
+                    wat_dist = (start,stop,0,
+                                self.ny1max),
+                     sed_dist = (start,stop,
+                                 self.nysedmin,None),
+                     wat_time = (0,self.ny1max,
+                                 None,None),
+                     sed_time = (self.nysedmin,None,
+                                 None,None))
         lims = lim_dict[type]  
         
-        #self.scale_all_axes.isChecked(): 
-        #z_all_columns = np.array(self.fh.variables[index]) 
         '''    # if we do not have kz     
         else:  
         self.ny1max = len(self.depth-1)
@@ -535,15 +520,6 @@ def make_maxmin(self,var,start,stop,index,type):
     return maxmin
 
 
-## here we can add contour of some level with interesting value
-#add contour to 1 om ar saturation
-#ax.contour(X, Y,air,levels = [100],
-#     colors=('k',),linestyles=('--',),linewidths=(3,))        
-#ax.contour(X, Y,zz,levels = [1],
-#         colors=('k',),linestyles=('--',),linewidths=(3,))           #if self.injlines_checkbox.isChecked()== True:       
-#    readdata.plot_inj_lines(self,100,'r',ax2) #to change   
 
-#    ax2.axvline(730,color='red',linewidth = 2,
-#            linestyle = '--',zorder = 10)  
 
              
