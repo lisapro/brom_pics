@@ -56,8 +56,7 @@ def fluxes(self,start,stop):
         
         ax00 = self.figure.add_subplot(gs[0])
         ax01 = self.figure.add_subplot(gs[1])
-        
-          
+                  
         if self.yearlines_checkbox.isChecked() == True:
             for n in range(start,stop):
                 if n%365 == 0: 
@@ -65,18 +64,18 @@ def fluxes(self,start,stop):
                     linestyle = '--') 
                     ax01.axvline(n,color='black',
                     linestyle = '--') 
-
                                                                    
         var2 = str(selected_items[1].text())
         z2_units = fh.variables[var2].units
         z2 = np.array(fh.variables[str(selected_items[1].text())])
         zz2 =  z2[:,:,numcol] #1column
         ax01.set_title(var2+', '+ z2_units)
-        ax01.set_ylabel('Fluxes') #Label y axis
+        ax01.set_ylabel('Fluxes') 
         ax01.set_xlim(start,stop)
         ax01.axhline(0, color='black', linestyle = '--') 
  
-        fick2 = np.array([zz2[n][self.nysedmin] for n in range(start,stop)])  
+        fick2 = np.array(
+            [zz2[n][self.nysedmin] for n in range(start,stop)])  
         ax01.plot(X,fick2, linewidth = 1 ,
                     color = linecolor, zorder = 10)  
 
@@ -86,8 +85,7 @@ def fluxes(self,start,stop):
         ax01.fill_between(X,  fick2, 0 ,
                       where= fick2 < 0.,color = towater, label=u"up")            
         ax01.set_ylim(max(fick2),min(fick2)) 
-        #m = np.mean(fick2)
-        #ax01.axhline(m,c = 'r', linestyle = '--',label = 'mean')
+
     else : 
         messagebox = QtWidgets.QMessageBox.about(
             self, "Retry",'Choose 1 or 2 variables,please') 
@@ -130,31 +128,3 @@ def fluxes(self,start,stop):
     fh.close()
     self.canvas.draw()
         
- 
-    '''
-        #self.figure.suptitle(str(self.totitle),fontsize=16)
-        #                , fontweight='bold')    
-    
-    
-        #m = np.mean(fick)
-        #ax00.axhline(m,c = 'r', linestyle = '--',label = 'mean', zorder = 10)
-        #print(X)    
-        # injection      
-    
-            #if self.yearlines_checkbox.isChecked() == True:
-            #    for n in range(start,stop):
-            #        if n%365 == 0: 
-            #            ax01.axvline(n,
-            #            color='black', linestyle = '--')          
-    
-    if self.injlines_checkbox.isChecked()== True: 
-            ax00.axvline(365,color='red', linewidth = 2,
-                    linestyle = '--',zorder = 10) 
-            ax00.axvline(730,color='red',linewidth = 2,#1825 730
-                    linestyle = '--',zorder = 10)  
-              
-            ax01.axvline(365,color='red', linewidth = 2,
-                    linestyle = '--',zorder = 10) 
-            ax01.axvline(730,color='red',linewidth = 2,
-                    linestyle = '--',zorder = 10)   ''' 
-          

@@ -19,6 +19,7 @@ import matplotlib.dates as mdates
 import matplotlib.gridspec as gridspec
 import numpy.ma as ma
 import itertools
+from messages import Messages
 #format scales to be scalar 
 majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   
@@ -473,7 +474,7 @@ def make_maxmin(self,var,start,stop,index,type):
             min = float(functions[type][0].text())
             max = float(functions[type][1].text())
         else: 
-            from messages import Messages
+
             Messages.no_limits('sediment or water')
             
             lim_dict = dict(

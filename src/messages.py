@@ -5,23 +5,30 @@ from PyQt5.QtGui import QPixmap
 class Messages: 
     global capy_path
     capy_path = 'img/capybara.png'
+    global wiki 
+    wiki = '<a href= "https://github.com/lisapro/brom_pics2/wiki"> online help </a>'
+
     pixsize = 164
+
     def no_sediment():
         
         msg = QMessageBox() 
         msg.setText("Uncheck menu Properties/Use sediment Subplot")    
         pixmap = QPixmap(capy_path)
         pixmap1 = pixmap.scaled(164, 164)
+        
         msg.setIconPixmap(pixmap1)
+
         msg.exec_()  
      
     def no_limits(text): 
+        
         msg = QMessageBox() 
-        msg.setText("Manual limits for {} are not defined".format(text))    
+        msg.setWindowTitle('Something went wrong')
+        msg.setText('Specify all limits please {} '.format(wiki))    
         pixmap = QPixmap(capy_path)
         pixmap1 = pixmap.scaled(164, 164)
-        msg.setIconPixmap(pixmap1)
-        
+        msg.setIconPixmap(pixmap1)      
         msg.exec_()            
         
     def open_file():
@@ -47,7 +54,7 @@ class Messages:
     def StartStop():
         
         msg = QMessageBox()         
-        msg.setText("Retry \nWront start and stop values")    
+        msg.setText('Retry, \nWrong start and stop values {} '.format(wiki))    
         pixmap = QPixmap(capy_path)
         pixmap1 = pixmap.scaled(124, 124)
         msg.setIconPixmap(pixmap1)      

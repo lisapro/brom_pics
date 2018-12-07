@@ -18,14 +18,12 @@ from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT as NavigationToolbar)
 import matplotlib.pyplot as plt
 
-import readdata
-import time_plot 
-import dist_plot
-import fluxes_plot
+import readdata, time_plot
+import dist_plot, fluxes_plot
 import all_year_1d
-import help_dialog
-
+#import help_dialog
 import matplotlib.pylab as pylab
+from messages import Messages
 params = {'legend.fontsize': 'x-large',
          'axes.labelsize': 'x-large',
          'axes.titlesize':'x-large',
@@ -108,7 +106,7 @@ class Window(QtWidgets.QDialog):
         self.time_prof_all.released.connect(self.call_print_allyr)        
         self.fick_box.released.connect(self.call_fluxes)        
         self.dist_prof_button.released.connect(self.call_print_dist)                             
-        self.help_button.released.connect(self.call_help)
+        #self.help_button.released.connect(self.call_help)
                   
         self.canvas = FigureCanvas(self.figure)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
@@ -156,8 +154,7 @@ class Window(QtWidgets.QDialog):
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()     
         if stop <= start :
-            messagebox = QtWidgets.QMessageBox.about(
-            self, "Retry",'Wrong Start and Stop Values') 
+            Messages.StartStop()
             return None  
         else:                  
             fluxes_plot.fluxes(self,start,stop)
@@ -174,14 +171,13 @@ class Window(QtWidgets.QDialog):
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()  
         if stop <= start :
-            messagebox = QtWidgets.QMessageBox.about(
-            self, "Retry",'Wrong Start and Stop Values') 
+            Messages.StartStop()
             return None  
         else: 
             time_plot.time_profile(self,start,stop)  
                           
-    def call_help(self):
-        help_dialog.show(self) 
+    #def call_help(self):
+    #    help_dialog.show(self) 
 
 def createFluxGroup(self):
     self.flux_groupBox = QtWidgets.QGroupBox("Fluxes properties")  
@@ -258,10 +254,8 @@ def createTimeGroup(self):
     #line 2 
     self.time_grid.addWidget(self.numday_start_label,2,0,1,1)
     self.time_grid.addWidget( self.numday_stop_label,2,1,1,1) 
-    self.time_grid.addWidget(      self.maxday_label,2,2,1,1)      
-      
-    #self.time_grid.addWidget(self.numday_start_label,1,0,1,1)
-    
+    self.time_grid.addWidget(      self.maxday_label,2,2,1,1)            
+   
     #line 3             
     self.time_grid.addWidget(     self.numday_box,3,0,1,1) 
     self.time_grid.addWidget(self.numday_stop_box,3,1,1,1)      
