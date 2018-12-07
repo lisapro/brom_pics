@@ -32,8 +32,8 @@ def time_profile(self,start,stop):
     self.fh =  Dataset(self.fname)      
     z = np.array(self.fh.variables[index]) 
     data_units = self.fh.variables[index].units
-    # read only part 
-    z = z[start:stop+1] 
+    
+    z = z[start:stop+1] # read only part 
     ylen1 = len(self.depth) 
     x = np.array(self.time[start:stop+1]) 
     xlen = len(x)     

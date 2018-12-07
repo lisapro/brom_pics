@@ -54,7 +54,7 @@ class Messages:
     def StartStop():
         
         msg = QMessageBox()         
-        msg.setText('Retry, \nWrong start and stop values {} '.format(wiki))    
+        msg.setText('Retry, Wrong start and stop values {} '.format(wiki))    
         pixmap = QPixmap(capy_path)
         pixmap1 = pixmap.scaled(124, 124)
         msg.setIconPixmap(pixmap1)      
