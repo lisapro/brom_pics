@@ -3,6 +3,7 @@
 # this ↑ comment is important to have 
 # at the very first line 
 # to define using unicode 
+from datrie import itertools
 
 '''
 Created on 14. des. 2016
@@ -46,72 +47,64 @@ def readdata_brom(self,fname): #,varname,fname
 def read_num_col(self,fname):
     # Read all variables name from the file 
     # And add them to the qlistwidget        
-    self.fh = Dataset(fname)    
-    self.names_vars = [] 
-    for names,vars in self.fh.variables.items():
-        self.names_vars.append(names)  
-    flux_list = []
-    sink_list = []
-    other_list = []
-   
+    fh = Dataset(fname)        
+    self.names_vars = [names for names,vars in fh.variables.items()] 
+        
+    flux_l,sink_l,other_l  = [],[],[]
     for name in self.names_vars: 
         if name[:4] == 'fick':
-            flux_list.append(name) 
+            flux_l.append(name) 
         elif name[:4] == 'sink':
-            sink_list.append(name)
+            sink_l.append(name)
         elif name not in ['z','z2','kz','time','i']:    
-            other_list.append(name) 
-            
+            other_l.append(name) 
+    import itertools        
+     
     # sort variables alphabetically non-case sensitive            
-    self.sorted_names =  sorted(other_list, key=lambda s: s.lower())  
-    self.sorted_names.extend(flux_list) 
-    self.sorted_names.extend(sink_list)    
-    
+    self.sorted_names =  sorted(other_l, key=lambda s: s.lower()) 
+    self.sorted_names  = list(itertools.chain(self.sorted_names,
+                 flux_l,sink_l))
+     
     #Read i variable to know number of columns     
-    for names,vars in self.fh.variables.items():
-        if names == 'z' or names == 'z2' : 
-            pass
-        elif names == 'time': # or names == 'i' : 
-            pass 
-        else :
-            if 'i' in self.names_vars:
-                self.testvar = np.array(self.fh['i'][:]) 
-                self.max_num_col = self.testvar.shape[0]     
-                break  
-    #self.fh.close()  
+    for names,vars in fh.variables.items():
+        if names not in ['z','z2','time'] and 'i' in self.names_vars: 
+            self.testvar = np.array(fh['i'][:]) 
+            self.max_num_col = self.testvar.shape[0]     
+            break  
+    fh.close()  
     
 def readdata2_brom(self,fname):  
   
-    self.fh = Dataset(fname)
+    fh = Dataset(fname)
     try:
-        self.depth = self.fh.variables['z'][:]  
+        self.depth = fh.variables['z'][:]  
     except KeyError : 
-        self.depth = self.fh.variables['depth'][:] 
+        self.depth = fh.variables['depth'][:] 
     if 'Kz_s' in self.names_vars or 'Kz' in self.names_vars:    
         try: 
-            self.depth2 = self.fh.variables['z2'][:]    
+            self.depth2 = fh.variables['z2'][:]    
         except KeyError : 
-            self.depth2 = self.fh.variables['depth2'][:]          
+            self.depth2 = fh.variables['depth2'][:]          
         #middle points   
         try: 
-            self.kz =  self.fh.variables['Kz'][:,:] 
+            self.kz =  fh.variables['Kz'][:,:] 
         except KeyError : 
-            self.kz =  self.fh.variables['Kz_s'][:,:]                 
+            self.kz =  fh.variables['Kz_s'][:,:]                 
         self.lendepth2 = len(self.depth2)
         # bbl width depends on depth
         if self.lendepth2 < 50 :
             self.bbl = 0.3 #0.5 
         else :
             self.bbl = 0.5         
-    self.time =  self.fh.variables['time'][:]
-    self.time_units = self.fh.variables['time'].units
+    self.time =  fh.variables['time'][:]
+    self.time_units = fh.variables['time'].units
     #time_calendar = self.fh.variables['time'].calendar
     self.dates = num2date(self.time[:],
                           units= self.time_units)   
                  
     if 'i' in self.names_vars: 
-        self.dist = np.array(self.fh.variables['i']) 
-    #self.fh.close()
+        self.dist = np.array(fh.variables['i']) 
+    fh.close()
  
 def read_all_year_var(self,fname,varname1,varname2,varname3): 
     self.fh = Dataset(fname)  
@@ -125,14 +118,14 @@ def colors(self):
     self.spr_aut ='#998970'
     self.wint =  '#8dc0e7'
     self.summ = '#d0576f' 
-    self.a_w = 0.4 #alpha_wat alpha (transparency) for winter
+    self.a_w = 0.7 #alpha_wat alpha (transparency) for winter
     self.a_bbl = 0.3     
     self.a_s = 0.4 #alpha (transparency) for summer
-    self.a_aut = 0.4 #alpha (transparency) for autumn and spring    
-    self.wat_col = '#c9ecfd' 
- 
-    self.bbl_col = '#2873b8' 
-    self.sed_col= '#916012'
+    self.a_aut = 0.4 #alpha (transparency) for autumn and spring  
+      
+    self.wat_col = '#eef9fe' #c5d8e3' #'#d9e4e9' #
+    self.bbl_col = '#2873b8'  
+    self.sed_col=  '#CFB997' #'#916012'
     self.wat_col1 = '#c9ecfd'  
     self.bbl_col1 = '#ccd6de'
     self.sed_col1 = '#a3abb1'

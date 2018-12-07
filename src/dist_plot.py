@@ -12,6 +12,8 @@ import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as mtick 
+from netCDF4 import Dataset 
+
 def dist_profile(self): 
     plt.clf()
     try:
@@ -23,6 +25,7 @@ def dist_profile(self):
         return None            
     readdata.get_cmap(self)
     numday = self.numday_box.value()  
+    self.fh =  Dataset(self.fname)
     data = np.array(self.fh.variables[index])
     data_units = self.fh.variables[index].units
     ylen = len(self.depth)        
@@ -41,8 +44,7 @@ def dist_profile(self):
     else :
         print ("wrong depth array size") 
     
-    ylen = len(y) 
-        
+    ylen = len(y)         
     z2d = []
     if data.shape[2] > 1: 
         for n in range(0,xlen): # distance 
@@ -150,7 +152,7 @@ def dist_profile(self):
             cb = plt.colorbar(CS,cax = self.cax,ticks = wat_ticks)            
                        
         self.ax.set_ylim(self.y1max,0)
-          
+        self.fh.close()  
         self.canvas.draw()
                             
             

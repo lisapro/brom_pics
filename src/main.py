@@ -79,13 +79,9 @@ class Window(QtWidgets.QDialog):
         self.all_year_button =  QtWidgets.QPushButton()                                  
         self.fick_box = QtWidgets.QPushButton() 
         self.help_button = QtWidgets.QPushButton(' ')
-        
-        self.fh =  Dataset(self.fname)        
-        #def testvar(self):                    
+                                          
         readdata.read_num_col(self,self.fname)
-            #max_num_col = self.testvar.shape[0]
-            #return (self.testvar)
-            
+                    
         # Add group Boxes - boxes of widgets       
         createOptionsGroup(self)
         createTimeGroup(self)
@@ -93,15 +89,12 @@ class Window(QtWidgets.QDialog):
         createCmapLimitsGroup(self)
         createFluxGroup(self) 
                              
-        if 'i' in self.names_vars:
-            self.dist = np.array(self.fh.variables['i'])                          
+        if 'i' in self.names_vars:                     
             self.numcol_2d.setRange(0, int(self.testvar.shape[0]-1))               
             self.numday_box.setRange(0, self.lentime-1)              
             self.numday_stop_box.setRange(0, self.lentime-1)             
             self.numday_stop_box.setValue(self.lentime-1)
-        
-        self.fh.close()
-        
+                
         # Add titles to buttons 
         self.time_prof_all.setText('Time: all year')
         self.fick_box.setText('Fluxes SWI')
@@ -154,15 +147,22 @@ class Window(QtWidgets.QDialog):
         self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
               self.canvas.height())
         
-    def call_all_year(self):   
-        all_year_1d.plot(self)
+    def call_all_year(self):  
+        start = self.numday_box.value() 
+        stop = self.numday_stop_box.value()          
+        all_year_1d.plot(self,start,stop)
         
     def call_fluxes(self): 
-           
-        fluxes_plot.fluxes(self)
+        start = self.numday_box.value() 
+        stop = self.numday_stop_box.value()     
+        if stop <= start :
+            messagebox = QtWidgets.QMessageBox.about(
+            self, "Retry",'Wrong Start and Stop Values') 
+            return None  
+        else:                  
+            fluxes_plot.fluxes(self,start,stop)
         
-    def call_print_dist(self): 
-        
+    def call_print_dist(self):         
         dist_plot.dist_profile(self)
             
     def call_print_lyr(self): #last year

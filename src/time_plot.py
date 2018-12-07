@@ -15,7 +15,7 @@ import matplotlib.gridspec as gridspec
 import numpy.ma as ma
 from PyQt5 import QtGui,QtWidgets
 from netCDF4 import num2date 
-
+from netCDF4 import Dataset 
 def time_profile(self,start,stop):    
     plt.clf()
     self.changing_depth = False    
@@ -27,7 +27,8 @@ def time_profile(self,start,stop):
         return None     
           
     readdata.get_cmap(self)           
-    ## read chosen variable and data units     
+    ## read chosen variable and data units
+    self.fh =  Dataset(self.fname)      
     z = np.array(self.fh.variables[index]) 
     data_units = self.fh.variables[index].units
     # read only part 
@@ -160,4 +161,5 @@ def time_profile(self,start,stop):
         format = None  
         cb = plt.colorbar(CS, self.cax,ticks = wat_ticks, 
                           format = format)
+    self.fh.close()    
     self.canvas.draw()
