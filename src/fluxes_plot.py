@@ -37,7 +37,7 @@ def fluxes(self,start,stop):
     z = np.array(fh.variables[var1])
     z_units = fh.variables[var1].units
     
-    zz =  z[:,:,numcol] #1column
+    zz =  z[:,:,numcol]
     X = np.array(self.time[start:stop])
     
     if len(selected_items)== 1:
@@ -68,7 +68,7 @@ def fluxes(self,start,stop):
         var2 = str(selected_items[1].text())
         z2_units = fh.variables[var2].units
         z2 = np.array(fh.variables[str(selected_items[1].text())])
-        zz2 =  z2[:,:,numcol] #1column
+        zz2 =  z2[:,:,numcol] 
         ax01.set_title(var2+', '+ z2_units)
         ax01.set_ylabel('Fluxes') 
         ax01.set_xlim(start,stop)
@@ -120,7 +120,7 @@ def fluxes(self,start,stop):
         min_fick = min(fick)
         max_fick = max(fick)
         
-    if self.reverse_flux_checkbox.isChecked() == True:
+    if self.reverse_flux.isChecked() == True:
         ax00.set_ylim(min_fick,max_fick)
     else:        
         ax00.set_ylim(max_fick,min_fick) 

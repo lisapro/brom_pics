@@ -40,13 +40,14 @@ def readdata_brom(self,fname): #,varname,fname
     self.right_gs = 0.8
     self.e_crit_min = 0.02
     self.e_crit_max = 10000 
+    self.num = 50. 
     self.fh.close()
     
 def read_num_col(self,fname):
     # Read all variables name from the file 
     # And add them to the qlistwidget        
     fh = Dataset(fname)        
-    self.names_vars = [names for names,vars in fh.variables.items()] 
+    self.names_vars = [n for n,v in fh.variables.items()] 
         
     flux_l,sink_l,other_l  = [],[],[]
     for name in self.names_vars: 
@@ -56,8 +57,7 @@ def read_num_col(self,fname):
             sink_l.append(name)
         elif name not in ['z','z2','kz','time','i']:    
             other_l.append(name) 
-           
-    
+               
     # sort variables alphabetically non-case sensitive            
     self.sorted_names =  sorted(other_l, key=lambda s: s.lower()) 
     self.sorted_names  = list(itertools.chain(self.sorted_names,
@@ -91,7 +91,7 @@ def readdata2_brom(self,fname):
         self.lendepth2 = len(self.depth2)
         # bbl width depends on depth
         if self.lendepth2 < 50 :
-            self.bbl = 0.3 #0.5 
+            self.bbl = 0.3 
         else :
             self.bbl = 0.5         
     self.time =  fh.variables['time'][:]
@@ -102,24 +102,15 @@ def readdata2_brom(self,fname):
     if 'i' in self.names_vars: 
         self.dist = np.array(fh.variables['i']) 
     fh.close()
- 
-def read_all_year_var(self,fname,varname1,varname2,varname3): 
-    self.fh = Dataset(fname)  
-    self.var1 = self.fh.variables[varname1][:]
-    self.var2 = self.fh.variables[varname2][:]
-    self.var3 = self.fh.variables[varname3][:] 
-    self.fh.close()     
-    return  self.var1,self.var2, self.var3      
-
-         
+          
 def colors(self):
     self.spr_aut ='#998970'
     self.wint =  '#8dc0e7'
     self.summ = '#d0576f' 
-    self.a_w = 0.7 #alpha_wat alpha (transparency) for winter
+    self.a_w = 0.7
     self.a_bbl = 0.3     
-    self.a_s = 0.4 #alpha (transparency) for summer
-    self.a_aut = 0.4 #alpha (transparency) for autumn and spring        
+    self.a_s = 0.4 
+    self.a_aut = 0.4      
     self.wat_col = '#eef9fe' #c5d8e3' #'#d9e4e9' #
     self.bbl_col = '#2873b8'  
     self.sed_col=  '#CFB997' #'#916012'
@@ -127,59 +118,58 @@ def colors(self):
     self.bbl_col1 = '#ccd6de'
     self.sed_col1 = '#a3abb1'
            
-    self.font_txt = 15 #(height / 190.)
-    # text on figure 2 (Water; BBL, Sed) 
-    self.xlabel_fontsize = 10
-    #(height / 170.) #14 #axis labels      
-    self.ticklabel_fontsize = 10 #(height / 190.) #14 #axis labels   
+    self.font_txt = 15 
+    self.xlabel_fontsize = 10    
+    self.ticklabel_fontsize = 10 #14 #axis labels   
     self.linewidth = 0.7   
              
  
 def calculate_ywat(self):
-    for n in range(0,(len(self.depth2))):
-        if self.depth2[n+1] - self.depth2[n] >= self.bbl:
-            if n == self.lendepth2-2: 
-                y1max = (self.depth2[n]-1)
-                self.ny1min = (self.depth[0])
-                self.y1max = y1max                                                     
-                self.ny1max = n-1
-                self.sediment = False    
-                break  
-        elif self.depth2[n+1] - self.depth2[n] < self.bbl:   
-            self.y1max = (self.depth[n])                               
-            self.ny1max = n #-1
-            self.sediment = True
+    self.sediment = False     
+    for n in range(0,self.lendepth2):
+        dif  = self.depth2[n+1] - self.depth2[n]
+        if dif >= self.bbl and  n == (self.lendepth2-2) :
+            self.y1max = (self.depth2[n]-1)
+            self.ny1min = (self.depth[0])                                                    
+            self.ny1max = n-1  
+            break  
+            
+        elif dif < self.bbl:   
+            self.y1max = self.depth[n]                               
+            self.ny1max = n
+            self.sediment = True            
             if self.ny1max == 0 :
-                self.y1max = (self.depth[len(self.depth2)-2])
-                self.ny1max = len(self.depth2)
-                self.sediment = False            
+                self.y1max = self.depth[-2]
+                self.ny1max = self.lendepth2           
             break
         
   
 def calculate_ybbl(self):
-    for n in range(0,(len(self.depth2)-1)):
+    for n in range(0,(self.lendepth2-1)):
         try: 
             if self.kz[1,n,0] == 0:
                 self.y2max = self.depth2[n]         
                 self.ny2max = n       
                 break  
-            if self.kz[1,n,0] != 0 and n == (len(self.depth2)-2):       
+            if self.kz[1,n,0] != 0 and n == (self.lendepth2-2):       
                 self.y2max = self.depth2[n]         
-                self.ny2max = n    
+                self.ny2max = n
+                    
         except IndexError: 
             if self.kz[1,n] == 0:
                 self.y2max = self.depth2[n]         
                 self.ny2max = n      
                 break  
-            if self.kz[1,n] != 0 and n == (len(self.depth2)-2):       
+            if self.kz[1,n] != 0 and n == (self.lendepth2-2):       
                 self.y2max = self.depth2[n]         
                 self.ny2max = n  
                                 
 def y2max_fill_water(self):    
-    for n in range(0,(len(self.depth2)-1)):
-        if self.depth2[n+1] - self.depth2[n] >= self.bbl:
+    for n in range(0,(self.lendepth2-1)):
+        dif = self.depth2[n+1] - self.depth2[n]
+        if dif >= self.bbl:
             pass
-        elif self.depth2[n+1] - self.depth2[n] < self.bbl:
+        elif dif < self.bbl:
             self.y2max_fill_water = self.depth2[n] 
             self.nbblmin = n            
             break 
@@ -201,7 +191,7 @@ def calculate_ysed(self):
             if self.kz[1,n] == 0:
                 ysed = self.depth_sed[n] #0 cm depth             
                 self.ysedmin =  ysed - 10
-                self.ysedmax =  self.depth_sed[len(self.depth_sed)-1]        
+                self.ysedmax =  self.depth_sed[-1]        
                 self.y3min = self.depth_sed[self.nbblmin+2]                
                 break  
             else : 
@@ -233,7 +223,7 @@ def y_coords(self):
 
 
 def depth_sed(self):
-    # calc depth in cm from sed/wat interface 
+    # calc depth in cm from SWI
     self.depth_sed =  [(float(i) - self.y2max)*100 for i in self.depth] 
     self.depth_sed2 = [(float(i) - self.y2max)*100 for i in self.depth2] 
 
@@ -314,7 +304,7 @@ def ticks(minv,maxv):
 def set_widget_styles(self):
     
     # Push buttons style
-    for button in (self.time_prof_all,self.time_prof_last_year,
+    for button in (self.time_prof_all,self.time_prof_lyr,
                  self.dist_prof_button,self.fick_box, 
                  self.all_year_button,self.help_button):   
         button.setStyleSheet(
@@ -329,7 +319,7 @@ def set_widget_styles(self):
     self.qlistwidget.setStyleSheet(
     'QListWidget{font: 25 px; background-color: #eadfda;  }')
      
-    self.label_choose_var.setStyleSheet(
+    self.lbl_choose_var.setStyleSheet(
         'QLabel {border-width: 7px;'
         '  padding: 7px; font: bold 15px; }')        
     
@@ -347,9 +337,9 @@ def widget_layout(self):
         self.grid.addWidget(self.options_groupBox,0,8,3,1)  
         
         #second line   
-        self.grid.addWidget(self.label_choose_var,    1,0,1,1)             
+        self.grid.addWidget(self.lbl_choose_var,    1,0,1,1)             
         self.grid.addWidget(self.fick_box,            1,2,1,1)                                   
-        self.grid.addWidget(self.time_prof_last_year, 1,3,1,1)  
+        self.grid.addWidget(self.time_prof_lyr,       1,3,1,1)  
         
         #third line      
         self.grid.addWidget(self.qlistwidget,         2,0,2,2)         
@@ -361,7 +351,8 @@ def widget_layout(self):
   
 def cmap_list(self):
     self.cmap_list = ['jet','inferno','rainbow',
-                      'viridis','plasma','Paired']
+                      'viridis','plasma','Paired',
+                      'magma','Greys','Greys_r','ocean']
     return self.cmap_list    
 
 def use_num2date(self,time_units,X_subplot):   
@@ -372,20 +363,15 @@ def use_num2date(self,time_units,X_subplot):
 def format_time_axis2(self, xaxis,xlen):   
     xaxis.xaxis_date()
     if xlen > 365 and xlen < 365*5 : 
-        xaxis.xaxis.set_major_formatter(
-            mdates.DateFormatter('%m/%Y'))  
+        f ='%m/%Y'  
     elif xlen >= 365*5 :
-        xaxis.xaxis.set_major_formatter(
-            mdates.DateFormatter('%Y'))          
-    elif xlen <= 365: 
-        xaxis.xaxis.set_major_formatter(
-            mdates.DateFormatter('%d %b'))   
-
-def plot_inj_lines(self,numday,col,axis):
-    axis.axvline(numday,color= col, linewidth = 2,
-                   linestyle = '--',zorder = 10) 
-
-
+        f ='%Y'          
+    elif xlen <= 365:     
+        f = '%d %b'
+    
+    xaxis.xaxis.set_major_formatter(
+            mdates.DateFormatter(f))  
+  
 def grid_plot(self,numplots):
     if numplots == 1:
         self.gs = gridspec.GridSpec(1, 1) 
@@ -420,7 +406,7 @@ def varmin(self,var,lims):
 
 def check_minmax(self,cmin,cmax,index):
     ''' Checks if values of max and min are the same or masked'''
-    if self.exact_limits_checkbox.isChecked():  
+    if self.exact_limits.isChecked():  
         pass     
     else:              
         if cmin is ma.masked or cmax is ma.masked: 
@@ -454,60 +440,40 @@ def check_minmax(self,cmin,cmax,index):
         
 def make_maxmin(self,var,start,stop,index,type):
     
-    if  self.change_limits_checkbox.isChecked():
+    lim_dict = dict(
+        wat_dist = (start,stop,0,self.ny1max),
+        sed_dist = (start,stop,self.nysedmin,None),
+        wat_time = (0,self.ny1max,None,None),
+        sed_time = (self.nysedmin,None,None,None))
+                             
+    if  self.change_limits.isChecked():
         
         ''' Get manually typed values '''
-        if (len(self.box_minwater.text()) > 0  and 
-            len(self.box_maxwater.text()) > 0 and
+        if (len(self.box_minw.text()) > 0  and 
+            len(self.box_maxw.text()) > 0 and
             len(self.box_maxsed.text()) > 0 and 
             len(self.box_minsed.text()) > 0   ) :
             
-            functions = dict(wat_time = (self.box_minwater,
-                                         self.box_maxwater),
-                             wat_dist = (self.box_minwater,
-                                         self.box_maxwater),
-                             sed_time = (self.box_minsed,
-                                         self.box_maxsed),
-                             sed_dist = (self.box_minsed,
-                                         self.box_maxsed))
+            funcs = dict(
+                wat_time = (self.box_minw,
+                            self.box_maxw),
+                wat_dist = (self.box_minw,
+                            self.box_maxw),
+                sed_time = (self.box_minsed,
+                            self.box_maxsed),
+                sed_dist = (self.box_minsed,
+                            self.box_maxsed))
             
-            min = float(functions[type][0].text())
-            max = float(functions[type][1].text())
+            min = float(funcs[type][0].text())
+            max = float(funcs[type][1].text())
         else: 
-
             Messages.no_limits('sediment or water')
             
-            lim_dict = dict(
-                         wat_dist = (start,stop,0,
-                                     self.ny1max),
-                         sed_dist = (start,stop,
-                                     self.nysedmin,None),
-                         wat_time = (0,self.ny1max,
-                                     None,None),
-                         sed_time = (self.nysedmin,None,
-                                     None,None))
-            lims = lim_dict[type]  
-            
-            #self.scale_all_axes.isChecked(): 
-            #z_all_columns = np.array(self.fh.variables[index]) 
-            '''    # if we do not have kz     
-            else:  
-            self.ny1max = len(self.depth-1)
-            self.y1max = max(self.depth)'''
+            lims = lim_dict[type] 
             min = varmin(self,var,lims)     
             max = varmax(self,var,lims)         
-    
-        
+           
     else: 
-        lim_dict = dict(
-                    wat_dist = (start,stop,0,
-                                self.ny1max),
-                     sed_dist = (start,stop,
-                                 self.nysedmin,None),
-                     wat_time = (0,self.ny1max,
-                                 None,None),
-                     sed_time = (self.nysedmin,None,
-                                 None,None))
         lims = lim_dict[type]  
         
         '''    # if we do not have kz     

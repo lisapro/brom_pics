@@ -59,8 +59,7 @@ def time_profile(self,start,stop):
                  0,xlen) for m in range(
                      0,ylen)])
                             
-    tomask_zz = z.flatten().reshape(xlen,ylen).T 
-    zz = ma.masked_invalid(tomask_zz) #mask NaNs 
+    zz = ma.masked_invalid(z.flatten().reshape(xlen,ylen).T) #mask NaNs 
                                                                   
     X,Y = np.meshgrid(x,y)        
     self.ny1min = min(self.depth)

@@ -33,9 +33,9 @@ def plot(self,start,stop):
     gs.update(left=0.3, right=0.7,top = 0.94,bottom = 0.04,
                wspace=0.2,hspace=0.3) 
     
-    self.ax00 = self.figure.add_subplot(gs[0]) # water         
-    self.ax10 = self.figure.add_subplot(gs[1]) # bbl
-    self.ax20 = self.figure.add_subplot(gs[2]) # sediment 
+    self.ax00 = self.figure.add_subplot(gs[0])     
+    self.ax10 = self.figure.add_subplot(gs[1]) 
+    self.ax20 = self.figure.add_subplot(gs[2])  
     
     for axis in (self.ax00,self.ax10,self.ax20):
         axis.yaxis.grid(True,'minor')
@@ -52,7 +52,6 @@ def plot(self,start,stop):
     self.ax10.yaxis.set_major_formatter(
         ScalarFormatter(useOffset=False))
         
-
     def add_colr_lims(axis,bot,top,col,lims = True,text = 'h, m'):
         axis.axhspan(bot,top,color = col)
         if lims == True:
@@ -68,9 +67,9 @@ def plot(self,start,stop):
     add_colr_lims(self.ax20,self.ysedmin,0,self.wat_col,lims = False)
          
     
-    if  self.change_limits_checkbox.isChecked():
-        functions = dict(wat = (self.box_minwater,
-                                self.box_maxwater),
+    if  self.change_limits.isChecked():
+        functions = dict(wat = (self.box_minw,
+                                self.box_maxw),
                          sed = (self.box_minsed,
                                 self.box_maxsed))
         
@@ -78,6 +77,7 @@ def plot(self,start,stop):
         watmax = float(functions['wat'][1].text())               
         sedmin = float(functions['sed'][0].text())
         sedmax = float(functions['sed'][1].text())
+        
         self.ax00.set_xlim(watmin,watmax)      
         self.ax10.set_xlim(watmin,watmax)       
         self.ax20.set_xlim(sedmin,sedmax)   
@@ -86,7 +86,7 @@ def plot(self,start,stop):
         step  = 10 
     else: 
         step = 2      
-    for n in range(start,stop,step):#365
+    for n in range(start,stop,step):
 
         self.ax00.plot(z[n][0:self.ny2max],
               self.depth[0:self.ny2max],

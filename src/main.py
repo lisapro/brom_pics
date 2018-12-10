@@ -11,6 +11,9 @@ import os,sys
 import numpy as np
 from netCDF4 import Dataset 
 from PyQt5 import QtGui, QtCore,QtWidgets
+from PyQt5.QtWidgets import (QLineEdit,QComboBox,
+            QLabel,QListWidget,QPushButton,QGroupBox,
+            QGridLayout,QCheckBox,QVBoxLayout,QSpinBox) 
 from matplotlib import rc
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas)
@@ -24,6 +27,7 @@ import all_year_1d
 #import help_dialog
 import matplotlib.pylab as pylab
 from messages import Messages
+
 params = {'legend.fontsize': 'x-large',
          'axes.labelsize': 'x-large',
          'axes.titlesize':'x-large',
@@ -32,11 +36,6 @@ params = {'legend.fontsize': 'x-large',
 pylab.rcParams.update(params)
 
 class Window(QtWidgets.QDialog):
-    # function to display the names of the window flags        
-    # Qt.Window Indicates that the widget is a window, 
-    # usually with a window system frame and a title bar
-    # ! it is not possible to unset this flag if the widget 
-    # does not have a parent.    
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
         
@@ -45,8 +44,7 @@ class Window(QtWidgets.QDialog):
         self.figure = plt.figure(figsize=(5.69 , 6.27),
                         facecolor='None',edgecolor='None') 
         self.figure.patch.set_alpha(0)    
-            
-        # open file system to choose needed nc file        
+                  
         self.fname ,_  = (QtWidgets.QFileDialog.getOpenFileName(self,
         'Open netcdf ', os.getcwd(), "netcdf (*.nc) "))  
         
@@ -60,23 +58,20 @@ class Window(QtWidgets.QDialog):
         createDistGroup(self) 
                 
         # Create widgets
-        self.label_choose_var = QtWidgets.QLabel('Choose variable:')                   
-        self.qlistwidget = QtWidgets.QListWidget() 
+        self.lbl_choose_var = QLabel('Choose variable:')                   
+        self.qlistwidget = QListWidget() 
 
         self.qlistwidget.setSelectionMode(
             QtWidgets.QAbstractItemView.ExtendedSelection)
         
-        self.all_year_box = QtWidgets.QComboBox()                                      
-        self.dist_prof_button = QtWidgets.QPushButton()           
-        #self.injlines_checkbox = QtWidgets.QCheckBox(
-        #    'Draw inject lines')                     
-        self.time_prof_last_year =  QtWidgets.QPushButton()    
-        self.time_prof_all =  QtWidgets.QPushButton()  
-        
-        #self.time_prof_box = QtWidgets.QComboBox()                                   
-        self.all_year_button =  QtWidgets.QPushButton()                                  
-        self.fick_box = QtWidgets.QPushButton() 
-        self.help_button = QtWidgets.QPushButton(' ')
+        self.all_year_box =     QComboBox()                                      
+        self.dist_prof_button = QPushButton()                               
+        self.time_prof_lyr =    QPushButton()    
+        self.time_prof_all =    QPushButton()  
+                                        
+        self.all_year_button =  QPushButton()                                  
+        self.fick_box =         QPushButton() 
+        self.help_button =      QPushButton(' ')
                                           
         readdata.read_num_col(self,self.fname)
                     
@@ -97,28 +92,27 @@ class Window(QtWidgets.QDialog):
         self.time_prof_all.setText('Time: all year')
         self.fick_box.setText('Fluxes SWI')
         self.all_year_button.setText('1D plot')
-        self.time_prof_last_year.setText('Time: last year')               
+        self.time_prof_lyr.setText('Time: last year')               
         self.dist_prof_button.setText('Transect 1 day')  
            
         ### Define connection                                   
-        self.time_prof_last_year.released.connect(self.call_print_lyr)
-        self.all_year_button.released.connect(self.call_all_year)
+        self.time_prof_lyr.released.connect(self.call_print_lyr)
+        self.all_year_button.released.connect(self.call_1d)
         self.time_prof_all.released.connect(self.call_print_allyr)        
         self.fick_box.released.connect(self.call_fluxes)        
         self.dist_prof_button.released.connect(self.call_print_dist)                             
-        #self.help_button.released.connect(self.call_help)
                   
         self.canvas = FigureCanvas(self.figure)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                        QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+                        QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)  
         self.canvas.setSizePolicy(sizePolicy)         
         self.toolbar = NavigationToolbar(self.canvas, self)
-        #self.canvas.setMinimumSize(self.canvas.size())
         
         ## The QGridLayout class lays out widgets in a grid          
-        self.grid = QtWidgets.QGridLayout(self)
+        self.grid = QGridLayout(self)
         
         readdata.widget_layout(self)        
         readdata.readdata2_brom(self,self.fname)   
@@ -129,7 +123,6 @@ class Window(QtWidgets.QDialog):
             readdata.y2max_fill_water(self)
             readdata.depth_sed(self)
             readdata.calculate_ysed(self)
-            readdata.calculate_ysed(self)
             readdata.calc_nysedmin(self)  
             readdata.y_coords(self)        
         else: 
@@ -138,14 +131,13 @@ class Window(QtWidgets.QDialog):
         readdata.colors(self)
         readdata.set_widget_styles(self) 
         
-        self.num = 50. 
-
+        
         self.qlistwidget.addItems(self.sorted_names)
         self.qlistwidget.setFixedSize(
         self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
               self.canvas.height())
         
-    def call_all_year(self):  
+    def call_1d(self):  
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()          
         all_year_1d.plot(self,start,stop)
@@ -174,28 +166,26 @@ class Window(QtWidgets.QDialog):
             Messages.StartStop()
             return None  
         else: 
-            time_plot.time_profile(self,start,stop)  
-                          
-    #def call_help(self):
-    #    help_dialog.show(self) 
+            time_plot.time_profile(
+                self,start,stop)  
 
 def createFluxGroup(self):
-    self.flux_groupBox = QtWidgets.QGroupBox("Fluxes properties")  
-    self.minflux_label = QtWidgets.QLabel('Min flux axis')
-    self.maxflux_label = QtWidgets.QLabel('Max flux axis')
-    self.flux_min_box =  QtWidgets.QLineEdit() 
-    self.flux_max_box = QtWidgets.QLineEdit()    
-    self.manual_limits_flux =  QtWidgets.QCheckBox(
+    self.flux_groupBox = QGroupBox("Fluxes properties")  
+    self.minflux_lbl = QLabel('Min flux axis')
+    self.maxflux_lbl = QLabel('Max flux axis')
+    self.flux_min_box =  QLineEdit() 
+    self.flux_max_box = QLineEdit()    
+    self.manual_limits_flux =  QCheckBox(
     'Use manual limits for flux axis')  
-    self.reverse_flux_checkbox = QtWidgets.QCheckBox(
+    self.reverse_flux = QCheckBox(
     'Reverse flux axis')  
               
-    self.flux_grid = QtWidgets.QGridLayout(self.flux_groupBox)
+    self.flux_grid = QGridLayout(self.flux_groupBox)
     
-    self.flux_grid.addWidget(self.reverse_flux_checkbox,0,0,1,1)
+    self.flux_grid.addWidget(self.reverse_flux,0,0,1,1)
     self.flux_grid.addWidget(self.manual_limits_flux,1,0,1,2) 
-    self.flux_grid.addWidget(self.minflux_label,2,0,1,1) 
-    self.flux_grid.addWidget(self.maxflux_label,2,1,1,1) 
+    self.flux_grid.addWidget(self.minflux_lbl,2,0,1,1) 
+    self.flux_grid.addWidget(self.maxflux_lbl,2,1,1,1) 
     
     self.flux_grid.addWidget(self.flux_min_box,3,0,1,1) 
     self.flux_grid.addWidget(self.flux_max_box,3,1,1,1) 
@@ -203,58 +193,58 @@ def createFluxGroup(self):
     
 def createDistGroup(self):  
         
-    self.dist_groupBox = QtWidgets.QGroupBox("Distance axis")           
-    self.dist_grid = QtWidgets.QGridLayout(self.dist_groupBox)   
-    self.col_label = QtWidgets.QLabel('Column: ')
-    self.numcol_2d = QtWidgets.QSpinBox() 
+    self.dist_groupBox = QGroupBox("Distance axis")           
+    self.dist_grid = QGridLayout(self.dist_groupBox)   
+    self.col_lbl = QLabel('Column: ')
+    self.numcol_2d = QSpinBox() 
     readdata.read_num_col(self,self.fname)
     try:
-        self.label_maxcol = QtWidgets.QLabel(
+        self.lbl_maxcol = QLabel(
         'max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
     except AttributeError: 
         pass
       
-    self.dist_grid.addWidget(self.col_label,0,0,1,1) 
+    self.dist_grid.addWidget(self.col_lbl,0,0,1,1) 
     self.dist_grid.addWidget(self.numcol_2d,1,0,1,1) 
     try:
-        self.dist_grid.addWidget(self.label_maxcol,1,1,1,1) 
+        self.dist_grid.addWidget(self.lbl_maxcol,1,1,1,1) 
     except AttributeError: 
         pass    
        
 def createTimeGroup(self):  
      
-    self.last_year_button = QtWidgets.QPushButton('last year')    
-    self.time_groupBox = QtWidgets.QGroupBox("Time axis")        
+    self.last_year_button = QPushButton('last year')    
+    self.time_groupBox = QGroupBox("Time axis")        
 
-    self.numday_start_label = QtWidgets.QLabel('start: ') 
-    self.numday_stop_label = QtWidgets.QLabel('stop: ')  
-    self.maxday_label = QtWidgets.QLabel('max day: ')
+    self.numday_start_lbl = QLabel('start: ') 
+    self.numday_stop_lbl =  QLabel('stop: ')  
+    self.maxday_lbl =       QLabel('max day: ')
                     
-    self.numday_box = QtWidgets.QSpinBox()   
-    self.numday_stop_box = QtWidgets.QSpinBox()  
-    self.value_maxday = QtWidgets.QLabel(str(self.lentime-1))  
+    self.numday_box =       QSpinBox()   
+    self.numday_stop_box =  QSpinBox()  
+    self.value_maxday = QLabel(str(self.lentime-1))  
           
-    self.cmap_water_box = QtWidgets.QComboBox() 
-    self.cmap_water_label = QtWidgets.QLabel('cmap water: ') 
+    self.cmap_water_box = QComboBox() 
+    self.cmap_water_lbl = QLabel('cmap water: ') 
     self.cmap_water_box.addItems(readdata.cmap_list(self))  
-    self.cmap_sed_box = QtWidgets.QComboBox()
-    self.cmap_sed_box.addItems(readdata.cmap_list(self))
-    self.cmap_sed_label = QtWidgets.QLabel('cmap sed: ')
-
-             
-    self.time_grid = QtWidgets.QGridLayout(self.time_groupBox)   
+    
+    self.cmap_sed_box = QComboBox()
+    self.cmap_sed_lbl = QLabel('cmap sed: ')
+    self.cmap_sed_box.addItems(readdata.cmap_list(self)) 
+                
+    self.time_grid = QGridLayout(self.time_groupBox)   
     #line 0
-    self.time_grid.addWidget(self.cmap_water_label,0,0,1,1)
-    self.time_grid.addWidget( self.cmap_sed_label,0,1,1,1) 
+    self.time_grid.addWidget(self.cmap_water_lbl,0,0,1,1)
+    self.time_grid.addWidget( self.cmap_sed_lbl,0,1,1,1) 
         
     #line 1
     self.time_grid.addWidget(self.cmap_water_box,1,0,1,1)
     self.time_grid.addWidget( self.cmap_sed_box,1,1,1,1)    
     
     #line 2 
-    self.time_grid.addWidget(self.numday_start_label,2,0,1,1)
-    self.time_grid.addWidget( self.numday_stop_label,2,1,1,1) 
-    self.time_grid.addWidget(      self.maxday_label,2,2,1,1)            
+    self.time_grid.addWidget(self.numday_start_lbl,2,0,1,1)
+    self.time_grid.addWidget( self.numday_stop_lbl,2,1,1,1) 
+    self.time_grid.addWidget(      self.maxday_lbl,2,2,1,1)            
    
     #line 3             
     self.time_grid.addWidget(     self.numday_box,3,0,1,1) 
@@ -262,57 +252,57 @@ def createTimeGroup(self):
     self.time_grid.addWidget(   self.value_maxday,3,2,1,1)   
    
 def createOptionsGroup(self):
-        self.options_groupBox = QtWidgets.QGroupBox(" Properties ")  
+        self.options_groupBox = QGroupBox(" Properties ")  
         
-        self.scale_all_axes = QtWidgets.QCheckBox(
+        self.scale_all_axes = QCheckBox(
             "Scale:all columns, all time")                 
-        self.yearlines_checkbox = QtWidgets.QCheckBox(
+        self.yearlines_checkbox = QCheckBox(
             'Draw year lines')           
-        self.datescale_checkbox = QtWidgets.QCheckBox(
+        self.datescale_checkbox = QCheckBox(
             'Format time axis')         
-        self.interpolate_checkbox = QtWidgets.QCheckBox(
+        self.interpolate_checkbox = QCheckBox(
             'Interpolate')       
                     
-        vbox = QtWidgets.QVBoxLayout()
+        vbox = QVBoxLayout()
         vbox.addWidget(self.scale_all_axes)
         vbox.addWidget(self.yearlines_checkbox)
         vbox.addWidget(self.datescale_checkbox)
         vbox.addWidget(self.interpolate_checkbox)    
- 
         vbox.addStretch(1)
         self.options_groupBox.setLayout(vbox)     
 
 def createCmapLimitsGroup(self):
         
-        self.cmap_groupBox = QtWidgets.QGroupBox("colour map limits ")  
-        self.change_limits_checkbox = QtWidgets.QCheckBox('Change limits')
-        self.exact_limits_checkbox = QtWidgets.QCheckBox('Exact limits')
-        self.label_maxwater = QtWidgets.QLabel('max water: ')
+        self.cmap_groupBox = QGroupBox("colour map limits ")  
+        self.change_limits = QCheckBox('Change limits')
+        self.exact_limits = QCheckBox('Exact limits')
+        self.lbl_maxw = QLabel('max water: ')
         
-        self.label_minwater = QtWidgets.QLabel('min water: ')   
-        self.label_maxsed = QtWidgets.QLabel('max sediment: ')
-        self.label_minsed = QtWidgets.QLabel('min sediment: ')  
-        #self.box_minwater = QtWidgets.QDoubleSpinBox()
+        self.lbl_minw = QLabel('min water: ')   
+        self.lbl_maxsed = QLabel('max sediment: ')
+        self.lbl_minsed = QLabel('min sediment: ')  
         
-        self.box_minwater = QtWidgets.QLineEdit()     
-        self.box_maxwater = QtWidgets.QLineEdit() 
-        self.box_minsed = QtWidgets.QLineEdit()
-        self.box_maxsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()   
+        self.box_minw = QLineEdit()     
+        self.box_maxw = QLineEdit() 
+        self.box_minsed = QLineEdit()
+        self.box_maxsed = QLineEdit() 
          
-        cmap_grid = QtWidgets.QGridLayout(self.cmap_groupBox) 
+        cmap_grid = QGridLayout(self.cmap_groupBox) 
         
-        cmap_grid.addWidget(self.change_limits_checkbox,0,0,1,1) 
-        cmap_grid.addWidget(self.exact_limits_checkbox,0,1,1,1)
-        cmap_grid.addWidget(self.label_minwater,1,0,1,1)
-        cmap_grid.addWidget(self.label_maxwater,1,1,1,1)
-        cmap_grid.addWidget(self.box_minwater,2,0,1,1)
-        cmap_grid.addWidget(self.box_maxwater,2,1,1,1)  
-                 
-        cmap_grid.addWidget(self.label_minsed,3,0,1,1)        
-        cmap_grid.addWidget(self.label_maxsed,3,1,1,1)
-        cmap_grid.addWidget(self.box_minsed,4,0,1,1)
-        cmap_grid.addWidget(self.box_maxsed,4,1,1,1)       
-                                
+        widgets = [
+            self.change_limits,self.exact_limits,
+            self.lbl_minw,self.lbl_maxw,
+            self.box_minw,self.box_maxw,
+            self.lbl_minsed,self.lbl_maxsed,
+            self.box_minsed,self.box_maxsed ]
+        
+        dict_w = [[0,0],[0,1],[1,0],[1,1],
+                  [2,0],[2,1],[3,0],[3,1],
+                  [4,0],[4,1]]
+                  
+        for c,w in enumerate(widgets):
+          cmap_grid.addWidget(w,dict_w[c][0],dict_w[c][1],1,1)  
+                          
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("plastique")
