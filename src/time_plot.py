@@ -105,7 +105,7 @@ def time_profile(self,start,stop):
                                  vmin = sedmin, vmax = sedmax,    
                              cmap= self.cmap1) 
                                     
-        if self.yearlines_checkbox.isChecked()==True and \
+        if self.yearlines.isChecked()==True and \
            self.datescale_checkbox.isChecked()== False:
             for n in range(start,stop):
                 if n%365 == 0: 
@@ -147,7 +147,7 @@ def time_profile(self,start,stop):
          
     self.ax.set_xlim(np.min(X),np.max(X))
        
-    if self.yearlines_checkbox.isChecked()==True  and \
+    if self.yearlines.isChecked()==True  and \
        self.datescale_checkbox.isChecked()== False:
         for n in range(start,stop):
             if n%365 == 0: 

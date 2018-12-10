@@ -256,7 +256,7 @@ def createOptionsGroup(self):
         
         self.scale_all_axes = QCheckBox(
             "Scale:all columns, all time")                 
-        self.yearlines_checkbox = QCheckBox(
+        self.yearlines = QCheckBox(
             'Draw year lines')           
         self.datescale_checkbox = QCheckBox(
             'Format time axis')         
@@ -265,7 +265,7 @@ def createOptionsGroup(self):
                     
         vbox = QVBoxLayout()
         vbox.addWidget(self.scale_all_axes)
-        vbox.addWidget(self.yearlines_checkbox)
+        vbox.addWidget(self.yearlines)
         vbox.addWidget(self.datescale_checkbox)
         vbox.addWidget(self.interpolate_checkbox)    
         vbox.addStretch(1)
@@ -288,20 +288,19 @@ def createCmapLimitsGroup(self):
         self.box_maxsed = QLineEdit() 
          
         cmap_grid = QGridLayout(self.cmap_groupBox) 
-        
-        widgets = [
-            self.change_limits,self.exact_limits,
-            self.lbl_minw,self.lbl_maxw,
-            self.box_minw,self.box_maxw,
-            self.lbl_minsed,self.lbl_maxsed,
-            self.box_minsed,self.box_maxsed ]
-        
-        dict_w = [[0,0],[0,1],[1,0],[1,1],
-                  [2,0],[2,1],[3,0],[3,1],
-                  [4,0],[4,1]]
-                  
-        for c,w in enumerate(widgets):
-          cmap_grid.addWidget(w,dict_w[c][0],dict_w[c][1],1,1)  
+
+        cmap_grid.addWidget(self.change_limits,0,0,1,1) 
+        cmap_grid.addWidget(self.exact_limits,0,1,1,1)
+        cmap_grid.addWidget(self.lbl_minw,1,0,1,1)
+        cmap_grid.addWidget(self.lbl_maxw,1,1,1,1)
+        cmap_grid.addWidget(self.box_minw,2,0,1,1)
+        cmap_grid.addWidget(self.box_maxw,2,1,1,1)  
+                 
+        cmap_grid.addWidget(self.lbl_minsed,3,0,1,1)        
+        cmap_grid.addWidget(self.lbl_maxsed,3,1,1,1)
+        cmap_grid.addWidget(self.box_minsed,4,0,1,1)
+        cmap_grid.addWidget(self.box_maxsed,4,1,1,1)  
+
                           
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

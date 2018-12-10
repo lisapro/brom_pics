@@ -44,7 +44,7 @@ def fluxes(self,start,stop):
         
         gs = gridspec.GridSpec(1,1)
         ax00 = self.figure.add_subplot(gs[0]) 
-        if self.yearlines_checkbox.isChecked() == True:
+        if self.yearlines.isChecked() == True:
             for n in range(start,stop):
                 if n%365 == 0: 
                     ax00.axvline(n, 
@@ -57,12 +57,12 @@ def fluxes(self,start,stop):
         ax00 = self.figure.add_subplot(gs[0])
         ax01 = self.figure.add_subplot(gs[1])
                   
-        if self.yearlines_checkbox.isChecked() == True:
+        if self.yearlines.isChecked() == True:
             for n in range(start,stop):
                 if n%365 == 0: 
-                    ax00.axvline(n,color='black',
+                    ax00.axvline(n,color='k',
                     linestyle = '--') 
-                    ax01.axvline(n,color='black',
+                    ax01.axvline(n,color='k',
                     linestyle = '--') 
                                                                    
         var2 = str(selected_items[1].text())
