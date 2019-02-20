@@ -12,6 +12,9 @@ import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as mtick 
+from matplotlib import colors
+from netCDF4 import Dataset 
+
 def dist_profile(self): 
     plt.clf()
     try:
@@ -23,8 +26,9 @@ def dist_profile(self):
         return None            
     readdata.get_cmap(self)
     numday = self.numday_box.value()  
-    data = np.array(self.fh.variables[index])
-    data_units = self.fh.variables[index].units
+    fh =  Dataset(self.fname)
+    data = np.array(fh.variables[index])
+    data_units = fh.variables[index].units
     ylen = len(self.depth)        
     xlen = len(self.dist)  
 
@@ -41,20 +45,21 @@ def dist_profile(self):
     else :
         print ("wrong depth array size") 
     
-    ylen = len(y) 
-    if data.shape[2] > 1: 
-        z2d = [data[numday][m][n] for m in range(ylen)for n in range(xlen)]                       
-        zz = np.array(z2d).flatten().reshape(xlen,ylen).T 
+    ylen = len(y)         
 
+
+    if data.shape[2] > 1: 
+        z2d = [data[numday][m][n]  for n in range(0,xlen) for m in range(0,ylen) ]                         
+        zz = np.array(z2d).flatten().reshape(xlen,ylen).T 
+      
         if self.scale_all_axes.isChecked():                      
             start = self.numday_box.value() 
             stop = self.numday_stop_box.value() 
-            print (start,stop)  
         else : 
             start = numday
             stop = numday+1 
             
-        watmin,watmax = readdata.make_maxmin(
+        watmin,watmax  = readdata.make_maxmin(
             self,data,start,stop,index,'wat_dist')    
 
         def fmt(x, pos):
@@ -113,11 +118,9 @@ def dist_profile(self):
                 cmap=self.cmap1)           
         else:            
             CS = self.ax.pcolormesh(X,Y, zz, 
-                vmin = watmin,vmax = watmax,  
-                cmap=self.cmap1)
-
-        from matplotlib import colors
-        
+                 vmin = watmin,vmax = watmax,  
+                 cmap=self.cmap1)
+       
         if watmax > self.e_crit_max or watmax < self.e_crit_min:
             format = mtick.FuncFormatter(fmt)
             cb = plt.colorbar(CS,cax = self.cax,format= format)
@@ -125,7 +128,8 @@ def dist_profile(self):
             format = None 
             cb = plt.colorbar(CS,cax = self.cax,ticks = wat_ticks)            
                        
-        self.ax.set_ylim(self.y1max,0) 
+        self.ax.set_ylim(self.y1max,0)
+        fh.close()  
         self.canvas.draw()
                              
     else:
