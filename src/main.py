@@ -180,21 +180,13 @@ class Window(QtWidgets.QDialog):
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()  
         time_plot.time_profile(self,start,stop)  
-                       
-    '''def save_figure(self): 
-        #does not work 
-        printer = QtWidgets.QPrinter(QtWidgets.QPrinter.HighResolution)
-        printer.setPageSize(QtWidgets.QPrinter.A9)
-        printer.setColorMode(QtWidgets.QPrinter.Color)
-        printer.setOutputFormat(QtWidgets.QPrinter.PdfFormat)
-        printer.setOutputFileName(self.edit.text())
-        self.render(printer)
-        #plt.savefig('pdf_fig.pdf',format = 'pdf')    
-        #self.figure.savefig('pic.png', format='png')'''
-   
-   
+                         
     def call_help(self):
         help_dialog.show(self) 
+
+    def closeEvent(self, event):
+            event.accept()
+    
 
 def createFluxGroup(self):
     self.flux_groupBox = QtWidgets.QGroupBox("Fluxes properties")  
@@ -226,13 +218,13 @@ def createDistGroup(self):
     
     self.col_label = QtWidgets.QLabel('Column: ')
     self.numcol_2d = QtWidgets.QSpinBox() 
-    readdata.read_num_col(self,self.fname)
+    #readdata.read_num_col(self,self.fname)
     try:
         self.label_maxcol = QtWidgets.QLabel(
         'max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
     except AttributeError: 
         pass
-    #max_col = readdata.read_num_col(self,self.fname)
+
     #self.label_maxcol_n =
     # QtWidgets.QLabel('max\ncolumn: ') #+ str(testvar.shape[0]-1))      
     
@@ -322,9 +314,9 @@ def createCmapLimitsGroup(self):
         #self.box_minwater = QtWidgets.QDoubleSpinBox()
         
         self.box_minwater = QtWidgets.QLineEdit()     
-        self.box_maxwater = QtWidgets.QLineEdit() #.QDoubleSpinBox()
-        self.box_minsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()
-        self.box_maxsed = QtWidgets.QLineEdit() #.QDoubleSpinBox()   
+        self.box_maxwater = QtWidgets.QLineEdit() 
+        self.box_minsed = QtWidgets.QLineEdit()
+        self.box_maxsed = QtWidgets.QLineEdit()  
          
         cmap_grid = QtWidgets.QGridLayout(self.cmap_groupBox) 
         
@@ -339,7 +331,13 @@ def createCmapLimitsGroup(self):
         cmap_grid.addWidget(self.label_maxsed,3,1,1,1)
         cmap_grid.addWidget(self.box_minsed,4,0,1,1)
         cmap_grid.addWidget(self.box_maxsed,4,1,1,1)       
-                                
+
+
+
+
+
+
+
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("plastique")

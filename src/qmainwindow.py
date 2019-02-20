@@ -24,7 +24,7 @@ from matplotlib import gridspec
 from matplotlib.ticker import MaxNLocator
 import os
 import readdata_qmain
-import path
+#import path
 from messages import Messages
 
 __version__ = "1.0.0"

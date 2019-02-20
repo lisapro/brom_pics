@@ -229,13 +229,15 @@ def time_profile(self,start,stop):
 
  
 
-
-    if watmax > self.e_crit_max or sedmax < self.e_crit_min:
-        format = mtick.FuncFormatter(fmt)
-        cb = plt.colorbar(CS,cax = self.cax,
-                format = format)               
+    if (self.sediment == True and (
+        watmax > self.e_crit_max or sedmax < self.e_crit_min)):
+        #if watmax > self.e_crit_max or sedmax < self.e_crit_min:
+            format = mtick.FuncFormatter(fmt)
+            cb = plt.colorbar(CS,cax = self.cax,
+                    format = format)               
     else: 
         format = None  
-        cb = plt.colorbar(CS, self.cax,ticks = wat_ticks, 
-                          format = format)
+    cb = plt.colorbar(CS, self.cax,ticks = wat_ticks, 
+                    format = format)
+
     self.canvas.draw()

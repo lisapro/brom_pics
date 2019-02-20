@@ -42,17 +42,9 @@ def dist_profile(self):
         print ("wrong depth array size") 
     
     ylen = len(y) 
-        
-    z2d = []
     if data.shape[2] > 1: 
-        for n in range(0,xlen): # distance 
-            for m in range(0,ylen):  # depth 
-                # take only n's column for brom             
-                z2d.append(data[numday][m][n])                     
-        
-        z2 = np.array(z2d).flatten() 
-        z2 = z2.reshape(xlen,ylen)       
-        zz = z2.T   
+        z2d = [data[numday][m][n] for m in range(ylen)for n in range(xlen)]                       
+        zz = np.array(z2d).flatten().reshape(xlen,ylen).T 
 
         if self.scale_all_axes.isChecked():                      
             start = self.numday_box.value() 
@@ -62,35 +54,24 @@ def dist_profile(self):
             start = numday
             stop = numday+1 
             
-            #(self,var,start,stop,index,type)
-        maxmin = readdata.make_maxmin(
+        watmin,watmax = readdata.make_maxmin(
             self,data,start,stop,index,'wat_dist')    
-        watmin = maxmin[0]     
-        watmax = maxmin[1]            
-            
 
-        #wat_ticks = np.linspace(watmin,watmax,5)
-        #wat_ticks = (np.floor(wat_ticks*100)/100.)
         def fmt(x, pos):
             a, b = '{:.2e}'.format(x).split('e')
-            b = int(b)
-            return r'${} \times 10^{{{}}}$'.format(a, b) 
+            return r'${} \times 10^{{{}}}$'.format(a, int(b)) 
     
         if self.sediment == False:   
-            readdata.grid_plot(self,1)                              
-            #gs = gridspec.GridSpec(1, 1)                        
-            #cax = self.figure.add_axes([0.92, 0.1, 0.02, 0.8])                  
-                             
+            readdata.grid_plot(self,1)  
+
         elif self.sediment == True : 
             readdata.grid_plot(self,2)
-            #gs = gridspec.GridSpec(2, 1)         
-    
+           
             X_sed,Y_sed = np.meshgrid(self.dist,y_sed)
                                                    
-            sed_maxmin = readdata.make_maxmin(self,
-                    data,start,stop,index,'sed_dist')    
-            sed_min = sed_maxmin[0]     
-            sed_max = sed_maxmin[1]                 
+            sed_min,sed_max = readdata.make_maxmin(self,
+                    data,start,stop,index,'sed_dist') 
+
             sed_ticks = readdata.ticks_2(sed_min,sed_max)                                    
             sed_levs = np.linspace(sed_min,sed_max,
                             num = self.num) 
@@ -101,33 +82,27 @@ def dist_profile(self):
                         extend="both", cmap=self.cmap)   
             else:        
                 CS1 = self.ax2.pcolormesh(X_sed,Y_sed, zz, 
-                    vmin = sed_min, vmax = sed_max, #levels = sed_levs,
+                    vmin = sed_min, vmax = sed_max, 
                                  cmap=self.cmap)  
                            
             self.ax2.axhline(0, color='white', linestyle = '--',
                         linewidth = 1 )                   
 
             self.ax2.set_ylim(self.ysedmax,self.ysedmin) 
-            self.ax2.set_ylabel('Depth, cm',fontsize= self.font_txt)  #Depth (cm)
-            self.ax2.set_xlabel('distance, m',fontsize= self.font_txt)   #Distance (km)  
-                         
-            #cax1 = self.figure.add_axes([0.92, 0.1, 0.02, 0.35])
-            #cax = self.figure.add_axes([0.92, 0.53, 0.02, 0.35])   
-                           
+            self.ax2.set_ylabel('Depth, cm',fontsize= self.font_txt)
+            self.ax2.set_xlabel('distance, m',fontsize= self.font_txt)
+                                                      
             from matplotlib import colors
             
             if sed_max > self.e_crit_max or sed_max < self.e_crit_min:
                 format = mtick.FuncFormatter(fmt)
-                cb1 = plt.colorbar(CS1,cax = self.cax1,format= format)
             else: 
                 format = None 
-                cb1 = plt.colorbar(CS1,cax = self.cax1,
-                               ticks = sed_ticks)
+            cb1 = plt.colorbar(CS1,cax = self.cax1, ticks = sed_ticks,format= format)
         
         X,Y = np.meshgrid(self.dist,y)
         self.ax.set_title(index + ', ' + data_units) 
-        self.ax.set_ylabel('Depth, m',fontsize= self.font_txt) #Depth (m)
-        
+        self.ax.set_ylabel('Depth, m',fontsize= self.font_txt)
         wat_ticks = readdata.ticks_2(watmin,watmax)  
         wat_levs = np.linspace(watmin,watmax,
                             num = self.num)            
@@ -138,8 +113,9 @@ def dist_profile(self):
                 cmap=self.cmap1)           
         else:            
             CS = self.ax.pcolormesh(X,Y, zz, 
-                 vmin = watmin,vmax = watmax,  
-                 cmap=self.cmap1)
+                vmin = watmin,vmax = watmax,  
+                cmap=self.cmap1)
+
         from matplotlib import colors
         
         if watmax > self.e_crit_max or watmax < self.e_crit_min:
@@ -149,12 +125,9 @@ def dist_profile(self):
             format = None 
             cb = plt.colorbar(CS,cax = self.cax,ticks = wat_ticks)            
                        
-        self.ax.set_ylim(self.y1max,0)
-          
+        self.ax.set_ylim(self.y1max,0) 
         self.canvas.draw()
-                            
-            
-                                             
+                             
     else:
         messagebox = QtWidgets.QMessageBox.about(self, "Retry,please",
                                              'it is 1D BROM')
