@@ -275,7 +275,7 @@ def ticks_2(minv,maxv):
     ticks = np.arange(start_tick,maxv+step,step)    
     return ticks
 
-def ticks(minv,maxv):  
+'''def ticks(minv,maxv):  
     #TODO: Rewrite it 
     if maxv > 1 :
         minv = np.floor(minv)
@@ -328,7 +328,7 @@ def ticks(minv,maxv):
                 maxv + minv/100.,minv/1000.)
     else : 
         ticks = [minv,maxv]                     
-    return ticks
+    return ticks'''
              
 def set_widget_styles(self):
     # Push buttons style
