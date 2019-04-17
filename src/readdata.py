@@ -275,7 +275,7 @@ def ticks_2(minv,maxv):
     ticks = np.arange(start_tick,maxv+step,step)    
     return ticks
 
-def ticks(minv,maxv):  
+'''def ticks(minv,maxv):  
     #TODO: Rewrite it 
     if maxv > 1 :
         minv = np.floor(minv)
@@ -328,7 +328,7 @@ def ticks(minv,maxv):
                 maxv + minv/100.,minv/1000.)
     else : 
         ticks = [minv,maxv]                     
-    return ticks
+    return ticks'''
              
 def set_widget_styles(self):
     # Push buttons style
@@ -389,12 +389,17 @@ def use_num2date(self,time_units,X_subplot):
 
 def format_time_axis2(self, xaxis,xlen):   
     xaxis.xaxis_date()
+
+
     if xlen > 365 and xlen < 365*5 : 
         frmt = '%m/%Y'
     elif xlen >= 365*5 :
         frmt = '%Y'        
     elif xlen <= 365: 
         frmt = '%b'
+
+    if self.time_units == 'seconds since 2012-01-01 00:00:00':
+        frmt = '%b-%d'       
     xaxis.xaxis.set_major_formatter(
         mdates.DateFormatter(frmt))   
 
