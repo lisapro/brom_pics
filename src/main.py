@@ -127,7 +127,9 @@ class Window(QtWidgets.QDialog):
             readdata.y_coords(self)        
         else: 
             self.sediment = False
-           
+            self.ny1max = len(self.depth)-1
+            self.y1max = self.depth[self.ny1max]
+
         readdata.colors(self)
         readdata.set_widget_styles(self) 
         

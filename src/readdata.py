@@ -512,7 +512,40 @@ def make_maxmin(self,var,start,stop,index,type):
                 
     maxmin = check_minmax(self,min,max,index)           
     return maxmin
-
+def water_make_maxmin(self,var,start,stop,index,type):
+    
+    lim_dict = dict(
+        wat_dist = (start,stop,0,self.ny1max),
+        wat_time = (0,self.ny1max,None,None))
+                             
+    if  self.change_limits.isChecked():
+        
+        ''' Get manually typed values '''
+        if (len(self.box_minw.text()) > 0  and 
+            len(self.box_maxw.text()) > 0 ) :
+            
+            funcs = dict(
+                wat_time = (self.box_minw,
+                            self.box_maxw),
+                wat_dist = (self.box_minw,
+                            self.box_maxw))
+            
+            min = float(funcs[type][0].text())
+            max = float(funcs[type][1].text())
+        else: 
+            Messages.no_limits('sediment or water')
+            
+            lims = lim_dict[type] 
+            min = varmin(self,var,lims)     
+            max = varmax(self,var,lims)         
+           
+    else: 
+        lims = lim_dict[type]  
+        min = varmin(self,var,lims)     
+        max = varmax(self,var,lims) 
+                
+    maxmin = check_minmax(self,min,max,index)           
+    return maxmin
 
 
 

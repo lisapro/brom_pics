@@ -127,7 +127,7 @@ def time_profile(self,start,stop):
         X = readdata.use_num2date(self,self.time_units,X)     
         readdata.format_time_axis2(self,self.ax,xlen)   
                              
-    watmin,watmax  = readdata.make_maxmin(
+    watmin,watmax  = readdata.water_make_maxmin(
         self,zz,start,stop,index,'wat_time')    
     wat_ticks = readdata.ticks_2(watmin,watmax)
     wat_levs = np.linspace(watmin,watmax,num = self.num)  

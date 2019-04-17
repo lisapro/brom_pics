@@ -606,6 +606,8 @@ class Window(QMainWindow):
                 CS = ax0.pcolormesh(X,Y,Z_wat, cmap = cmap) 
                 
             ax0.set_ylim(np.max(y),np.min(y))
+            #ax0.set_title(index + ', {}'.format(z_units) 
+            ax0.set_ylabel('Depth, m')
             cb = plt.colorbar(CS)  
         self.canvas.draw() 
 
