@@ -390,7 +390,6 @@ def use_num2date(self,time_units,X_subplot):
 def format_time_axis2(self, xaxis,xlen):   
     xaxis.xaxis_date()
 
-
     if xlen > 365 and xlen < 365*5 : 
         frmt = '%m/%Y'
     elif xlen >= 365*5 :
@@ -400,6 +399,7 @@ def format_time_axis2(self, xaxis,xlen):
 
     if self.time_units == 'seconds since 2012-01-01 00:00:00':
         frmt = '%b-%d'       
+        
     xaxis.xaxis.set_major_formatter(
         mdates.DateFormatter(frmt))   
 
