@@ -31,7 +31,7 @@ width, height = screen_rect.width(), screen_rect.height()
 rc('font', **{'sans-serif' : 'Arial', #for unicode text
                 'family' : 'sans-serif'})  
       
-def readdata_brom(self,fname): #,varname,fname
+def readdata_brom(self,fname): 
     
     self.fh = Dataset(fname)    
     self.time =  self.fh.variables['time'][:]
@@ -118,54 +118,76 @@ def colors(self):
     self.bbl_col1 = '#ccd6de'
     self.sed_col1 = '#a3abb1'
            
-    self.font_txt = 15 
-    self.xlabel_fontsize = 10    
-    self.ticklabel_fontsize = 10 #14 #axis labels   
+    self.font_txt = 15
+
+    # text on figure 2 (Water; BBL, Sed) 
+    self.xlabel_fontsize = 10  
+    self.ticklabel_fontsize = 10
     self.linewidth = 0.7   
              
- 
-def calculate_ywat(self):
-    self.sediment = False     
-    for n in range(0,self.lendepth2):
-        dif  = self.depth2[n+1] - self.depth2[n]
-        if dif >= self.bbl and  n == (self.lendepth2-2) :
-            self.y1max = (self.depth2[n]-1)
-            self.ny1min = (self.depth[0])                                                    
-            self.ny1max = n-1  
-            break  
-            
-        elif dif < self.bbl:   
-            self.y1max = self.depth[n]                               
-            self.ny1max = n
-            self.sediment = True            
-            if self.ny1max == 0 :
-                self.y1max = self.depth[-2]
-                self.ny1max = self.lendepth2           
-            break
-        
+'''def axis_pos(self): # for plot with all var in one page 
+    # disctances between x axes
+    dx = 0.1 
+    dy = 14 
+    
+    #x and y positions of axes labels 
+    self.labelaxis_x =  1.10     
+    self.labelaxis1_y = 1.02    
+    self.labelaxis2_y = 1.02 + dx
+    self.labelaxis3_y = 1.02 + dx * 2.
+    self.labelaxis4_y = 1.02 + dx * 3.
+    self.labelaxis5_y = 1.02 + dx * 4.
+
+    # positions of xaxes
+    self.axis1 = 0
+    self.axis2 = 0 + dy 
+    self.axis3 = 0 + dy * 2
+    self.axis4 = 0 + dy * 3
+    self.axis5 = 0 + dy * 4  '''
   
+def calculate_ywat(self):
+    ld2 = self.lendepth2
+    for n in range(0,ld2):
+        dif = self.depth2[n+1] - self.depth2[n]
+        if dif >= self.bbl and n == ld2-2:
+            self.y1max = self.depth2[n]-1
+            self.ny1min = self.depth[0]                                                  
+            self.ny1max = n-1
+            self.sediment = False   
+            break
+         
+        elif dif < self.bbl:   
+            self.y1max = (self.depth[n])                               
+            self.ny1max = n 
+            self.sediment = True
+            if self.ny1max == 0 :
+                self.y1max = (self.depth[-2])
+                self.ny1max = ld2
+                self.sediment = False            
+            break
+         
 def calculate_ybbl(self):
-    for n in range(0,(self.lendepth2-1)):
+    ld2 = self.lendepth2
+    for n in range(0,(len(self.depth2)-1)):
         try: 
             if self.kz[1,n,0] == 0:
                 self.y2max = self.depth2[n]         
-                self.ny2max = n       
+                self.ny2max = n     
                 break  
-            if self.kz[1,n,0] != 0 and n == (self.lendepth2-2):       
+            if self.kz[1,n,0] != 0 and n == ld2-2:       
                 self.y2max = self.depth2[n]         
-                self.ny2max = n
-                    
+                self.ny2max = n   
         except IndexError: 
             if self.kz[1,n] == 0:
                 self.y2max = self.depth2[n]         
-                self.ny2max = n      
+                self.ny2max = n  
                 break  
-            if self.kz[1,n] != 0 and n == (self.lendepth2-2):       
+            if self.kz[1,n] != 0 and n == ld2-2:       
                 self.y2max = self.depth2[n]         
                 self.ny2max = n  
-                                
-def y2max_fill_water(self):    
-    for n in range(0,(self.lendepth2-1)):
+
+def y2max_fill_water(self):
+    for n in range(0,self.lendepth2-1):
         dif = self.depth2[n+1] - self.depth2[n]
         if dif >= self.bbl:
             pass
@@ -198,15 +220,14 @@ def calculate_ysed(self):
                 self.ysedmax =  max(self.depth_sed)                 
                 
             
-def calc_nysedmin(self):
-    m = 0      
+def calc_nysedmin(self):    
     self.ysedmin = - 10           
-    for n in (self.depth_sed):
+    for m,n in enumerate(self.depth_sed,start = 0):
         if n >= self.ysedmin :
             self.nysedmin = m 
             break
         else: 
-            m = m+1
+            pass
     return self.nysedmin    
  
          
@@ -220,33 +241,41 @@ def y_coords(self):
     self.y1min = 0 
     self.y2min = self.y2max - 2*(self.y2max - self.y1max)   
 
-
-
+# calc depth in cm from sed/wat interface 
 def depth_sed(self):
-    # calc depth in cm from SWI
-    self.depth_sed =  [(float(i) - self.y2max)*100 for i in self.depth] 
-    self.depth_sed2 = [(float(i) - self.y2max)*100 for i in self.depth2] 
+    self.depth_sed =  [(i- self.y2max)*100 for i in self.depth.tolist()]
+    self.depth_sed2 = [(i- self.y2max)*100 for i in self.depth2.tolist()]
 
 def ticks_2(minv,maxv):  
-    ''' make "beautiful"  values to show on ticks '''  
+    ''' make "beautiful" values to show on ticks '''  
     minv = float(minv)
     maxv = float(maxv)
+    print (minv,maxv,'minmax values')
     assert minv < maxv       
     dif = maxv - minv 
+    step_raw = dif/4  
     if dif >= 1000:
-        step = math.trunc((dif/4)/100)*100
-    elif dif > 30:
-        step = math.trunc((dif/4)/10)*10
+        step = math.trunc(step_raw*100)/100
+        start_tick = (math.trunc((minv)/100)*100)
+    elif dif >= 100:
+        step = math.trunc((step_raw*10)/10)
+        start_tick = (math.trunc((minv)/10)*10)
+    elif dif > 5:
+        step = int(step_raw) 
+        start_tick = int(minv)
     elif dif >= 1: 
-        step = float(round((dif/4),1))       
+        step = round(step_raw,1) 
+        start_tick = round(minv,1)    
     elif dif >= 0.03 and dif < 1:
-        step = float(format((dif/4),'.2f'))         
+        step = round(step_raw,2)        
+        start_tick = round(minv,2) 
     else : 
-        step = dif        
-    ticks = np.arange(minv-step,maxv+step,step)                           
+        step = step_raw     
+        start_tick = minv   
+    ticks = np.arange(start_tick,maxv+step,step)    
     return ticks
 
-def ticks(minv,maxv):  
+'''def ticks(minv,maxv):  
     #TODO: Rewrite it 
     if maxv > 1 :
         minv = np.floor(minv)
@@ -299,10 +328,9 @@ def ticks(minv,maxv):
                 maxv + minv/100.,minv/1000.)
     else : 
         ticks = [minv,maxv]                     
-    return ticks
+    return ticks'''
              
 def set_widget_styles(self):
-    
     # Push buttons style
     for button in (self.time_prof_all,self.time_prof_lyr,
                  self.dist_prof_button,self.fick_box, 
@@ -356,22 +384,30 @@ def cmap_list(self):
     return self.cmap_list    
 
 def use_num2date(self,time_units,X_subplot):   
-    X_subplot = num2date(X_subplot,
-                            units = time_units) 
+    X_subplot = num2date(X_subplot,units = time_units) 
     return X_subplot
 
 def format_time_axis2(self, xaxis,xlen):   
     xaxis.xaxis_date()
+
     if xlen > 365 and xlen < 365*5 : 
-        f ='%m/%Y'  
+        frmt = '%m/%Y'
     elif xlen >= 365*5 :
-        f ='%Y'          
-    elif xlen <= 365:     
-        f = '%d %b'
-    
+        frmt = '%Y'        
+    elif xlen <= 365: 
+        frmt = '%b'
+
+    if self.time_units == 'seconds since 2012-01-01 00:00:00':
+        frmt = '%b-%d'       
+        
     xaxis.xaxis.set_major_formatter(
-            mdates.DateFormatter(f))  
-  
+        mdates.DateFormatter(frmt))   
+
+def plot_inj_lines(self,numday,col,axis):
+    axis.axvline(numday,color= col, linewidth = 2,
+                   linestyle = '--',zorder = 10) 
+
+
 def grid_plot(self,numplots):
     if numplots == 1:
         self.gs = gridspec.GridSpec(1, 1) 
@@ -424,18 +460,19 @@ def check_minmax(self,cmin,cmax,index):
             cmin = float(format(float(cmin), '.2f')) 
             cmax = float(format(float(cmax), '.2f'))           
         elif cmax > 100 :
-            cmax = math.trunc(cmax/100)*100
-            cmin = math.trunc(cmin/100)*100   
+            cmax = math.trunc(cmax*100)/100
+            cmin = math.trunc(cmin*100)/100   
         elif cmax > 10  :
-            cmax = math.trunc(cmax/10)*10
-            cmin = math.trunc(cmin/10)*10    
+            cmax = math.trunc(cmax*10)/10
+            cmin = math.trunc(cmin*10)/10    
         elif cmax > 1  :
             cmax = math.trunc(cmax*10)/10
             cmin = math.trunc(cmin*10)/10      
         elif cmax > 0.1  :
             cmax = math.trunc(cmax*100)/100
             cmin = math.trunc(cmin*100)/100
-                      
+
+    assert cmin < cmax                 
     return float(cmin),float(cmax)        
         
 def make_maxmin(self,var,start,stop,index,type):
@@ -475,17 +512,45 @@ def make_maxmin(self,var,start,stop,index,type):
            
     else: 
         lims = lim_dict[type]  
-        
-        '''    # if we do not have kz     
-        else:  
-        self.ny1max = len(self.depth-1)
-        self.y1max = max(self.depth)'''
         min = varmin(self,var,lims)     
         max = varmax(self,var,lims) 
                 
-    maxmin = check_minmax(self,min,max,index)            
+    maxmin = check_minmax(self,min,max,index)           
     return maxmin
-
+def water_make_maxmin(self,var,start,stop,index,type):
+    
+    lim_dict = dict(
+        wat_dist = (start,stop,0,self.ny1max),
+        wat_time = (0,self.ny1max,None,None))
+                             
+    if  self.change_limits.isChecked():
+        
+        ''' Get manually typed values '''
+        if (len(self.box_minw.text()) > 0  and 
+            len(self.box_maxw.text()) > 0 ) :
+            
+            funcs = dict(
+                wat_time = (self.box_minw,
+                            self.box_maxw),
+                wat_dist = (self.box_minw,
+                            self.box_maxw))
+            
+            min = float(funcs[type][0].text())
+            max = float(funcs[type][1].text())
+        else: 
+            Messages.no_limits('sediment or water')
+            
+            lims = lim_dict[type] 
+            min = varmin(self,var,lims)     
+            max = varmax(self,var,lims)         
+           
+    else: 
+        lims = lim_dict[type]  
+        min = varmin(self,var,lims)     
+        max = varmax(self,var,lims) 
+                
+    maxmin = check_minmax(self,min,max,index)           
+    return maxmin
 
 
 

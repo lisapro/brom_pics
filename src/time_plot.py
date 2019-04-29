@@ -127,7 +127,7 @@ def time_profile(self,start,stop):
         X = readdata.use_num2date(self,self.time_units,X)     
         readdata.format_time_axis2(self,self.ax,xlen)   
                              
-    watmin,watmax  = readdata.make_maxmin(
+    watmin,watmax  = readdata.water_make_maxmin(
         self,zz,start,stop,index,'wat_time')    
     wat_ticks = readdata.ticks_2(watmin,watmax)
     wat_levs = np.linspace(watmin,watmax,num = self.num)  
@@ -153,13 +153,16 @@ def time_profile(self,start,stop):
             if n%365 == 0: 
                 self.ax.axvline(n, color='white', linestyle = '--')     
 
-    if watmax > self.e_crit_max or sedmax < self.e_crit_min:
+    if (watmax > self.e_crit_max):
         format = mtick.FuncFormatter(fmt)
-        cb = plt.colorbar(CS,cax = self.cax,
-                format = format)               
+  
+    elif self.sediment == True: 
+        if sedmax < self.e_crit_min:
+            format = mtick.FuncFormatter(fmt)
+
     else: 
         format = None  
-        cb = plt.colorbar(CS, self.cax,ticks = wat_ticks, 
+    cb = plt.colorbar(CS, self.cax,ticks = wat_ticks, 
                           format = format)
     self.fh.close()    
     self.canvas.draw()

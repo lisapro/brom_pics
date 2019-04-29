@@ -127,7 +127,9 @@ class Window(QtWidgets.QDialog):
             readdata.y_coords(self)        
         else: 
             self.sediment = False
-           
+            self.ny1max = len(self.depth)-1
+            self.y1max = self.depth[self.ny1max]
+
         readdata.colors(self)
         readdata.set_widget_styles(self) 
         
@@ -162,12 +164,20 @@ class Window(QtWidgets.QDialog):
     def call_print_allyr(self):  
         start = self.numday_box.value() 
         stop = self.numday_stop_box.value()  
+        time_plot.time_profile(self,start,stop)  
+                         
+    def call_help(self):
+        help_dialog.show(self) 
         if stop <= start :
             Messages.StartStop()
             return None  
         else: 
             time_plot.time_profile(
                 self,start,stop)  
+
+    def closeEvent(self, event):
+            event.accept()
+    
 
 def createFluxGroup(self):
     self.flux_groupBox = QGroupBox("Fluxes properties")  
@@ -197,7 +207,7 @@ def createDistGroup(self):
     self.dist_grid = QGridLayout(self.dist_groupBox)   
     self.col_lbl = QLabel('Column: ')
     self.numcol_2d = QSpinBox() 
-    readdata.read_num_col(self,self.fname)
+    #readdata.read_num_col(self,self.fname)
     try:
         self.lbl_maxcol = QLabel(
         'max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
