@@ -10,7 +10,7 @@ import numpy as np
 import readdata
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import matplotlib.ticker as mtick 
+#import matplotlib.ticker as mtick 
 import matplotlib.gridspec as gridspec
 import numpy.ma as ma
 from PyQt5 import QtGui,QtWidgets
