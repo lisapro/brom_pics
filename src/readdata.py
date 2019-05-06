@@ -125,26 +125,6 @@ def colors(self):
     self.ticklabel_fontsize = 10
     self.linewidth = 0.7   
              
-'''def axis_pos(self): # for plot with all var in one page 
-    # disctances between x axes
-    dx = 0.1 
-    dy = 14 
-    
-    #x and y positions of axes labels 
-    self.labelaxis_x =  1.10     
-    self.labelaxis1_y = 1.02    
-    self.labelaxis2_y = 1.02 + dx
-    self.labelaxis3_y = 1.02 + dx * 2.
-    self.labelaxis4_y = 1.02 + dx * 3.
-    self.labelaxis5_y = 1.02 + dx * 4.
-
-    # positions of xaxes
-    self.axis1 = 0
-    self.axis2 = 0 + dy 
-    self.axis3 = 0 + dy * 2
-    self.axis4 = 0 + dy * 3
-    self.axis5 = 0 + dy * 4  '''
-  
 def calculate_ywat(self):
     ld2 = self.lendepth2
     for n in range(0,ld2):
@@ -250,7 +230,6 @@ def ticks_2(minv,maxv):
     ''' make "beautiful" values to show on ticks '''  
     minv = float(minv)
     maxv = float(maxv)
-    print (minv,maxv,'minmax values')
     assert minv < maxv       
     dif = maxv - minv 
     step_raw = dif/4  
@@ -387,6 +366,16 @@ def use_num2date(self,time_units,X_subplot):
     X_subplot = num2date(X_subplot,units = time_units) 
     return X_subplot
 
+def get_startstop(self):
+    start = self.numday_box.value() 
+    stop = self.numday_stop_box.value()  
+    if stop <= start:
+        stop = len(self.time)
+        start = 0     
+        Messages.StartStop()          
+    return start,stop 
+
+
 def format_time_axis2(self, xaxis,xlen):   
     xaxis.xaxis_date()
 
@@ -396,10 +385,12 @@ def format_time_axis2(self, xaxis,xlen):
         frmt = '%Y'        
     elif xlen <= 365: 
         frmt = '%b'
-
     if self.time_units == 'seconds since 2012-01-01 00:00:00':
-        frmt = '%b-%d'       
-        
+        if xlen < 50 :
+            frmt = '%d %b %H:%M'    
+            xaxis.set_xticklabels(xaxis.get_xticklabels(), rotation=10)
+        else: 
+            frmt = '%b/%d '             
     xaxis.xaxis.set_major_formatter(
         mdates.DateFormatter(frmt))   
 
@@ -411,13 +402,13 @@ def plot_inj_lines(self,numday,col,axis):
 def grid_plot(self,numplots):
     if numplots == 1:
         self.gs = gridspec.GridSpec(1, 1) 
-        self.gs.update(left = 0.07,right = 0.85)
+        self.gs.update(left = 0.07,right = 0.85,hspace=0.25)
         self.cax = self.figure.add_axes([0.9, 0.1, 0.02, 0.8])        
         self.ax = self.figure.add_subplot(self.gs[0])  
              
     if numplots == 2: 
         self.gs = gridspec.GridSpec(2, 1) 
-        self.gs.update(left = 0.07,right = 0.85 )
+        self.gs.update(left = 0.07,right = 0.85,hspace=0.25)
         self.cax1 = self.figure.add_axes([0.86, 0.11, 0.02, 0.35])
         self.cax = self.figure.add_axes([0.86, 0.53, 0.02, 0.35])    
         self.ax = self.figure.add_subplot(self.gs[0])
@@ -514,7 +505,7 @@ def make_maxmin(self,var,start,stop,index,type):
         lims = lim_dict[type]  
         min = varmin(self,var,lims)     
         max = varmax(self,var,lims) 
-                
+                        
     maxmin = check_minmax(self,min,max,index)           
     return maxmin
 def water_make_maxmin(self,var,start,stop,index,type):

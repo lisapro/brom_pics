@@ -41,7 +41,7 @@ class Window(QtWidgets.QDialog):
         
         self.setWindowFlags(QtCore.Qt.Window)          
         self.setWindowIcon(QtGui.QIcon('img/logo.png'))       
-        self.figure = plt.figure(figsize=(5.69 , 6.27),
+        self.figure = plt.figure(figsize=(5.9 , 6.27),
                         facecolor='None',edgecolor='None') 
         self.figure.patch.set_alpha(0)    
                   
@@ -141,17 +141,13 @@ class Window(QtWidgets.QDialog):
         
     def call_1d(self):  
         start = self.numday_box.value() 
-        stop = self.numday_stop_box.value()          
+        stop = self.numday_stop_box.value() 
+
         all_year_1d.plot(self,start,stop)
         
     def call_fluxes(self): 
-        start = self.numday_box.value() 
-        stop = self.numday_stop_box.value()     
-        if stop <= start :
-            Messages.StartStop()
-            return None  
-        else:                  
-            fluxes_plot.fluxes(self,start,stop)
+        start,stop = readdata.get_startstop(self)        
+        fluxes_plot.fluxes(self,start,stop)
         
     def call_print_dist(self):         
         dist_plot.dist_profile(self)
@@ -162,23 +158,15 @@ class Window(QtWidgets.QDialog):
         time_plot.time_profile(self,start,stop)
             
     def call_print_allyr(self):  
-        start = self.numday_box.value() 
-        stop = self.numday_stop_box.value()  
+        start,stop = readdata.get_startstop(self)                 
         time_plot.time_profile(self,start,stop)  
                          
     def call_help(self):
         help_dialog.show(self) 
-        if stop <= start :
-            Messages.StartStop()
-            return None  
-        else: 
-            time_plot.time_profile(
-                self,start,stop)  
 
     def closeEvent(self, event):
             event.accept()
     
-
 def createFluxGroup(self):
     self.flux_groupBox = QGroupBox("Fluxes properties")  
     self.minflux_lbl = QLabel('Min flux axis')
@@ -199,15 +187,14 @@ def createFluxGroup(self):
     
     self.flux_grid.addWidget(self.flux_min_box,3,0,1,1) 
     self.flux_grid.addWidget(self.flux_max_box,3,1,1,1) 
-
-    
+☻  
 def createDistGroup(self):  
         
     self.dist_groupBox = QGroupBox("Distance axis")           
     self.dist_grid = QGridLayout(self.dist_groupBox)   
     self.col_lbl = QLabel('Column: ')
     self.numcol_2d = QSpinBox() 
-    #readdata.read_num_col(self,self.fname)
+
     try:
         self.lbl_maxcol = QLabel(
         'max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
