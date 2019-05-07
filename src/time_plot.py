@@ -10,23 +10,17 @@ import numpy as np
 import readdata
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-#import matplotlib.ticker as mtick 
+import matplotlib.ticker as mtick 
 import matplotlib.gridspec as gridspec
 import numpy.ma as ma
 from PyQt5 import QtGui,QtWidgets
 from netCDF4 import num2date, Dataset
 
 
-def time_profile(self,start,stop):    
+def time_profile(self,index,start,stop):    
     plt.clf()
     self.changing_depth = False    
-    try:
-        index = str(self.qlistwidget.currentItem().text())
-    except AttributeError:   
-        messagebox = QtWidgets.QMessageBox.about(self, "Retry",
-                                             'Choose variable,please') 
-        return None     
-          
+            
     readdata.get_cmap(self)           
     ## read chosen variable and data units
     self.fh =  Dataset(self.fname)      

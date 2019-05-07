@@ -313,7 +313,8 @@ def set_widget_styles(self):
     # Push buttons style
     for button in (self.time_prof_all,self.time_prof_lyr,
                  self.dist_prof_button,self.fick_box, 
-                 self.all_year_button,self.help_button):   
+                 self.all_year_button,self.help_button,
+                 self.dist_time_button):   
         button.setStyleSheet(
         'QPushButton {background-color: #c2b4ae; border-width: 5px;'
         '  padding: 2px; font: bold 15px; }')   
@@ -344,18 +345,19 @@ def widget_layout(self):
         self.grid.addWidget(self.options_groupBox,0,8,3,1)  
         
         #second line   
-        self.grid.addWidget(self.lbl_choose_var,    1,0,1,1)             
+        self.grid.addWidget(self.dist_time_button,    1,0,1,1)            
         self.grid.addWidget(self.fick_box,            1,2,1,1)                                   
         self.grid.addWidget(self.time_prof_lyr,       1,3,1,1)  
         
         #third line      
-        self.grid.addWidget(self.qlistwidget,         2,0,2,2)         
+        self.grid.addWidget(self.lbl_choose_var,      2,0,1,1)         
         self.grid.addWidget(self.all_year_button,     2,2,1,1)                   
         self.grid.addWidget(self.dist_prof_button,    2,3,1,1)         
  
         #4th line        
-        self.grid.addWidget(self.canvas, 3, 1,1,8) 
-  
+        self.grid.addWidget(self.canvas,              3,2,1,8) 
+        self.grid.addWidget(self.qlistwidget,         3,0,2,2)  
+
 def cmap_list(self):
     self.cmap_list = ['jet','inferno','rainbow',
                       'viridis','plasma','Paired',
@@ -543,6 +545,33 @@ def water_make_maxmin(self,var,start,stop,index,type):
     maxmin = check_minmax(self,min,max,index)           
     return maxmin
 
+def check_var_ischosen(self):
+    "checks if var is chosen"
+    try:
+        index = str(self.qlistwidget.currentItem().text())
+        return index
+    except AttributeError:     
+        messagebox = QtWidgets.QMessageBox.about(
+            self, "Retry", 'Choose variable,please') 
+        return False
+
+def check_is2d(self,index):
+    "checks if model array is 2d "
+    fh =  Dataset(self.fname)             
+    data = np.array(fh.variables[index])
+    fh.close()
+    if data.shape[2] < 2: 
+        messagebox = QtWidgets.QMessageBox.about(self, "Retry,please",
+                                             'it is 1D BROM')        
+        return False                                             
+    else: 
+        return True    
+
+def check_2d_and_index(self): 
+    index = check_var_ischosen(self)
+    if index != False:
+        twoD = check_is2d(self,index)   
+        if twoD == True:    
+            return twoD,index
 
 
-             
