@@ -405,7 +405,7 @@ def grid_plot(self,numplots):
     if numplots == 1:
         self.gs = gridspec.GridSpec(1, 1) 
         self.gs.update(left = 0.07,right = 0.85,hspace=0.25)
-        self.cax = self.figure.add_axes([0.9, 0.1, 0.02, 0.8])        
+        self.cax = self.figure.add_axes([0.86, 0.1, 0.02, 0.8])        
         self.ax = self.figure.add_subplot(self.gs[0])  
              
     if numplots == 2: 
@@ -574,4 +574,13 @@ def check_2d_and_index(self):
         if twoD == True:    
             return twoD,index
 
-
+def fmt(x, pos):
+    a, b = '{:.2e}'.format(x).split('e')
+    b = int(b)
+    return r'${} \times 10^{{{}}}$'.format(a, b)   
+  
+def get_format(self,vmax):
+    if vmax > self.e_crit_max or vmax < self.e_crit_min:
+        return mtick.FuncFormatter(fmt)
+    else: 
+        return None   

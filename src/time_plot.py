@@ -108,7 +108,8 @@ def time_profile(self,index,start,stop):
         self.ax2.set_xlim(np.min(X_sed),np.max(X_sed))
         self.ax2.set_ylim(self.ysedmax,self.ysedmin)                                                               
         self.ax2.axhline(0, color='white', linestyle = '--',
-                         linewidth = 1)                         
+                         linewidth = 1)        
+                                          
         if sedmax > self.e_crit_max or sedmax < self.e_crit_min:
             format = mtick.FuncFormatter(fmt)
             cb_sed = plt.colorbar(CS1,cax = self.cax1,format = format)            
