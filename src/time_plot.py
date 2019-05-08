@@ -17,16 +17,10 @@ from PyQt5 import QtGui,QtWidgets
 from netCDF4 import num2date, Dataset
 
 
-def time_profile(self,start,stop):    
+def time_profile(self,index,start,stop):    
     plt.clf()
     self.changing_depth = False    
-    try:
-        index = str(self.qlistwidget.currentItem().text())
-    except AttributeError:   
-        messagebox = QtWidgets.QMessageBox.about(self, "Retry",
-                                             'Choose variable,please') 
-        return None     
-          
+            
     readdata.get_cmap(self)           
     ## read chosen variable and data units
     self.fh =  Dataset(self.fname)      
@@ -114,7 +108,8 @@ def time_profile(self,start,stop):
         self.ax2.set_xlim(np.min(X_sed),np.max(X_sed))
         self.ax2.set_ylim(self.ysedmax,self.ysedmin)                                                               
         self.ax2.axhline(0, color='white', linestyle = '--',
-                         linewidth = 1)                         
+                         linewidth = 1)        
+                                          
         if sedmax > self.e_crit_max or sedmax < self.e_crit_min:
             format = mtick.FuncFormatter(fmt)
             cb_sed = plt.colorbar(CS1,cax = self.cax1,format = format)            

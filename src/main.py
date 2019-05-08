@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 
 import readdata, time_plot
 import dist_plot, fluxes_plot
-import all_year_1d
+import all_year_1d,dist_time
 #import help_dialog
 import matplotlib.pylab as pylab
 from messages import Messages
@@ -41,7 +41,7 @@ class Window(QtWidgets.QDialog):
         
         self.setWindowFlags(QtCore.Qt.Window)          
         self.setWindowIcon(QtGui.QIcon('img/logo.png'))       
-        self.figure = plt.figure(figsize=(5.69 , 6.27),
+        self.figure = plt.figure(figsize=(5.9 , 6.27),
                         facecolor='None',edgecolor='None') 
         self.figure.patch.set_alpha(0)    
                   
@@ -65,7 +65,8 @@ class Window(QtWidgets.QDialog):
             QtWidgets.QAbstractItemView.ExtendedSelection)
         
         self.all_year_box =     QComboBox()                                      
-        self.dist_prof_button = QPushButton()                               
+        self.dist_prof_button = QPushButton()      
+        self.dist_time_button = QPushButton()                               
         self.time_prof_lyr =    QPushButton()    
         self.time_prof_all =    QPushButton()  
                                         
@@ -94,14 +95,16 @@ class Window(QtWidgets.QDialog):
         self.all_year_button.setText('1D plot')
         self.time_prof_lyr.setText('Time: last year')               
         self.dist_prof_button.setText('Transect 1 day')  
-           
+        self.dist_time_button.setText('Dist Time plot')     
+
         ### Define connection                                   
         self.time_prof_lyr.released.connect(self.call_print_lyr)
         self.all_year_button.released.connect(self.call_1d)
         self.time_prof_all.released.connect(self.call_print_allyr)        
         self.fick_box.released.connect(self.call_fluxes)        
         self.dist_prof_button.released.connect(self.call_print_dist)                             
-                  
+        self.dist_time_button.released.connect(self.call_print_dist_time) 
+
         self.canvas = FigureCanvas(self.figure)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
@@ -141,44 +144,51 @@ class Window(QtWidgets.QDialog):
         
     def call_1d(self):  
         start = self.numday_box.value() 
-        stop = self.numday_stop_box.value()          
+        stop = self.numday_stop_box.value() 
         all_year_1d.plot(self,start,stop)
         
     def call_fluxes(self): 
-        start = self.numday_box.value() 
-        stop = self.numday_stop_box.value()     
-        if stop <= start :
-            Messages.StartStop()
-            return None  
-        else:                  
-            fluxes_plot.fluxes(self,start,stop)
+        start,stop = readdata.get_startstop(self)        
+        fluxes_plot.fluxes(self,start,stop)
         
-    def call_print_dist(self):         
-        dist_plot.dist_profile(self)
-            
+    def call_print_dist(self):  
+        v =  readdata.check_2d_and_index(self)
+        if v[0]:
+            dist_plot.dist_profile(self,v[1])    
+        '''index = readdata.check_var(self)
+        if index != False:
+            twoD = readdata.check_is2d(self,index)   
+            if twoD == True:
+                dist_plot.dist_profile(self,index)
+        else:
+            pass'''
+
+    def call_print_dist_time(self):         
+        v =  readdata.check_2d_and_index(self)
+        if v[0]:
+            start,stop = readdata.get_startstop(self)  
+            depth = self.depth_bin.value()
+            dist_time.make_plot(self,v[1],start,stop,depth) 
+
     def call_print_lyr(self): #last year
-        stop = len(self.time)
-        start = stop - 365
-        time_plot.time_profile(self,start,stop)
+        index = readdata.check_var_ischosen(self)
+        if index != False:        
+            stop = len(self.time)
+            start = stop - 365
+            time_plot.time_profile(self,index,start,stop)
             
     def call_print_allyr(self):  
-        start = self.numday_box.value() 
-        stop = self.numday_stop_box.value()  
-        time_plot.time_profile(self,start,stop)  
+        index = readdata.check_var_ischosen(self)
+        if index != False:
+            start,stop = readdata.get_startstop(self)                 
+            time_plot.time_profile(self,index,start,stop)  
                          
     def call_help(self):
         help_dialog.show(self) 
-        if stop <= start :
-            Messages.StartStop()
-            return None  
-        else: 
-            time_plot.time_profile(
-                self,start,stop)  
 
     def closeEvent(self, event):
             event.accept()
     
-
 def createFluxGroup(self):
     self.flux_groupBox = QGroupBox("Fluxes properties")  
     self.minflux_lbl = QLabel('Min flux axis')
@@ -200,14 +210,14 @@ def createFluxGroup(self):
     self.flux_grid.addWidget(self.flux_min_box,3,0,1,1) 
     self.flux_grid.addWidget(self.flux_max_box,3,1,1,1) 
 
-    
 def createDistGroup(self):  
         
     self.dist_groupBox = QGroupBox("Distance axis")           
     self.dist_grid = QGridLayout(self.dist_groupBox)   
     self.col_lbl = QLabel('Column: ')
     self.numcol_2d = QSpinBox() 
-    #readdata.read_num_col(self,self.fname)
+    self.depth_lbl = QLabel('Depth num: ')
+    self.depth_bin = QSpinBox() 
     try:
         self.lbl_maxcol = QLabel(
         'max\ncolumn: '+ str(self.testvar.shape[0]-1)) 
@@ -216,6 +226,8 @@ def createDistGroup(self):
       
     self.dist_grid.addWidget(self.col_lbl,0,0,1,1) 
     self.dist_grid.addWidget(self.numcol_2d,1,0,1,1) 
+    self.dist_grid.addWidget(self.depth_lbl,2,0,1,1) 
+    self.dist_grid.addWidget(self.depth_bin,3,0,1,1)     
     try:
         self.dist_grid.addWidget(self.lbl_maxcol,1,1,1,1) 
     except AttributeError: 

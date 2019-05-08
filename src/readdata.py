@@ -125,26 +125,6 @@ def colors(self):
     self.ticklabel_fontsize = 10
     self.linewidth = 0.7   
              
-'''def axis_pos(self): # for plot with all var in one page 
-    # disctances between x axes
-    dx = 0.1 
-    dy = 14 
-    
-    #x and y positions of axes labels 
-    self.labelaxis_x =  1.10     
-    self.labelaxis1_y = 1.02    
-    self.labelaxis2_y = 1.02 + dx
-    self.labelaxis3_y = 1.02 + dx * 2.
-    self.labelaxis4_y = 1.02 + dx * 3.
-    self.labelaxis5_y = 1.02 + dx * 4.
-
-    # positions of xaxes
-    self.axis1 = 0
-    self.axis2 = 0 + dy 
-    self.axis3 = 0 + dy * 2
-    self.axis4 = 0 + dy * 3
-    self.axis5 = 0 + dy * 4  '''
-  
 def calculate_ywat(self):
     ld2 = self.lendepth2
     for n in range(0,ld2):
@@ -250,7 +230,6 @@ def ticks_2(minv,maxv):
     ''' make "beautiful" values to show on ticks '''  
     minv = float(minv)
     maxv = float(maxv)
-    print (minv,maxv,'minmax values')
     assert minv < maxv       
     dif = maxv - minv 
     step_raw = dif/4  
@@ -334,7 +313,8 @@ def set_widget_styles(self):
     # Push buttons style
     for button in (self.time_prof_all,self.time_prof_lyr,
                  self.dist_prof_button,self.fick_box, 
-                 self.all_year_button,self.help_button):   
+                 self.all_year_button,self.help_button,
+                 self.dist_time_button):   
         button.setStyleSheet(
         'QPushButton {background-color: #c2b4ae; border-width: 5px;'
         '  padding: 2px; font: bold 15px; }')   
@@ -365,18 +345,19 @@ def widget_layout(self):
         self.grid.addWidget(self.options_groupBox,0,8,3,1)  
         
         #second line   
-        self.grid.addWidget(self.lbl_choose_var,    1,0,1,1)             
+        self.grid.addWidget(self.dist_time_button,    1,0,1,1)            
         self.grid.addWidget(self.fick_box,            1,2,1,1)                                   
         self.grid.addWidget(self.time_prof_lyr,       1,3,1,1)  
         
         #third line      
-        self.grid.addWidget(self.qlistwidget,         2,0,2,2)         
+        self.grid.addWidget(self.lbl_choose_var,      2,0,1,1)         
         self.grid.addWidget(self.all_year_button,     2,2,1,1)                   
         self.grid.addWidget(self.dist_prof_button,    2,3,1,1)         
  
         #4th line        
-        self.grid.addWidget(self.canvas, 3, 1,1,8) 
-  
+        self.grid.addWidget(self.canvas,              3,2,1,8) 
+        self.grid.addWidget(self.qlistwidget,         3,0,2,2)  
+
 def cmap_list(self):
     self.cmap_list = ['jet','inferno','rainbow',
                       'viridis','plasma','Paired',
@@ -387,6 +368,16 @@ def use_num2date(self,time_units,X_subplot):
     X_subplot = num2date(X_subplot,units = time_units) 
     return X_subplot
 
+def get_startstop(self):
+    start = self.numday_box.value() 
+    stop = self.numday_stop_box.value()  
+    if stop <= start:
+        stop = len(self.time)
+        start = 0     
+        Messages.StartStop()          
+    return start,stop 
+
+
 def format_time_axis2(self, xaxis,xlen):   
     xaxis.xaxis_date()
 
@@ -396,10 +387,12 @@ def format_time_axis2(self, xaxis,xlen):
         frmt = '%Y'        
     elif xlen <= 365: 
         frmt = '%b'
-
     if self.time_units == 'seconds since 2012-01-01 00:00:00':
-        frmt = '%b-%d'       
-        
+        if xlen < 50 :
+            frmt = '%d %b %H:%M'    
+            xaxis.set_xticklabels(xaxis.get_xticklabels(), rotation=10)
+        else: 
+            frmt = '%b/%d '             
     xaxis.xaxis.set_major_formatter(
         mdates.DateFormatter(frmt))   
 
@@ -411,13 +404,13 @@ def plot_inj_lines(self,numday,col,axis):
 def grid_plot(self,numplots):
     if numplots == 1:
         self.gs = gridspec.GridSpec(1, 1) 
-        self.gs.update(left = 0.07,right = 0.85)
-        self.cax = self.figure.add_axes([0.9, 0.1, 0.02, 0.8])        
+        self.gs.update(left = 0.07,right = 0.85,hspace=0.25)
+        self.cax = self.figure.add_axes([0.86, 0.1, 0.02, 0.8])        
         self.ax = self.figure.add_subplot(self.gs[0])  
              
     if numplots == 2: 
         self.gs = gridspec.GridSpec(2, 1) 
-        self.gs.update(left = 0.07,right = 0.85 )
+        self.gs.update(left = 0.07,right = 0.85,hspace=0.25)
         self.cax1 = self.figure.add_axes([0.86, 0.11, 0.02, 0.35])
         self.cax = self.figure.add_axes([0.86, 0.53, 0.02, 0.35])    
         self.ax = self.figure.add_subplot(self.gs[0])
@@ -514,7 +507,7 @@ def make_maxmin(self,var,start,stop,index,type):
         lims = lim_dict[type]  
         min = varmin(self,var,lims)     
         max = varmax(self,var,lims) 
-                
+                        
     maxmin = check_minmax(self,min,max,index)           
     return maxmin
 def water_make_maxmin(self,var,start,stop,index,type):
@@ -552,6 +545,42 @@ def water_make_maxmin(self,var,start,stop,index,type):
     maxmin = check_minmax(self,min,max,index)           
     return maxmin
 
+def check_var_ischosen(self):
+    "checks if var is chosen"
+    try:
+        index = str(self.qlistwidget.currentItem().text())
+        return index
+    except AttributeError:     
+        messagebox = QtWidgets.QMessageBox.about(
+            self, "Retry", 'Choose variable,please') 
+        return False
 
+def check_is2d(self,index):
+    "checks if model array is 2d "
+    fh =  Dataset(self.fname)             
+    data = np.array(fh.variables[index])
+    fh.close()
+    if data.shape[2] < 2: 
+        messagebox = QtWidgets.QMessageBox.about(self, "Retry,please",
+                                             'it is 1D BROM')        
+        return False                                             
+    else: 
+        return True    
 
-             
+def check_2d_and_index(self): 
+    index = check_var_ischosen(self)
+    if index != False:
+        twoD = check_is2d(self,index)   
+        if twoD == True:    
+            return twoD,index
+
+def fmt(x, pos):
+    a, b = '{:.2e}'.format(x).split('e')
+    b = int(b)
+    return r'${} \times 10^{{{}}}$'.format(a, b)   
+  
+def get_format(self,vmax):
+    if vmax > self.e_crit_max or vmax < self.e_crit_min:
+        return mtick.FuncFormatter(fmt)
+    else: 
+        return None   
