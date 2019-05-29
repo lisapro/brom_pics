@@ -25,18 +25,15 @@ def fmt(x, pos):
 def time_profile(self,index,start,stop):   
      
     plt.clf()
-    self.changing_depth = False    
-            
+    self.changing_depth = False               
     readdata.get_cmap(self)           
     ## read chosen variable and data units
     da = xr.open_dataset(self.fname)[index].copy()     
     data_units = da.units
     var = da[start:stop+1]
-    print (var)
     if 'i' in var.coords:
         numcol = self.numcol_2d.value() 
         i = da.i.values[numcol]
-        print ('column',numcol,i)
         var = var.where(var.i == i,drop = True)     
     else:
         var = da[start:stop+1,:]
@@ -55,9 +52,7 @@ def time_profile(self,index,start,stop):
     X,Y = np.meshgrid(var.time,var.z)
 
     self.ny1min = min(self.depth)
-    print ('shape',var.values.T)
     zz = var.values.T[0]       
-    print ('shape',zz.shape)
     if (self.sediment == False and 
         'V_air' not in self.names_vars) : 
         readdata.grid_plot(self,1)              
