@@ -20,6 +20,7 @@ import matplotlib.gridspec as gridspec
 import numpy.ma as ma
 import itertools
 from messages import Messages
+import xarray as xr
 #format scales to be scalar 
 majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   
@@ -43,11 +44,12 @@ def readdata_brom(self,fname):
     self.num = 50. 
     self.fh.close()
     
-def read_num_col(self,fname):
+def read_num_col_old(self,fname):
     # Read all variables name from the file 
     # And add them to the qlistwidget        
-    fh = Dataset(fname)        
-    self.names_vars = [n for n,v in fh.variables.items()] 
+    fh = Dataset(fname) 
+    items = fh.variables.items()    
+    self.names_vars = [n for n,v in items] 
         
     flux_l,sink_l,other_l  = [],[],[]
     for name in self.names_vars: 
@@ -64,45 +66,51 @@ def read_num_col(self,fname):
                  flux_l,sink_l))
      
     #Read i variable to know number of columns     
-    for names,vars in fh.variables.items():
+    for names,vars in items:
         if names not in ['z','z2','time'] and 'i' in self.names_vars: 
             self.testvar = np.array(fh['i'][:]) 
             self.max_num_col = self.testvar.shape[0]     
             break  
     fh.close()  
-    
-def readdata2_brom(self,fname):  
+
+def get_sorted_names(names_vars):
+    flux_l =  [n for n in names_vars if n.startswith('fick')]  
+    sink_l =  [n for n in names_vars if n.startswith('sink')]
+    other_l = [n for n in names_vars if (not n.startswith(
+                    ('fick', 'sink','z','z2','kz','time','i')))]
+              
+    # sort variables alphabetically non-case sensitive            
+    sorted_names =  sorted(other_l, key=lambda s: s.lower()) 
+    sorted_names  = list(itertools.chain(sorted_names,
+                 flux_l,sink_l))
+    return sorted_names
+
+#def get_num_col(self,fh):
+# Read all variables name from the file 
+# And add them to the qlistwidget        
+###fh = Dataset(fname)       
+#Read i variable to know number of columns   
+#if 'i' in fh.coords:
+#    self.max_num_col = fh.i.shape[0]  
+#for names,vars in fh.variables.keys():
+#    if names not in ['z','z2','time'] and 'i' in self.names_vars: 
+#        self.testvar = np.array(fh['i'][:]) 
+
+    #fh.close()      
+
+def readdata2_brom(self,fh,names_vars): #fname):  
   
-    fh = Dataset(fname)
-    try:
-        self.depth = fh.variables['z'][:]  
-    except KeyError : 
-        self.depth = fh.variables['depth'][:] 
-    if 'Kz_s' in self.names_vars or 'Kz' in self.names_vars:    
-        try: 
-            self.depth2 = fh.variables['z2'][:]    
-        except KeyError : 
-            self.depth2 = fh.variables['depth2'][:]          
-        #middle points   
-        try: 
-            self.kz =  fh.variables['Kz'][:,:] 
-        except KeyError : 
-            self.kz =  fh.variables['Kz_s'][:,:]                 
+    l = names_vars
+    if 'Kz_s' in l or 'Kz' in l:    
+        self.depth2 = fh['z2'].values
+        self.kz =  fh['Kz'].values    
         self.lendepth2 = len(self.depth2)
         # bbl width depends on depth
         if self.lendepth2 < 50 :
             self.bbl = 0.3 
         else :
-            self.bbl = 0.5         
-    self.time =  fh.variables['time'][:]
-    self.time_units = fh.variables['time'].units
-    self.dates = num2date(self.time[:],
-                          units= self.time_units)   
-                 
-    if 'i' in self.names_vars: 
-        self.dist = np.array(fh.variables['i']) 
-    fh.close()
-          
+            self.bbl = 0.5    
+
 def colors(self):
     self.spr_aut ='#998970'
     self.wint =  '#8dc0e7'
@@ -464,12 +472,12 @@ def check_minmax(self,cmin,cmax,index):
         elif cmax > 0.1  :
             cmax = math.trunc(cmax*100)/100
             cmin = math.trunc(cmin*100)/100
-
+    print (cmin,cmax)
     assert cmin < cmax                 
     return float(cmin),float(cmax)        
         
 def make_maxmin(self,var,start,stop,index,type):
-    
+    print (var)
     lim_dict = dict(
         wat_dist = (start,stop,0,self.ny1max),
         sed_dist = (start,stop,self.nysedmin,None),

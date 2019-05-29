@@ -15,6 +15,7 @@ import matplotlib.gridspec as gridspec
 import numpy.ma as ma
 from PyQt5 import QtGui,QtWidgets
 from netCDF4 import num2date, Dataset
+import xarray as xr
 
 
 def time_profile(self,index,start,stop):    
@@ -23,46 +24,36 @@ def time_profile(self,index,start,stop):
             
     readdata.get_cmap(self)           
     ## read chosen variable and data units
-    self.fh =  Dataset(self.fname)      
-    z = np.array(self.fh.variables[index]) 
-    data_units = self.fh.variables[index].units
-    
-    z = z[start:stop+1] # read only part 
-    ylen1 = len(self.depth) 
-    x = np.array(self.time[start:stop+1]) 
-    xlen = len(x)     
-
-    # check if the variable is defined on middlepoints  
-    if (z.shape[1])> ylen1: 
-        y = self.depth2
-        if self.sediment != False:               
-            y_sed = np.array(self.depth_sed2) 
-    elif (z.shape[1]) == ylen1:
-        y = self.depth 
-        if self.sediment != False:         
-            y_sed = np.array(self.depth_sed) 
-    else :
-        print ("wrong depth array size") 
-
-    ylen = len(y)           
-    
-    if ('i' in self.names_vars and z.shape[2] > 1):
+    da = xr.open_dataset(self.fname)[index]     
+    data_units = da.units
+    var = da[start:stop+1]
+    if 'i' in var.coords:
         numcol = self.numcol_2d.value() 
-        z = ma.array(
-        [z[n][m][numcol] for n in range(
-                 0,xlen) for m in range(
-                     0,ylen)])
-                            
-    zz = ma.masked_invalid(z.flatten().reshape(xlen,ylen).T) #mask NaNs 
+        var = var.where(var.i == numcol,drop = True)
+    else:
+        var = da[start:stop+1,:]
+    print (var)
+    x = var.time
+    xlen = x.shape[0]   
+
+    if 'z' in var.coords:
+        d = 'z'
+    elif 'z2' in var.coords:  
+        d = 'z2'  
+
+    y = var[d]
+    var['z_sed'] = (y - self.y2max)*100 
+    ylen = y.shape[0]  
                                                                   
-    X,Y = np.meshgrid(x,y)        
+    X,Y = np.meshgrid(var.time,var.z)
+
     self.ny1min = min(self.depth)
  
     def fmt(x, pos):
         a, b = '{:.2e}'.format(x).split('e')
         b = int(b)
         return r'${} \times 10^{{{}}}$'.format(a, b)          
-                   
+    zz = var.values.T            
     if (self.sediment == False and 
         'V_air' not in self.names_vars) : 
         readdata.grid_plot(self,1)              
@@ -75,8 +66,8 @@ def time_profile(self,index,start,stop):
         self.ax2.set_xlabel('Number of day',
                             fontsize= self.font_txt)
                         
-        X_sed,Y_sed = np.meshgrid(x,y_sed)  
-                    
+        X_sed,Y_sed = np.meshgrid(var.time,var.z_sed)  
+                       
         sedmin,sedmax = readdata.make_maxmin(self,
                     zz,start,stop,index,'sed_time')    
                    
@@ -159,5 +150,5 @@ def time_profile(self,index,start,stop):
         format = None  
     cb = plt.colorbar(CS, self.cax,ticks = wat_ticks, 
                           format = format)
-    self.fh.close()    
+    da.close()    
     self.canvas.draw()

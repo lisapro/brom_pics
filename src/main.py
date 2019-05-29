@@ -27,6 +27,7 @@ import all_year_1d,dist_time
 #import help_dialog
 import matplotlib.pylab as pylab
 from messages import Messages
+import xarray as xr
 
 params = {'legend.fontsize': 'x-large',
          'axes.labelsize': 'x-large',
@@ -50,12 +51,29 @@ class Window(QtWidgets.QDialog):
         
         totitle = os.path.split(self.fname)[1]
         self.setWindowTitle("BROM Pictures ("+str(totitle)+')')           
-        readdata.readdata_brom(self,self.fname)    
-         
+        readdata.readdata_brom(self,self.fname) 
+
+        fh =  xr.open_dataset(self.fname)
+        self.coords = fh.coords
+        names_vars = list(fh.variables.keys())
+
+        self.depth = fh['z'].values
+        self.time =  fh['time'].values
+
+        if 'i' in self.coords:   
+            createDistGroup(self)
+            self.numcol_2d.setRange(0, fh.i.shape[0]-1) 
+            self.dist = fh['i'].values
+ 
+        time_shape = fh.time.shape[0]
+        self.depth_shape = fh.z.shape[0]
+
+        readdata.readdata2_brom(self,fh,names_vars)
+        fh.close()
         # Add group Boxes - boxes of widgets
         createOptionsGroup(self)
         createTimeGroup(self)
-        createDistGroup(self) 
+
                 
         # Create widgets
         self.lbl_choose_var = QLabel('Choose variable:')                   
@@ -74,7 +92,7 @@ class Window(QtWidgets.QDialog):
         self.fick_box =         QPushButton() 
         self.help_button =      QPushButton(' ')
                                           
-        readdata.read_num_col(self,self.fname)
+        #readdata.read_num_col(self,self.fname)
                     
         # Add group Boxes - boxes of widgets       
         createOptionsGroup(self)
@@ -82,12 +100,11 @@ class Window(QtWidgets.QDialog):
         createDistGroup(self)        
         createCmapLimitsGroup(self)
         createFluxGroup(self) 
-                             
-        if 'i' in self.names_vars:                     
-            self.numcol_2d.setRange(0, int(self.testvar.shape[0]-1))               
-            self.numday_box.setRange(0, self.lentime-1)              
-            self.numday_stop_box.setRange(0, self.lentime-1)             
-            self.numday_stop_box.setValue(self.lentime-1)
+
+        self.numday_box.setRange(0, time_shape-2)              
+        self.numday_stop_box.setRange(1, time_shape-1)             
+        self.numday_stop_box.setValue(time_shape-1)
+        self.depth_bin.setRange(0,self.depth_shape-1) 
                 
         # Add titles to buttons 
         self.time_prof_all.setText('Time: all year')
@@ -102,8 +119,10 @@ class Window(QtWidgets.QDialog):
         self.all_year_button.released.connect(self.call_1d)
         self.time_prof_all.released.connect(self.call_print_allyr)        
         self.fick_box.released.connect(self.call_fluxes)        
-        self.dist_prof_button.released.connect(self.call_print_dist)                             
-        self.dist_time_button.released.connect(self.call_print_dist_time) 
+     
+        if ('i' in self.coords and 'time' in self.coords):        
+            self.dist_prof_button.released.connect(self.call_print_dist)                 
+            self.dist_time_button.released.connect(self.call_print_dist_time) 
 
         self.canvas = FigureCanvas(self.figure)
         sizePolicy = QtWidgets.QSizePolicy(
@@ -118,9 +137,8 @@ class Window(QtWidgets.QDialog):
         self.grid = QGridLayout(self)
         
         readdata.widget_layout(self)        
-        readdata.readdata2_brom(self,self.fname)   
-                 
-        if 'Kz'  in self.names_vars :
+
+        if 'Kz' in names_vars :
             readdata.calculate_ywat(self)
             readdata.calculate_ybbl(self)   
             readdata.y2max_fill_water(self)
@@ -136,8 +154,7 @@ class Window(QtWidgets.QDialog):
         readdata.colors(self)
         readdata.set_widget_styles(self) 
         
-        
-        self.qlistwidget.addItems(self.sorted_names)
+        self.qlistwidget.addItems(readdata.get_sorted_names(names_vars))
         self.qlistwidget.setFixedSize(
         self.qlistwidget.sizeHintForColumn(0)+ 2 * self.qlistwidget.frameWidth()+50,
               self.canvas.height())
@@ -163,13 +180,12 @@ class Window(QtWidgets.QDialog):
         else:
             pass'''
 
-    def call_print_dist_time(self):         
-        v =  readdata.check_2d_and_index(self)
-        if v[0]:
-            start,stop = readdata.get_startstop(self)  
-            depth = self.depth_bin.value()
-            dist_time.make_plot(self,v[1],start,stop,depth) 
-
+    def call_print_dist_time(self):        
+        start,stop = readdata.get_startstop(self)  
+        depth = self.depth_bin.value()
+        index = readdata.check_var_ischosen(self)
+        dist_time.make_plot(self,index,start,stop,depth) 
+    
     def call_print_lyr(self): #last year
         index = readdata.check_var_ischosen(self)
         if index != False:        
