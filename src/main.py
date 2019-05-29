@@ -65,8 +65,9 @@ class Window(QtWidgets.QDialog):
             self.numcol_2d.setRange(0, fh.i.shape[0]-1) 
             self.dist = fh['i'].values
  
-        time_shape = fh.time.shape[0]
+        self.time_shape = fh.time.shape[0]
         self.depth_shape = fh.z.shape[0]
+        #self.time_units = fh['time'] #.units
 
         readdata.readdata2_brom(self,fh,names_vars)
         fh.close()
@@ -101,9 +102,9 @@ class Window(QtWidgets.QDialog):
         createCmapLimitsGroup(self)
         createFluxGroup(self) 
 
-        self.numday_box.setRange(0, time_shape-2)              
-        self.numday_stop_box.setRange(1, time_shape-1)             
-        self.numday_stop_box.setValue(time_shape-1)
+        self.numday_box.setRange(0, self.time_shape-2)              
+        self.numday_stop_box.setRange(1, self.time_shape-1)             
+        self.numday_stop_box.setValue(self.time_shape-1)
         self.depth_bin.setRange(0,self.depth_shape-1) 
                 
         # Add titles to buttons 
@@ -260,7 +261,7 @@ def createTimeGroup(self):
                     
     self.numday_box =       QSpinBox()   
     self.numday_stop_box =  QSpinBox()  
-    self.value_maxday = QLabel(str(self.lentime-1))  
+    self.value_maxday = QLabel(str(self.time_shape))  
           
     self.cmap_water_box = QComboBox() 
     self.cmap_water_lbl = QLabel('cmap water: ') 

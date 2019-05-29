@@ -34,69 +34,28 @@ rc('font', **{'sans-serif' : 'Arial', #for unicode text
       
 def readdata_brom(self,fname): 
     
-    self.fh = Dataset(fname)    
-    self.time =  self.fh.variables['time'][:]
-    self.time_units = self.fh.variables['time'].units
-    self.lentime = len(self.time)  
+    fh = Dataset(fname)       
+    self.time_units = fh.variables['time'].units 
+    fh.close()    
+    # #self.time =  self.fh.variables['time'][:]
+
+    #self.lentime = len(self.time)  
     self.right_gs = 0.8
     self.e_crit_min = 0.02
     self.e_crit_max = 10000 
     self.num = 50. 
-    self.fh.close()
-    
-def read_num_col_old(self,fname):
-    # Read all variables name from the file 
-    # And add them to the qlistwidget        
-    fh = Dataset(fname) 
-    items = fh.variables.items()    
-    self.names_vars = [n for n,v in items] 
-        
-    flux_l,sink_l,other_l  = [],[],[]
-    for name in self.names_vars: 
-        if name[:4] == 'fick':
-            flux_l.append(name) 
-        elif name[:4] == 'sink':
-            sink_l.append(name)
-        elif name not in ['z','z2','kz','time','i']:    
-            other_l.append(name) 
-               
-    # sort variables alphabetically non-case sensitive            
-    self.sorted_names =  sorted(other_l, key=lambda s: s.lower()) 
-    self.sorted_names  = list(itertools.chain(self.sorted_names,
-                 flux_l,sink_l))
-     
-    #Read i variable to know number of columns     
-    for names,vars in items:
-        if names not in ['z','z2','time'] and 'i' in self.names_vars: 
-            self.testvar = np.array(fh['i'][:]) 
-            self.max_num_col = self.testvar.shape[0]     
-            break  
-    fh.close()  
 
+    
 def get_sorted_names(names_vars):
     flux_l =  [n for n in names_vars if n.startswith('fick')]  
     sink_l =  [n for n in names_vars if n.startswith('sink')]
     other_l = [n for n in names_vars if (not n.startswith(
                     ('fick', 'sink','z','z2','kz','time','i')))]
-              
     # sort variables alphabetically non-case sensitive            
     sorted_names =  sorted(other_l, key=lambda s: s.lower()) 
     sorted_names  = list(itertools.chain(sorted_names,
                  flux_l,sink_l))
     return sorted_names
-
-#def get_num_col(self,fh):
-# Read all variables name from the file 
-# And add them to the qlistwidget        
-###fh = Dataset(fname)       
-#Read i variable to know number of columns   
-#if 'i' in fh.coords:
-#    self.max_num_col = fh.i.shape[0]  
-#for names,vars in fh.variables.keys():
-#    if names not in ['z','z2','time'] and 'i' in self.names_vars: 
-#        self.testvar = np.array(fh['i'][:]) 
-
-    #fh.close()      
 
 def readdata2_brom(self,fh,names_vars): #fname):  
   
@@ -477,7 +436,7 @@ def check_minmax(self,cmin,cmax,index):
     return float(cmin),float(cmax)        
         
 def make_maxmin(self,var,start,stop,index,type):
-    print (var)
+
     lim_dict = dict(
         wat_dist = (start,stop,0,self.ny1max),
         sed_dist = (start,stop,self.nysedmin,None),

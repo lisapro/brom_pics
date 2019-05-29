@@ -17,22 +17,30 @@ from PyQt5 import QtGui,QtWidgets
 from netCDF4 import num2date, Dataset
 import xarray as xr
 
-
-def time_profile(self,index,start,stop):    
+def fmt(x, pos):
+    a, b = '{:.2e}'.format(x).split('e')
+    b = int(b)
+    return r'${} \times 10^{{{}}}$'.format(a, b)  
+            
+def time_profile(self,index,start,stop):   
+     
     plt.clf()
     self.changing_depth = False    
             
     readdata.get_cmap(self)           
     ## read chosen variable and data units
-    da = xr.open_dataset(self.fname)[index]     
+    da = xr.open_dataset(self.fname)[index].copy()     
     data_units = da.units
     var = da[start:stop+1]
+    print (var)
     if 'i' in var.coords:
         numcol = self.numcol_2d.value() 
-        var = var.where(var.i == numcol,drop = True)
+        i = da.i.values[numcol]
+        print ('column',numcol,i)
+        var = var.where(var.i == i,drop = True)     
     else:
         var = da[start:stop+1,:]
-    print (var)
+
     x = var.time
     xlen = x.shape[0]   
 
@@ -43,17 +51,13 @@ def time_profile(self,index,start,stop):
 
     y = var[d]
     var['z_sed'] = (y - self.y2max)*100 
-    ylen = y.shape[0]  
-                                                                  
+    ylen = y.shape[0]                                                     
     X,Y = np.meshgrid(var.time,var.z)
 
     self.ny1min = min(self.depth)
- 
-    def fmt(x, pos):
-        a, b = '{:.2e}'.format(x).split('e')
-        b = int(b)
-        return r'${} \times 10^{{{}}}$'.format(a, b)          
-    zz = var.values.T            
+    print ('shape',var.values.T)
+    zz = var.values.T[0]       
+    print ('shape',zz.shape)
     if (self.sediment == False and 
         'V_air' not in self.names_vars) : 
         readdata.grid_plot(self,1)              
@@ -65,12 +69,14 @@ def time_profile(self,index,start,stop):
                             fontsize= self.font_txt) 
         self.ax2.set_xlabel('Number of day',
                             fontsize= self.font_txt)
-                        
-        X_sed,Y_sed = np.meshgrid(var.time,var.z_sed)  
+
+        var_sed = var.where(var['z_sed']> - 20,drop = True)   
+        zz_sed = var_sed.T.values[0]                 
+        X_sed,Y_sed = np.meshgrid(var_sed.time,var_sed.z_sed)  
                        
-        sedmin,sedmax = readdata.make_maxmin(self,
-                    zz,start,stop,index,'sed_time')    
-                   
+        sedmin = var_sed.values.min()
+        sedmax =  var_sed.values.max() 
+                  
         sed_ticks = readdata.ticks_2(sedmin,sedmax)
         sed_levs = np.linspace(sedmin,sedmax,
                             num = self.num)
@@ -83,10 +89,10 @@ def time_profile(self,index,start,stop):
             self.ax2.set_xlabel(' ',fontsize= self.font_txt)   
         if self.interpolate_checkbox.isChecked():
             CS1 = self.ax2.contourf(
-                X_sed,Y_sed, zz, levels = sed_levs,        
+                X_sed,Y_sed, zz_sed, levels = sed_levs,        
                 extend="both", cmap= self.cmap1)                  
         else: 
-            CS1 = self.ax2.pcolormesh(X_sed,Y_sed, zz,                                      
+            CS1 = self.ax2.pcolormesh(X_sed,Y_sed, zz_sed,                                      
                                  vmin = sedmin, vmax = sedmax,    
                              cmap= self.cmap1) 
                                     

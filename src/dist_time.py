@@ -33,10 +33,10 @@ def make_plot(self,index,start,stop,depth):
 
 if __name__ == '__main__':
     fname = r'E:\Users\EYA\Horten\_EGU2019\BROM_Horten_out_April.nc'
-    f = xr.open_dataset(fname).variables.keys()
-    p = xr.open_dataset(fname) #['pH'] 
+    var = xr.open_dataset(fname)['pH']
+    print ('***',var.i.values)        
 
-    print (p)
+
     #flux_l = [n for n in names_vars if n.startswith('fick')]  
     #sink_l = [n for n in names_vars if n.startswith('sink')]
     #other_l = [n for n in names_vars if (not n.startswith(('fick', 'sink','z','z2','kz','time','i')))]
