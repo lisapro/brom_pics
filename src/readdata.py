@@ -20,6 +20,7 @@ import matplotlib.gridspec as gridspec
 import numpy.ma as ma
 import itertools
 from messages import Messages
+import xarray as xr
 #format scales to be scalar 
 majorLocator = mtick.MultipleLocator(2.)
 majorFormatter = mtick.ScalarFormatter(useOffset=False)   
@@ -33,76 +34,42 @@ rc('font', **{'sans-serif' : 'Arial', #for unicode text
       
 def readdata_brom(self,fname): 
     
-    self.fh = Dataset(fname)    
-    self.time =  self.fh.variables['time'][:]
-    self.time_units = self.fh.variables['time'].units
-    self.lentime = len(self.time)  
+    fh = Dataset(fname)       
+    self.time_units = fh.variables['time'].units 
+    fh.close()    
+    # #self.time =  self.fh.variables['time'][:]
+
+    #self.lentime = len(self.time)  
     self.right_gs = 0.8
     self.e_crit_min = 0.02
     self.e_crit_max = 10000 
     self.num = 50. 
-    self.fh.close()
+
     
-def read_num_col(self,fname):
-    # Read all variables name from the file 
-    # And add them to the qlistwidget        
-    fh = Dataset(fname)        
-    self.names_vars = [n for n,v in fh.variables.items()] 
-        
-    flux_l,sink_l,other_l  = [],[],[]
-    for name in self.names_vars: 
-        if name[:4] == 'fick':
-            flux_l.append(name) 
-        elif name[:4] == 'sink':
-            sink_l.append(name)
-        elif name not in ['z','z2','kz','time','i']:    
-            other_l.append(name) 
-               
+def get_sorted_names(names_vars):
+    flux_l =  [n for n in names_vars if n.startswith('fick')]  
+    sink_l =  [n for n in names_vars if n.startswith('sink')]
+    other_l = [n for n in names_vars if (not n.startswith(
+                    ('fick', 'sink','z','z2','kz','time','i')))]
     # sort variables alphabetically non-case sensitive            
-    self.sorted_names =  sorted(other_l, key=lambda s: s.lower()) 
-    self.sorted_names  = list(itertools.chain(self.sorted_names,
+    sorted_names =  sorted(other_l, key=lambda s: s.lower()) 
+    sorted_names  = list(itertools.chain(sorted_names,
                  flux_l,sink_l))
-     
-    #Read i variable to know number of columns     
-    for names,vars in fh.variables.items():
-        if names not in ['z','z2','time'] and 'i' in self.names_vars: 
-            self.testvar = np.array(fh['i'][:]) 
-            self.max_num_col = self.testvar.shape[0]     
-            break  
-    fh.close()  
-    
-def readdata2_brom(self,fname):  
+    return sorted_names
+
+def readdata2_brom(self,fh,names_vars): #fname):  
   
-    fh = Dataset(fname)
-    try:
-        self.depth = fh.variables['z'][:]  
-    except KeyError : 
-        self.depth = fh.variables['depth'][:] 
-    if 'Kz_s' in self.names_vars or 'Kz' in self.names_vars:    
-        try: 
-            self.depth2 = fh.variables['z2'][:]    
-        except KeyError : 
-            self.depth2 = fh.variables['depth2'][:]          
-        #middle points   
-        try: 
-            self.kz =  fh.variables['Kz'][:,:] 
-        except KeyError : 
-            self.kz =  fh.variables['Kz_s'][:,:]                 
+    l = names_vars
+    if 'Kz_s' in l or 'Kz' in l:    
+        self.depth2 = fh['z2'].values
+        self.kz =  fh['Kz'].values    
         self.lendepth2 = len(self.depth2)
         # bbl width depends on depth
         if self.lendepth2 < 50 :
             self.bbl = 0.3 
         else :
-            self.bbl = 0.5         
-    self.time =  fh.variables['time'][:]
-    self.time_units = fh.variables['time'].units
-    self.dates = num2date(self.time[:],
-                          units= self.time_units)   
-                 
-    if 'i' in self.names_vars: 
-        self.dist = np.array(fh.variables['i']) 
-    fh.close()
-          
+            self.bbl = 0.5    
+
 def colors(self):
     self.spr_aut ='#998970'
     self.wint =  '#8dc0e7'
@@ -464,12 +431,12 @@ def check_minmax(self,cmin,cmax,index):
         elif cmax > 0.1  :
             cmax = math.trunc(cmax*100)/100
             cmin = math.trunc(cmin*100)/100
-
+    print (cmin,cmax)
     assert cmin < cmax                 
     return float(cmin),float(cmax)        
         
 def make_maxmin(self,var,start,stop,index,type):
-    
+
     lim_dict = dict(
         wat_dist = (start,stop,0,self.ny1max),
         sed_dist = (start,stop,self.nysedmin,None),
