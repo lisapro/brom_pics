@@ -29,23 +29,7 @@ def make_plot(self,index,start,stop,depth):
     da.close()
     self.canvas.draw()
 
-
-
 if __name__ == '__main__':
     fname = r'E:\Users\EYA\Horten\_EGU2019\BROM_Horten_out_April.nc'
     var = xr.open_dataset(fname)['pH']
     print ('***',var.i.values)        
-
-
-    #flux_l = [n for n in names_vars if n.startswith('fick')]  
-    #sink_l = [n for n in names_vars if n.startswith('sink')]
-    #other_l = [n for n in names_vars if (not n.startswith(('fick', 'sink','z','z2','kz','time','i')))]
-   
-
-
-    #print(other_l)
-    #class Test():
-    #    def __init__(self):
-    #        self.fname = r'E:\Users\EYA\Horten\_for_Paper\BROM_Horten_out_13c_6pl .nc'
-    #        make_plot(self,'pH',0,10,5)    
-    #Test()'''      
