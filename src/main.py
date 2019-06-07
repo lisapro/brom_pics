@@ -49,7 +49,7 @@ class Window(QtWidgets.QDialog):
         self.figure.patch.set_alpha(0)    
 
         if len(sys.argv)>1:
-            print ('ll',sys.argv[1])
+            #print ('sys arg v',sys.argv[1])
             self.fname = sys.argv[1] 
         else:                   
             self.fname ,_  = (QtWidgets.QFileDialog.getOpenFileName(self,
@@ -177,16 +177,8 @@ class Window(QtWidgets.QDialog):
         
     def call_print_dist(self):  
         v =  readdata.check_2d_and_index(self)
-        print (v)
         if v[0]:
             dist_plot.dist_profile(self,v[1])    
-        '''index = readdata.check_var(self)
-        if index != False:
-            twoD = readdata.check_is2d(self,index)   
-            if twoD == True:
-                dist_plot.dist_profile(self,index)
-        else:
-            pass'''
 
     def call_print_dist_time(self):        
         start,stop = readdata.get_startstop(self)  

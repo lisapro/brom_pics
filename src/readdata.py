@@ -540,6 +540,10 @@ def check_2d_and_index(self):
         twoD = check_is2d(self,index)   
         if twoD == True:    
             return twoD,index
+        else:     
+            return False, False 
+    else: 
+        return False, False        
 
 def fmt(x, pos):
     a, b = '{:.2e}'.format(x).split('e')
