@@ -5,6 +5,7 @@ import readdata
 import numpy as np
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
+
 def make_plot(self,index,start,stop,depth): 
     plt.clf() 
 

@@ -127,4 +127,3 @@ def fluxes(self,start,stop):
 
     fh.close()
     self.canvas.draw()
-        

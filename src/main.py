@@ -6,35 +6,37 @@ Created on 14. des. 2016
 
 @author: Elizaveta Protsenko
 '''
-
 import os,sys
 import numpy as np
-from netCDF4 import Dataset 
+#from netCDF4 import Dataset 
 from PyQt5 import QtGui, QtCore,QtWidgets
 from PyQt5.QtWidgets import (QLineEdit,QComboBox,
             QLabel,QListWidget,QPushButton,QGroupBox,
             QGridLayout,QCheckBox,QVBoxLayout,QSpinBox) 
+
 from matplotlib import rc
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas)
+
 from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT as NavigationToolbar)
+
 import matplotlib.pyplot as plt
 
-import readdata, time_plot
+import readdata
+import time_plot
 import dist_plot, fluxes_plot
 import all_year_1d,dist_time
-#import help_dialog
-import matplotlib.pylab as pylab
+#import matplotlib.pylab as pylab
 from messages import Messages
 import xarray as xr
 
-params = {'legend.fontsize': 'x-large',
+'''params = {'legend.fontsize': 'x-large',
          'axes.labelsize': 'x-large',
          'axes.titlesize':'x-large',
          'xtick.labelsize':'x-large',
-         'ytick.labelsize':'x-large'}
-pylab.rcParams.update(params)
+         'ytick.labelsize':'x-large'}'''
+#pylab.rcParams.update(params)
 
 class Window(QtWidgets.QDialog):
     def __init__(self, parent=None):
@@ -45,10 +47,14 @@ class Window(QtWidgets.QDialog):
         self.figure = plt.figure(figsize=(5.9 , 6.27),
                         facecolor='None',edgecolor='None') 
         self.figure.patch.set_alpha(0)    
-                  
-        self.fname ,_  = (QtWidgets.QFileDialog.getOpenFileName(self,
-        'Open netcdf ', os.getcwd(), "netcdf (*.nc) "))  
-        
+
+        if len(sys.argv)>1:
+            print ('ll',sys.argv[1])
+            self.fname = sys.argv[1] 
+        else:                   
+            self.fname ,_  = (QtWidgets.QFileDialog.getOpenFileName(self,
+            'Open netcdf ', os.getcwd(), "netcdf (*.nc) "))  
+            
         totitle = os.path.split(self.fname)[1]
         self.setWindowTitle("BROM Pictures ("+str(totitle)+')')           
         readdata.readdata_brom(self,self.fname) 
@@ -171,6 +177,7 @@ class Window(QtWidgets.QDialog):
         
     def call_print_dist(self):  
         v =  readdata.check_2d_and_index(self)
+        print (v)
         if v[0]:
             dist_plot.dist_profile(self,v[1])    
         '''index = readdata.check_var(self)
@@ -347,4 +354,7 @@ if __name__ == '__main__':
     main = Window()
     main.setStyleSheet("background-color:#dceaed;")
     main.show()
+
     sys.exit(app.exec_()) 
+
+

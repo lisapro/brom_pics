@@ -11,9 +11,9 @@ import readdata
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as mtick 
-import matplotlib.gridspec as gridspec
+#import matplotlib.gridspec as gridspec
 import numpy.ma as ma
-from PyQt5 import QtGui,QtWidgets
+#from PyQt5 import QtGui,QtWidgets
 from netCDF4 import num2date, Dataset
 import xarray as xr
 

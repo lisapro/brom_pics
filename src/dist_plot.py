@@ -7,14 +7,14 @@ Created on 29. jun. 2017
 @author: Elizaveta Protsenko
 '''
 import matplotlib.pyplot as plt
-from PyQt5 import QtGui,QtWidgets
+#from PyQt5 import QtGui,QtWidgets
 import numpy as np
 import readdata
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as mtick 
 from matplotlib import colors
 from netCDF4 import Dataset 
-from matplotlib import colors
+
 
 def dist_profile(self,index): 
     plt.clf()            

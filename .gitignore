@@ -22,6 +22,8 @@ lib64/
 parts/
 sdist/
 var/
+output/
+output_argv/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -96,6 +98,8 @@ ENV/
 .spyderproject
 
 # Rope project settings
+
+./debug_output
 .ropeproject
 
 .settings

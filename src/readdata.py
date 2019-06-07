@@ -8,7 +8,7 @@ Created on 14. des. 2016
 '''
 
 from netCDF4 import Dataset,num2date
-import main,math, os, sys
+import math, sys #, os #main,
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
@@ -431,7 +431,7 @@ def check_minmax(self,cmin,cmax,index):
         elif cmax > 0.1  :
             cmax = math.trunc(cmax*100)/100
             cmin = math.trunc(cmin*100)/100
-    print (cmin,cmax)
+
     assert cmin < cmax                 
     return float(cmin),float(cmax)        
         
