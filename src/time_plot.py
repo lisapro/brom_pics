@@ -16,12 +16,23 @@ import numpy.ma as ma
 #from PyQt5 import QtGui,QtWidgets
 from netCDF4 import num2date, Dataset
 import xarray as xr
+import datetime
+from datetime import timedelta
 
 def fmt(x, pos):
     a, b = '{:.2e}'.format(x).split('e')
     b = int(b)
     return r'${} \times 10^{{{}}}$'.format(a, b)  
-            
+
+def get_years(var):
+    len_years = var.time[-1].dt.year.values  - var.time[0].dt.year.values + 1
+    start_date = datetime.date(year = var.time[0].dt.year.values,month = 1, day = 1)
+    years = [start_date + timedelta(days=365*n) for n in range(len_years)]
+    return years 
+
+def add_lines(axis,years):
+    [axis.axvline(y, color='white', linestyle = '--', linewidth=0.5) for y in years]
+
 def time_profile(self,index,start,stop):   
      
     plt.clf()
@@ -41,29 +52,29 @@ def time_profile(self,index,start,stop):
     x = var.time
     xlen = x.shape[0]   
 
-    if 'z' in var.coords:
-        d = 'z'
-    elif 'z2' in var.coords:  
-        d = 'z2'  
-
+    if 'z' in var.coords:d = 'z'
+    elif 'z2' in var.coords: d = 'z2'          
     y = var[d]
+
     var['z_sed'] = (y - self.y2max)*100 
     ylen = y.shape[0]                                                     
     X,Y = np.meshgrid(var.time,var.z)
 
     self.ny1min = min(self.depth)
-    zz = var.values.T[0]       
+    zz = var.values.T[0]   
+
+    if self.yearlines.isChecked()==True: 
+        years = get_years(var.time)
+
     if (self.sediment == False and 
         'V_air' not in self.names_vars) : 
         readdata.grid_plot(self,1)              
-           
+
     elif self.sediment == True:                                  
         readdata.grid_plot(self,2)
                               
         self.ax2.set_ylabel('Depth, cm',    
                             fontsize= self.font_txt) 
-        self.ax2.set_xlabel('Number of day',
-                            fontsize= self.font_txt)
 
         var_sed = var.where(var['z_sed']> - 20,drop = True)   
         zz_sed = var_sed.T.values[0]                 
@@ -76,12 +87,6 @@ def time_profile(self,index,start,stop):
         sed_levs = np.linspace(sedmin,sedmax,
                             num = self.num)
                   
-        if self.datescale_checkbox.isChecked() == True:  
-            X_sed = readdata.use_num2date(
-                self,self.time_units,X_sed)     
-            readdata.format_time_axis2(
-                self,self.ax2,xlen)        
-            self.ax2.set_xlabel(' ',fontsize= self.font_txt)   
         if self.interpolate_checkbox.isChecked():
             CS1 = self.ax2.contourf(
                 X_sed,Y_sed, zz_sed, levels = sed_levs,        
@@ -90,17 +95,15 @@ def time_profile(self,index,start,stop):
             CS1 = self.ax2.pcolormesh(X_sed,Y_sed, zz_sed,                                      
                                  vmin = sedmin, vmax = sedmax,    
                              cmap= self.cmap1) 
-                                    
-        if self.yearlines.isChecked()==True and \
-           self.datescale_checkbox.isChecked()== False:
-            for n in range(start,stop):
-                if n%365 == 0: 
-                    self.ax2.axvline(n, color='white',
-                                      linestyle = '--') 
+
+        if self.yearlines.isChecked()==True:
+            add_lines(self.ax2, years)
+            #[self.ax2.axvline(y, color='white', linestyle = '--') for y in years]      
+
         self.ax2.set_xlim(np.min(X_sed),np.max(X_sed))
         self.ax2.set_ylim(self.ysedmax,self.ysedmin)                                                               
         self.ax2.axhline(0, color='white', linestyle = '--',
-                         linewidth = 1)        
+                         linewidth = 0.5)        
                                           
         if sedmax > self.e_crit_max or sedmax < self.e_crit_min:
             format = mtick.FuncFormatter(fmt)
@@ -109,11 +112,7 @@ def time_profile(self,index,start,stop):
             format = None                  
             cb_sed = plt.colorbar(CS1,cax = self.cax1,
                 ticks = sed_ticks,format = format)
-                          
-    if self.datescale_checkbox.isChecked() == True:          
-        X = readdata.use_num2date(self,self.time_units,X)     
-        readdata.format_time_axis2(self,self.ax,xlen)   
-                             
+                                                      
     watmin,watmax  = readdata.water_make_maxmin(
         self,zz,start,stop,index,'wat_time')    
     wat_ticks = readdata.ticks_2(watmin,watmax)
@@ -134,22 +133,19 @@ def time_profile(self,index,start,stop):
          
     self.ax.set_xlim(np.min(X),np.max(X))
        
-    if self.yearlines.isChecked()==True  and \
-       self.datescale_checkbox.isChecked()== False:
-        for n in range(start,stop):
-            if n%365 == 0: 
-                self.ax.axvline(n, color='white', linestyle = '--')     
+    if self.yearlines.isChecked()==True:
+        add_lines(self.ax, years)
 
     if (watmax > self.e_crit_max):
         format = mtick.FuncFormatter(fmt)
-  
-    elif self.sediment == True: 
-        if sedmax < self.e_crit_min:
-            format = mtick.FuncFormatter(fmt)
-
+    elif ((self.sediment == True) & (sedmax < self.e_crit_min)): 
+        #if sedmax < self.e_crit_min:
+        format = mtick.FuncFormatter(fmt)
     else: 
         format = None  
     cb = plt.colorbar(CS, self.cax,ticks = wat_ticks, 
                           format = format)
-    da.close()    
+    da.close()  
+
+
     self.canvas.draw()
