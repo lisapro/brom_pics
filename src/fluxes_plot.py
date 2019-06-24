@@ -98,12 +98,6 @@ def fluxes(self,start,stop):
     # take values for fluxes at sed-vat interf        
     fick = np.array([zz[n][self.nysedmin] for n in range(start,stop)])                 
     ax00.axhline(0, color='black', linestyle = '--') #Line at SWI
-
-    if self.datescale_checkbox.isChecked() == True:          
-        X = readdata.use_num2date(self,self.time_units,X) 
-        readdata.format_time_axis2(self,ax00,len(X))         
-    else: 
-        ax00.set_xlabel('Julian day')  
         
     ax00.set_xlim(X[0],X[-1:])    
     ax00.plot(X,fick, linewidth = 1 ,color = linecolor, zorder = 10)  

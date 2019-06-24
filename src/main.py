@@ -296,15 +296,15 @@ def createOptionsGroup(self):
             "Scale:all columns, all time")                 
         self.yearlines = QCheckBox(
             'Draw year lines')           
-        self.datescale_checkbox = QCheckBox(
-            'Format time axis')         
+        #self.datescale_checkbox = QCheckBox(
+        #    'Format time axis')         
         self.interpolate_checkbox = QCheckBox(
             'Interpolate')       
                     
         vbox = QVBoxLayout()
         vbox.addWidget(self.scale_all_axes)
         vbox.addWidget(self.yearlines)
-        vbox.addWidget(self.datescale_checkbox)
+        #vbox.addWidget(self.datescale_checkbox)
         vbox.addWidget(self.interpolate_checkbox)    
         vbox.addStretch(1)
         self.options_groupBox.setLayout(vbox)     

@@ -97,8 +97,7 @@ def time_profile(self,index,start,stop):
                              cmap= self.cmap1) 
 
         if self.yearlines.isChecked()==True:
-            add_lines(self.ax2, years)
-            #[self.ax2.axvline(y, color='white', linestyle = '--') for y in years]      
+            add_lines(self.ax2, years) 
 
         self.ax2.set_xlim(np.min(X_sed),np.max(X_sed))
         self.ax2.set_ylim(self.ysedmax,self.ysedmin)                                                               
