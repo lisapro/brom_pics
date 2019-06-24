@@ -83,7 +83,7 @@ class Window(QMainWindow):
                     "Save figure")
         
         fileQuitAct = self.createAction("&Quit",
-                    self.close,"Ctrl+Q", "filequit",
+                    self.close,"Ctrl+Q", None,
                     "Close the application") 
         
         alltimeicon = r'img\icon.png'       
@@ -91,9 +91,9 @@ class Window(QMainWindow):
                     self.callPlot,icon = alltimeicon,
                     tip = "Click to Plot") 
              
-        editZoomAct = self.createAction("&Zoom...",
-                    self.editZoom,"Alt+Z","editzoom",
-                    tip = "Zoom the image")
+        #editZoomAct = self.createAction("&Zoom...",
+        #            self.editZoom,"Alt+Z","editzoom",
+        #            tip = "Zoom the image")
         #editCmapAct = self.createAction("Change Color map",
         #            self.changeCmap,
         #            tip = "Change Colormap")
@@ -140,11 +140,12 @@ class Window(QMainWindow):
         'File', 
         [fileOpenAct,fileSaveAct,fileQuitAct],
                         menubar.addMenu)
-        
-        editMenu = self.addMultipleAction(
+
+        #TODO:add edit menu later 
+        '''editMenu = self.addOneAction(
         'Edit',
-        [editZoomAct],
-        menubar.addMenu)
+        #[editZoomAct],
+        menubar.addMenu)'''
 
         proprtsMenu = self.addMultipleAction(
         'Properties',
@@ -417,6 +418,7 @@ class Window(QMainWindow):
             pixmap1 = QPixmap(icon).scaled(164, 164)
             ic.addPixmap(pixmap1, QIcon.Normal, QIcon.Off) 
             action.setIcon(ic)
+
         if shortcut is not None:
             action.setShortcut(shortcut)
         if tip is not None:
@@ -490,10 +492,10 @@ class Window(QMainWindow):
 
     def add_sed_plot(self,array,z,x,xlen,y):
         try: 
-            
             y2max,ny2max = array.y_watmax()   
             y_wat = y[:ny2max-1]
             y_sed = (array.depth_sed(y,y2max))[ny2max-1:] 
+            assert len(y_sed) > 1
             array.close()
               
             X,Y_wat = np.meshgrid(x,y_wat) 
@@ -582,6 +584,7 @@ class Window(QMainWindow):
         x = array.time(self.start,self.stop)
         xlen = len(x)
         y = array.depth()     
+
                
         if  self.SedInFileAct.isChecked():  
             self.add_sed_plot(array,z,x,xlen,y)
@@ -611,24 +614,12 @@ class Window(QMainWindow):
             cb = plt.colorbar(CS)  
         self.canvas.draw() 
 
-    
+    def okToContinue(self):
+        return True    
     
     def closeEvent(self, event):
         if self.okToContinue():
             settings = QSettings()
-            filename = QVariant(self.filename) \
-        if self.filename is not None else QVariant()
-            settings.setValue("LastFile", filename)
-            recentFiles = QVariant(self.recentFiles) \
-        if self.recentFiles else QVariant()
-            settings.setValue(
-            "RecentFiles", recentFiles)
-            settings.setValue("MainWindow/Size",
-                         QVariant(self.size()))
-            settings.setValue("MainWindow/Position",
-            QVariant(self.pos()))
-            settings.setValue("MainWindow/State",
-            QVariant(self.saveState()))
         else:
             event.ignore()  
                         
