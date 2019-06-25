@@ -1,0 +1,55 @@
+name: brom_pics
+channels:
+  - conda
+  - conda-forge
+  - defaults
+dependencies:
+  - bzip2=1.0.6=hfa6e2cd_1002
+  - ca-certificates=2019.6.16=hecc5488_0
+  - certifi=2019.6.16=py37_0
+  - cftime=1.0.3.4=py37h452e1ab_1001
+  - curl=7.65.1=h4496350_0
+  - cycler=0.10.0=py_1
+  - freetype=2.10.0=h5db478b_0
+  - hdf4=4.2.13=hf8e6fe8_1002
+  - hdf5=1.10.5=nompi_hcc15c50_1100
+  - icu=58.1=vc14_0
+  - intel-openmp=2019.4=245
+  - jpeg=9c=hfa6e2cd_1001
+  - kiwisolver=1.1.0=py37he980bc4_0
+  - krb5=1.16.3=hdd46e55_1001
+  - libblas=3.8.0=8_mkl
+  - libcblas=3.8.0=8_mkl
+  - libcurl=7.65.1=h4496350_0
+  - liblapack=3.8.0=8_mkl
+  - libnetcdf=4.6.2=ha953453_1002
+  - libpng=1.6.37=h7602738_0
+  - libssh2=1.8.2=h642c060_2
+  - matplotlib=3.1.0=py37_1
+  - matplotlib-base=3.1.0=py37h2852a4a_1
+  - mkl=2019.4=245
+  - netcdf4=1.5.1.2=py37h8c66456_1
+  - numpy=1.16.4=py37hc71023c_0
+  - openssl=1.1.1b=hfa6e2cd_2
+  - pandas=0.24.2=py37he350917_0
+  - pip=19.1.1=py37_0
+  - pyparsing=2.4.0=py_0
+  - pyqt=5.9.2=py37h6538335_0
+  - python=3.7.3=hb12ca83_0
+  - python-dateutil=2.8.0=py_0
+  - pytz=2019.1=py_0
+  - qt=5.9.7=hc6833c9_1
+  - setuptools=41.0.1=py37_0
+  - sip=4.19.8=py37h6538335_1000
+  - six=1.12.0=py37_1000
+  - sqlite=3.28.0=hfa6e2cd_0
+  - tk=8.6.9=hfa6e2cd_1002
+  - tornado=6.0.3=py37hfa6e2cd_0
+  - vc=14.1=h0510ff6_4
+  - vs2015_runtime=14.15.26706=h3a45250_4
+  - wheel=0.33.4=py37_0
+  - wincertstore=0.2=py37_1002
+  - xarray=0.12.1=py_0
+  - zlib=1.2.11=h2fa13f4_1004
+prefix: C:\Users\elp\AppData\Local\Continuum\anaconda3\envs\brom_pics
+
