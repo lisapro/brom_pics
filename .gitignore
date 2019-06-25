@@ -103,4 +103,9 @@ ENV/
 .ropeproject
 
 .settings
+<<<<<<< HEAD
 *.exe
+=======
+
+*.dll
+>>>>>>> 8915a7911be5f0b028a4bfecb1a2f013115cb08c
